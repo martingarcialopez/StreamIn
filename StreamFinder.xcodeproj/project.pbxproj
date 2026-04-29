@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5B63F2B32FA126C8002AB748 /* Claude.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* Claude.md */; };
+		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
+		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		5BBF59972FA119DD008CC68E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +30,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5B63F2B12FA1269F002AB748 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
+		5B63F2B22FA126C8002AB748 /* Claude.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Claude.md; sourceTree = "<group>"; };
+		5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		5BBF59892FA119DC008CC68E /* StreamFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BBF59B62FA11B88008CC68E /* TMDBClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = TMDBClient; path = Packages/TMDBClient; sourceTree = "<group>"; };
+		5BF89A012FA123DB005E8AF1 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +63,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */,
+				5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +88,15 @@
 		5BBF59802FA119DC008CC68E = {
 			isa = PBXGroup;
 			children = (
+				5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */,
+				5B63F2B22FA126C8002AB748 /* Claude.md */,
+				5B63F2B12FA1269F002AB748 /* Readme.md */,
+				5BF89A012FA123DB005E8AF1 /* Domain */,
+				5BBF59B62FA11B88008CC68E /* TMDBClient */,
 				5BBF598B2FA119DC008CC68E /* StreamFinder */,
 				5BBF59992FA119DD008CC68E /* StreamFinderTests */,
 				5BBF59A32FA119DD008CC68E /* StreamFinderUITests */,
+				5BBF59B72FA11F99008CC68E /* Frameworks */,
 				5BBF598A2FA119DC008CC68E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -92,6 +111,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		5BBF59B72FA11F99008CC68E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -99,6 +125,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5BBF59AA2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinder" */;
 			buildPhases = (
+				5BB248AB2FA2246C00207ABE /* Generate Secrets */,
 				5BBF59852FA119DC008CC68E /* Sources */,
 				5BBF59862FA119DC008CC68E /* Frameworks */,
 				5BBF59872FA119DC008CC68E /* Resources */,
@@ -112,6 +139,8 @@
 			);
 			name = StreamFinder;
 			packageProductDependencies = (
+				5BF89A032FA123FF005E8AF1 /* Domain */,
+				5BF89A062FA12411005E8AF1 /* TMDBClient */,
 			);
 			productName = StreamFinder;
 			productReference = 5BBF59892FA119DC008CC68E /* StreamFinder.app */;
@@ -195,6 +224,10 @@
 			);
 			mainGroup = 5BBF59802FA119DC008CC68E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */,
+				5BF89A052FA12411005E8AF1 /* XCLocalSwiftPackageReference "Packages/TMDBClient" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF598A2FA119DC008CC68E /* Products */;
 			projectDirPath = "";
@@ -212,6 +245,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B63F2B32FA126C8002AB748 /* Claude.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,6 +264,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5BB248AB2FA2246C00207ABE /* Generate Secrets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Secrets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/StreamFinder/GeneratedSecrets.swift",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "KEY=\"${TMDB_API_KEY:-your_tmdb_api_key_here}\"\ncat > \"${SRCROOT}/StreamFinder/GeneratedSecrets.swift\" <<EOF\n// Auto-generated at build time. DO NOT EDIT. DO NOT COMMIT.\nenum GeneratedSecrets {\n    static let tmdbAPIKey = \"${KEY}\"\n}\nEOF\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5BBF59852FA119DC008CC68E /* Sources */ = {
@@ -271,6 +328,7 @@
 /* Begin XCBuildConfiguration section */
 		5BBF59A82FA119DD008CC68E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -332,6 +390,7 @@
 		};
 		5BBF59A92FA119DD008CC68E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -385,6 +444,7 @@
 		};
 		5BBF59AB2FA119DD008CC68E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -427,6 +487,7 @@
 		};
 		5BBF59AC2FA119DD008CC68E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -605,6 +666,28 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Domain;
+		};
+		5BF89A052FA12411005E8AF1 /* XCLocalSwiftPackageReference "Packages/TMDBClient" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TMDBClient;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5BF89A032FA123FF005E8AF1 /* Domain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Domain;
+		};
+		5BF89A062FA12411005E8AF1 /* TMDBClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TMDBClient;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5BBF59812FA119DC008CC68E /* Project object */;
 }
