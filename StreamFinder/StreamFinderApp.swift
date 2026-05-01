@@ -24,14 +24,23 @@ struct StreamFinderApp: App {
 
     init() {
         let client = LiveTMDBClient(
-            config: TMDBConfig(apiKey: AppConfig.tmdbAPIKey)
+            config: TMDBConfig(
+                apiKey: AppConfig.tmdbAPIKey,
+                // TODO: proper language handling
+                language: "es-ES"
+            )
         )
         self.repository = TMDBMovieRepository(client: client)
     }
 
     var body: some Scene {
         WindowGroup {
-            SearchFeatureView(repository: repository)
+            SearchView(model: SearchViewModel(
+                repository: repository,
+                imageURLBuilder: TMDBImageURLBuilder(),
+                // TODO: proper region handling
+                region: .spain
+            ))
         }
     }
 }

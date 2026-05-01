@@ -208,3 +208,30 @@ public protocol MovieRepository: Sendable {
     /// Streaming / rent / buy availability for a given region.
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability
 }
+
+// MARK: - Region helpers
+
+public extension Region {
+    /// Best-effort region from the device locale; falls back to .unitedStates
+    /// when the device doesn't expose one (e.g. some simulator configurations).
+    static var currentLocale: Region {
+        Region(code: Locale.current.region?.identifier ?? "ES")
+    }
+}
+
+// MARK: - Image URLs
+//
+// Posters and provider logos live on a CDN whose URL format is transport-specific
+// (TMDB has its own scheme; another data source would have a different one).
+// Domain only declares the abstraction. The actual URL builder lives in the
+// data layer and is injected into anything that needs it.
+
+public enum ImageSize: Sendable, Hashable {
+    case poster
+    case backdrop
+    case providerLogo
+}
+
+public protocol ImageURLBuilder: Sendable {
+    func url(for path: ImagePath, size: ImageSize) -> URL?
+}
