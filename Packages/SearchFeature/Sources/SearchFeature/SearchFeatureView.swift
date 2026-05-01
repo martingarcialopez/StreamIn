@@ -1,27 +1,31 @@
 //
-//  ContentView.swift
-//  StreamFinder
+//  SearchFeatureView.swift
+//  SearchFeature
 //
 //  TEMPORARY smoke-test screen — exists only to prove the wiring works end to
-//  end (xcconfig → Info.plist → AppConfig → LiveTMDBClient → real network →
-//  TMDBMovieRepository → Domain types in a SwiftUI view).
+//  end (xcconfig → Run Script → GeneratedSecrets → AppConfig → LiveTMDBClient
+//  → real network → TMDBMovieRepository → Domain types in a SwiftUI view).
 //
-//  Once you see results from a real TMDB call here, delete this file and
-//  replace it with the proper Feature_Search package.
+//  Will be replaced by the proper Search feature (debounced search field,
+//  view model, tests) shortly.
 //
 
 import SwiftUI
 import Domain
 
-struct ContentView: View {
+public struct SearchFeatureView: View {
 
     let repository: MovieRepository
 
-    @State private var results: [Movie] = []
-    @State private var error: MovieError?
+    @State private var viewModel: SearchFeatureViewModel
     @State private var isLoading = false
 
-    var body: some View {
+    public init(repository: MovieRepository) {
+        self.repository = repository
+        self.viewModel = .init()
+    }
+
+    public var body: some View {
         NavigationStack {
             content
                 .navigationTitle("StreamFinder")
@@ -38,7 +42,7 @@ struct ContentView: View {
     private var content: some View {
         if isLoading {
             ProgressView("Searching…")
-        } else if let error {
+        } else if let error = viewModel.error {
             VStack(spacing: 12) {
                 Text("Error: \(String(describing: error))")
                     .foregroundStyle(.red)
@@ -47,14 +51,14 @@ struct ContentView: View {
                 }
             }
             .padding()
-        } else if results.isEmpty {
+        } else if viewModel.results.isEmpty {
             ContentUnavailableView(
                 "Tap Search to verify wiring",
                 systemImage: "movieclapper",
-                description: Text("Smoke-test screen. Replace with Feature_Search once green.")
+                description: Text("Smoke-test screen. Replace with the real search view soon.")
             )
         } else {
-            List(results) { movie in
+            List(viewModel.results) { movie in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(movie.title).font(.headline)
                     if let date = movie.releaseDate {
@@ -77,14 +81,14 @@ struct ContentView: View {
         defer { isLoading = false }
         do {
             let page = try await repository.searchMovies(query: "Inception", page: 1)
-            results = page.results
-            error = nil
+            viewModel.results = page.results
+            viewModel.error = nil
         } catch let movieError as MovieError {
-            error = movieError
-            results = []
+            viewModel.error = movieError
+            viewModel.results = []
         } catch {
-            self.error = .unknown
-            results = []
+            viewModel.error = .unknown
+            viewModel.results = []
         }
     }
 }
@@ -92,11 +96,11 @@ struct ContentView: View {
 // MARK: - Preview
 
 #Preview {
-    ContentView(repository: PreviewMovieRepository())
+    SearchFeatureView(repository: PreviewMovieRepository())
 }
 
 /// Trivial fake used only for SwiftUI previews. Real test fakes will live in
-/// the Feature_Search package once we get there.
+/// `SearchFeatureTests` once we add the view model.
 private struct PreviewMovieRepository: MovieRepository {
     func searchMovies(query: String, page: Int) async throws -> SearchPage {
         SearchPage(

@@ -20,7 +20,7 @@ Three layers, hard boundaries enforced by Swift Package separation. See `README.
 - **TMDBClient** (depends on Domain) — HTTP, DTOs, adapter to `MovieRepository`.
 - **Persistence** (depends on Domain) — SwiftData stores for history and watchlist.
 - **DesignSystem** (no deps) — reusable views, colors, typography.
-- **Feature_*** (depends on Domain + DesignSystem) — one package per screen.
+- ***Feature** (depends on Domain + DesignSystem) — one package per screen, e.g. `SearchFeature`, `MovieDetailFeature`. PascalCase suffix style for consistency with the other packages.
 - **App** (depends on all) — composition root that wires concrete implementations.
 
 The single most important rule: **Features depend on Domain protocols, never on TMDB or SwiftData directly.**
@@ -46,7 +46,7 @@ Netflix / Disney+ / HBO / etc. don't expose public availability APIs. The realis
 
 ### One Swift Package per layer
 
-`Domain`, `TMDBClient`, `Persistence`, `DesignSystem`, one `Feature_*` per screen, App target on top. Boundaries enforced at *build time* by package separation, not just convention. Cost: a few minutes per new package. Benefit: the rule "features can't import TMDB" is physically impossible to violate.
+`Domain`, `TMDBClient`, `Persistence`, `DesignSystem`, one `*Feature` per screen (e.g. `SearchFeature`), App target on top. Boundaries enforced at *build time* by package separation, not just convention. Cost: a few minutes per new package. Benefit: the rule "features can't import TMDB" is physically impossible to violate.
 
 ### Local packages: only outermost ones added at project level
 
@@ -98,7 +98,7 @@ See `README.md` "Quick start". A free TMDB API key is required and goes in `Secr
 ## Working agreements with Claude
 
 - Always propose the change as a diff before applying broad edits across multiple files.
-- When adding a new feature package, copy the structure of an existing one (`Feature_Search`) — don't invent a new layout.
+- When adding a new feature package, copy the structure of an existing one (`SearchFeature`) — don't invent a new layout.
 - When adding a dependency, justify it in the PR description.
 - Tests are not optional; new behavior ships with tests in the same PR.
 - If you find yourself wanting to bypass a layer (e.g. importing `TMDBClient` from a feature), stop and surface it — it's almost always a smell.

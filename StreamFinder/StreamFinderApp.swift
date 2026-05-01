@@ -8,6 +8,7 @@
 import SwiftUI
 import Domain
 import TMDBClient
+import SearchFeature
 
 @main
 struct StreamFinderApp: App {
@@ -30,7 +31,7 @@ struct StreamFinderApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(repository: repository)
+            SearchFeatureView(repository: repository)
         }
     }
 }

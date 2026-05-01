@@ -55,6 +55,7 @@ public struct Region: Hashable, Sendable {
     public static let unitedKingdom = Region(code: "GB")
     public static let france        = Region(code: "FR")
     public static let germany       = Region(code: "DE")
+    public static let denmark       = Region(code: "DK")
 }
 
 // MARK: - Movie

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5B63F2B32FA126C8002AB748 /* Claude.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* Claude.md */; };
+		5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B8B87012FA38F9C0038B8ED /* SearchFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
 		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
 /* End PBXBuildFile section */
@@ -33,6 +34,7 @@
 		5B63F2B12FA1269F002AB748 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		5B63F2B22FA126C8002AB748 /* Claude.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Claude.md; sourceTree = "<group>"; };
 		5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		5B8B86FF2FA38DF50038B8ED /* SearchFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SearchFeature; path = Packages/SearchFeature; sourceTree = "<group>"; };
 		5BBF59892FA119DC008CC68E /* StreamFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +67,7 @@
 			files = (
 				5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */,
 				5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */,
+				5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,8 +92,9 @@
 			isa = PBXGroup;
 			children = (
 				5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */,
-				5B63F2B22FA126C8002AB748 /* Claude.md */,
 				5B63F2B12FA1269F002AB748 /* Readme.md */,
+				5B63F2B22FA126C8002AB748 /* Claude.md */,
+				5B8B86FF2FA38DF50038B8ED /* SearchFeature */,
 				5BF89A012FA123DB005E8AF1 /* Domain */,
 				5BBF59B62FA11B88008CC68E /* TMDBClient */,
 				5BBF598B2FA119DC008CC68E /* StreamFinder */,
@@ -141,6 +145,7 @@
 			packageProductDependencies = (
 				5BF89A032FA123FF005E8AF1 /* Domain */,
 				5BF89A062FA12411005E8AF1 /* TMDBClient */,
+				5B8B87012FA38F9C0038B8ED /* SearchFeature */,
 			);
 			productName = StreamFinder;
 			productReference = 5BBF59892FA119DC008CC68E /* StreamFinder.app */;
@@ -227,6 +232,7 @@
 			packageReferences = (
 				5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */,
 				5BF89A052FA12411005E8AF1 /* XCLocalSwiftPackageReference "Packages/TMDBClient" */,
+				5B8B87002FA38F9C0038B8ED /* XCLocalSwiftPackageReference "Packages/SearchFeature" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF598A2FA119DC008CC68E /* Products */;
@@ -668,6 +674,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		5B8B87002FA38F9C0038B8ED /* XCLocalSwiftPackageReference "Packages/SearchFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SearchFeature;
+		};
 		5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Domain;
@@ -679,6 +689,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5B8B87012FA38F9C0038B8ED /* SearchFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SearchFeature;
+		};
 		5BF89A032FA123FF005E8AF1 /* Domain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Domain;
