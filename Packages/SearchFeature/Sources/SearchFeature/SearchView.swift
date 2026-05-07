@@ -19,14 +19,16 @@ public struct SearchView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("StreamFinder")
-                .searchable(text: $searchText, prompt: "Search a movie")
-                .onSubmit(of: .search) {
-                    Task { await model.search(query: searchText) }
-                }
-        }
+        // The NavigationStack lives one level up (in the App target's
+        // composition root), so this view simply contributes content + the
+        // search bar + the submit handler. Rows below use NavigationLink(value:)
+        // to push movies onto whichever stack contains us.
+        content
+            .navigationTitle("StreamFinder")
+            .searchable(text: $searchText, prompt: "Search a movie")
+            .onSubmit(of: .search) {
+                Task { await model.search(query: searchText) }
+            }
     }
 
     @ViewBuilder
@@ -50,7 +52,9 @@ public struct SearchView: View {
             )
         } else {
             List(model.results) { movie in
-                row(for: movie)
+                NavigationLink(value: movie) {
+                    row(for: movie)
+                }
             }
         }
     }
@@ -142,13 +146,15 @@ private struct ProviderLogo: View {
 // MARK: - Preview
 
 #Preview {
-    SearchView(
-        model: SearchViewModel(
-            repository: PreviewMovieRepository(),
-            imageURLBuilder: PreviewImageURLBuilder(),
-            region: .unitedStates
+    NavigationStack {
+        SearchView(
+            model: SearchViewModel(
+                repository: PreviewMovieRepository(),
+                imageURLBuilder: PreviewImageURLBuilder(),
+                region: .unitedStates
+            )
         )
-    )
+    }
 }
 
 /// Trivial fake used only for SwiftUI previews. Real test fakes will live in

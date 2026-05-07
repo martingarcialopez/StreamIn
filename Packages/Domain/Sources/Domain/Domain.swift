@@ -30,6 +30,11 @@ public struct ProviderID: Hashable, Sendable {
     public init(_ rawValue: Int) { self.rawValue = rawValue }
 }
 
+public struct PersonID: Hashable, Sendable {
+    public let rawValue: Int
+    public init(_ rawValue: Int) { self.rawValue = rawValue }
+}
+
 /// A relative path returned by TMDB (e.g. "/abc.jpg"). Kept opaque here;
 /// the UI layer composes the absolute URL with the configured CDN base + size,
 /// because *that* is a presentation concern (different sizes for thumb vs hero).
@@ -56,11 +61,26 @@ public struct Region: Hashable, Sendable {
     public static let france        = Region(code: "FR")
     public static let germany       = Region(code: "DE")
     public static let denmark       = Region(code: "DK")
+
+    /// Static catalog of regions the app exposes in its settings picker. Add
+    /// to this list as we localize for new markets; each entry needs a TMDB
+    /// presence (every entry here has one, but worth checking when extending).
+    public static let allKnown: [Region] = [
+        .unitedStates, .spain, .unitedKingdom, .france, .germany, .denmark
+    ]
+
+    /// Human-readable name in the user's *display* language. So a Spanish-
+    /// locale user sees "Estados Unidos"; an English-locale user sees
+    /// "United States". Falls back to the raw ISO code if the locale doesn't
+    /// know the country (very rare).
+    public var displayName: String {
+        Locale.current.localizedString(forRegionCode: code) ?? code
+    }
 }
 
 // MARK: - Movie
 
-public struct Movie: Equatable, Identifiable, Sendable {
+public struct Movie: Equatable, Hashable, Identifiable, Sendable {
     public let id: MovieID
     public let title: String
     public let originalTitle: String
@@ -71,6 +91,10 @@ public struct Movie: Equatable, Identifiable, Sendable {
     public let voteAverage: Double
     /// Nil from search results, populated by the detail fetch.
     public let runtime: Duration?
+    /// Empty from search results, populated by the detail fetch.
+    /// Most movies have one director; some have two or more (Coen brothers,
+    /// Wachowskis, etc.) — hence a list rather than a single optional.
+    public let directors: [Person]
 
     public init(
         id: MovieID,
@@ -81,7 +105,8 @@ public struct Movie: Equatable, Identifiable, Sendable {
         posterPath: ImagePath?,
         backdropPath: ImagePath?,
         voteAverage: Double,
-        runtime: Duration?
+        runtime: Duration?,
+        directors: [Person] = []
     ) {
         self.id = id
         self.title = title
@@ -92,6 +117,21 @@ public struct Movie: Equatable, Identifiable, Sendable {
         self.backdropPath = backdropPath
         self.voteAverage = voteAverage
         self.runtime = runtime
+        self.directors = directors
+    }
+}
+
+// MARK: - Person
+
+public struct Person: Equatable, Hashable, Identifiable, Sendable {
+    public let id: PersonID
+    public let name: String
+    public let profilePath: ImagePath?
+
+    public init(id: PersonID, name: String, profilePath: ImagePath?) {
+        self.id = id
+        self.name = name
+        self.profilePath = profilePath
     }
 }
 
@@ -212,10 +252,58 @@ public protocol MovieRepository: Sendable {
 // MARK: - Region helpers
 
 public extension Region {
-    /// Best-effort region from the device locale; falls back to .unitedStates
-    /// when the device doesn't expose one (e.g. some simulator configurations).
+    /// Best-effort region from the device locale, *constrained to the catalog*
+    /// of regions the app exposes. If the device locale isn't one we ship with
+    /// (e.g. user is in Mexico, catalog only has Spain), falls back to a
+    /// reasonable default rather than returning a region the picker can't show.
     static var currentLocale: Region {
-        Region(code: Locale.current.region?.identifier ?? "ES")
+        let code = Locale.current.region?.identifier ?? "ES"
+        return allKnown.first(where: { $0.code == code }) ?? .spain
+    }
+}
+
+// MARK: - Language
+//
+// Mirror of Region but for the `language=` parameter TMDB accepts on every
+// localized call (search, movie detail). Driven from settings, defaults to the
+// device locale (constrained to the catalog).
+
+public struct Language: Hashable, Sendable {
+    /// BCP-47 identifier, e.g. "en-US", "es-ES", "fr-FR".
+    public let code: String
+
+    public init(code: String) { self.code = code }
+
+    public static let englishUS    = Language(code: "en-US")
+    public static let spanishES    = Language(code: "es-ES")
+    public static let frenchFR     = Language(code: "fr-FR")
+    public static let germanDE     = Language(code: "de-DE")
+    public static let italianIT    = Language(code: "it-IT")
+    public static let portugueseBR = Language(code: "pt-BR")
+
+    /// Catalog of languages exposed in the settings picker.
+    public static let allKnown: [Language] = [
+        .englishUS, .spanishES, .frenchFR, .germanDE, .italianIT, .portugueseBR
+    ]
+
+    /// Self-localized name — each language's name *in itself*: "English",
+    /// "Español", "Français". This is the iOS / App Store convention for
+    /// language pickers; users find their language even if the app's current
+    /// display language is different.
+    public var displayName: String {
+        Locale(identifier: code).localizedString(forIdentifier: code) ?? code
+    }
+
+    /// Best-effort language from the device locale, constrained to the catalog.
+    /// Tries an exact BCP-47 match, then a language-code prefix match, then
+    /// falls back to Spanish (Spain) — matching the project's defaults.
+    public static var currentLocale: Language {
+        let lang = Locale.current.language.languageCode?.identifier ?? "es"
+        let region = Locale.current.region?.identifier ?? "ES"
+        let bcp47 = "\(lang)-\(region)"
+        return allKnown.first(where: { $0.code == bcp47 })
+            ?? allKnown.first(where: { $0.code.hasPrefix(lang + "-") })
+            ?? .spanishES
     }
 }
 

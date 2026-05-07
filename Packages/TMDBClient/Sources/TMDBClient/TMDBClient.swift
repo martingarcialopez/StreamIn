@@ -94,14 +94,46 @@ public struct TMDBMovieDetailDTO: Decodable, Sendable {
     public let backdropPath: String?
     public let voteAverage: Double
     public let runtime: Int?              // minutes
+    /// Populated when the request asked for `append_to_response=credits`.
+    public let credits: TMDBCreditsDTO?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, overview, runtime
+        case id, title, overview, runtime, credits
         case originalTitle = "original_title"
         case releaseDate = "release_date"
         case posterPath = "poster_path"
         case backdropPath = "backdrop_path"
         case voteAverage = "vote_average"
+    }
+}
+
+public struct TMDBCreditsDTO: Decodable, Sendable {
+    public let cast: [TMDBCastMemberDTO]?
+    public let crew: [TMDBCrewMemberDTO]?
+}
+
+public struct TMDBCastMemberDTO: Decodable, Sendable {
+    public let id: Int
+    public let name: String
+    public let profilePath: String?
+    public let character: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, character
+        case profilePath = "profile_path"
+    }
+}
+
+public struct TMDBCrewMemberDTO: Decodable, Sendable {
+    public let id: Int
+    public let name: String
+    public let profilePath: String?
+    public let job: String          // e.g. "Director", "Director of Photography"
+    public let department: String   // e.g. "Directing", "Camera"
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, job, department
+        case profilePath = "profile_path"
     }
 }
 
@@ -163,7 +195,12 @@ public final class LiveTMDBClient: TMDBClient {
     public func movieDetails(id: Int) async throws -> TMDBMovieDetailDTO {
         try await get(
             path: "/movie/\(id)",
-            query: ["language": config.language]
+            query: [
+                "language": config.language,
+                // Bundles the credits endpoint into the same response so we
+                // get cast & crew (incl. director) without a second round trip.
+                "append_to_response": "credits"
+            ]
         )
     }
 
@@ -251,7 +288,8 @@ public struct TMDBMovieRepository: MovieRepository {
             posterPath: dto.posterPath.map(ImagePath.init),
             backdropPath: dto.backdropPath.map(ImagePath.init),
             voteAverage: dto.voteAverage,
-            runtime: dto.runtime.map { Duration.seconds($0 * 60) }
+            runtime: dto.runtime.map { Duration.seconds($0 * 60) },
+            directors: extractDirectors(from: dto.credits)
         )
     }
 
@@ -299,6 +337,21 @@ public struct TMDBMovieRepository: MovieRepository {
     private func parseDate(_ raw: String?) -> Date? {
         guard let raw, !raw.isEmpty else { return nil }
         return dateFormatter.date(from: raw)
+    }
+
+    /// Pulls people whose `job == "Director"` out of the crew. Excludes
+    /// related-but-different roles like "Director of Photography" or
+    /// "Co-Director" — adjust the predicate here if you want a broader set.
+    private func extractDirectors(from credits: TMDBCreditsDTO?) -> [Person] {
+        (credits?.crew ?? [])
+            .filter { $0.job == "Director" }
+            .map { dto in
+                Person(
+                    id: PersonID(dto.id),
+                    name: dto.name,
+                    profilePath: dto.profilePath.map(ImagePath.init)
+                )
+            }
     }
 
     /// Translates URLError / cancellation / unknown errors into our domain enum

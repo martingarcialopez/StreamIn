@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B20C7EC2FA4C510006066E7 /* DetailsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B20C7EB2FA4C510006066E7 /* DetailsFeature */; };
 		5B63F2B32FA126C8002AB748 /* Claude.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* Claude.md */; };
 		5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B8B87012FA38F9C0038B8ED /* SearchFeature */; };
+		5BF57B592FAB9D6C00BF5F39 /* SettingsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */; };
+		5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
 		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
 /* End PBXBuildFile section */
@@ -31,6 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5B20C7E92FA4C408006066E7 /* DetailsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DetailsFeature; path = Packages/DetailsFeature; sourceTree = "<group>"; };
 		5B63F2B12FA1269F002AB748 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		5B63F2B22FA126C8002AB748 /* Claude.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Claude.md; sourceTree = "<group>"; };
 		5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
@@ -39,6 +43,8 @@
 		5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59B62FA11B88008CC68E /* TMDBClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = TMDBClient; path = Packages/TMDBClient; sourceTree = "<group>"; };
+		5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WatchlistFeature; path = Packages/WatchlistFeature; sourceTree = "<group>"; };
+		5BF57B562FAB9CD100BF5F39 /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SettingsFeature; path = Packages/SettingsFeature; sourceTree = "<group>"; };
 		5BF89A012FA123DB005E8AF1 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +71,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5BF57B592FAB9D6C00BF5F39 /* SettingsFeature in Frameworks */,
+				5B20C7EC2FA4C510006066E7 /* DetailsFeature in Frameworks */,
 				5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */,
+				5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */,
 				5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */,
 				5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */,
 			);
@@ -94,7 +103,10 @@
 				5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */,
 				5B63F2B12FA1269F002AB748 /* Readme.md */,
 				5B63F2B22FA126C8002AB748 /* Claude.md */,
+				5BF57B562FAB9CD100BF5F39 /* SettingsFeature */,
+				5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */,
 				5B8B86FF2FA38DF50038B8ED /* SearchFeature */,
+				5B20C7E92FA4C408006066E7 /* DetailsFeature */,
 				5BF89A012FA123DB005E8AF1 /* Domain */,
 				5BBF59B62FA11B88008CC68E /* TMDBClient */,
 				5BBF598B2FA119DC008CC68E /* StreamFinder */,
@@ -146,6 +158,9 @@
 				5BF89A032FA123FF005E8AF1 /* Domain */,
 				5BF89A062FA12411005E8AF1 /* TMDBClient */,
 				5B8B87012FA38F9C0038B8ED /* SearchFeature */,
+				5B20C7EB2FA4C510006066E7 /* DetailsFeature */,
+				5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */,
+				5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */,
 			);
 			productName = StreamFinder;
 			productReference = 5BBF59892FA119DC008CC68E /* StreamFinder.app */;
@@ -233,6 +248,9 @@
 				5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */,
 				5BF89A052FA12411005E8AF1 /* XCLocalSwiftPackageReference "Packages/TMDBClient" */,
 				5B8B87002FA38F9C0038B8ED /* XCLocalSwiftPackageReference "Packages/SearchFeature" */,
+				5B20C7EA2FA4C510006066E7 /* XCLocalSwiftPackageReference "Packages/DetailsFeature" */,
+				5BF57B572FAB9D6C00BF5F39 /* XCLocalSwiftPackageReference "Packages/SettingsFeature" */,
+				5BF57B5A2FAB9D7900BF5F39 /* XCLocalSwiftPackageReference "Packages/WatchlistFeature" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF598A2FA119DC008CC68E /* Products */;
@@ -678,9 +696,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		5B20C7EA2FA4C510006066E7 /* XCLocalSwiftPackageReference "Packages/DetailsFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/DetailsFeature;
+		};
 		5B8B87002FA38F9C0038B8ED /* XCLocalSwiftPackageReference "Packages/SearchFeature" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/SearchFeature;
+		};
+		5BF57B572FAB9D6C00BF5F39 /* XCLocalSwiftPackageReference "Packages/SettingsFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/SettingsFeature;
+		};
+		5BF57B5A2FAB9D7900BF5F39 /* XCLocalSwiftPackageReference "Packages/WatchlistFeature" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/WatchlistFeature;
 		};
 		5BF89A022FA123FF005E8AF1 /* XCLocalSwiftPackageReference "Packages/Domain" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -693,9 +723,21 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5B20C7EB2FA4C510006066E7 /* DetailsFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DetailsFeature;
+		};
 		5B8B87012FA38F9C0038B8ED /* SearchFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SearchFeature;
+		};
+		5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SettingsFeature;
+		};
+		5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WatchlistFeature;
 		};
 		5BF89A032FA123FF005E8AF1 /* Domain */ = {
 			isa = XCSwiftPackageProductDependency;
