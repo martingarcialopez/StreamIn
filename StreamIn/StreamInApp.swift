@@ -8,6 +8,7 @@
 import SwiftUI
 import Domain
 import TMDBClient
+import Preferences
 import SearchFeature
 import DetailsFeature
 import WatchlistFeature
@@ -19,17 +20,17 @@ struct StreamInApp: App {
     /// Composition root.
     ///
     /// Owns the long-lived dependencies that don't depend on user-mutable
-    /// settings: the image URL builder, and the settings store itself.
-    /// The data-layer repository depends on `language` (a settings value) so
+    /// preferences: the image URL builder, and the preferences store itself.
+    /// The data-layer repository depends on `language` (a preferences value) so
     /// it's constructed inside `RootView` and refreshed when language changes.
     private let imageURLBuilder: ImageURLBuilder = TMDBImageURLBuilder()
-    private let settings: SettingsViewModel = SettingsViewModel()
+    private let prefs: Preferences = Preferences()
 
     var body: some Scene {
         WindowGroup {
             RootView(
                 imageURLBuilder: imageURLBuilder,
-                settings: settings
+                prefs: prefs
             )
         }
     }
@@ -38,7 +39,7 @@ struct StreamInApp: App {
 // MARK: - Root view (tabs + settings sheet)
 
 /// Hosts the bottom tab bar and the settings sheet. The repository is derived
-/// directly from `settings.language` in `body` so that when the language
+/// directly from `prefs.language` in `body` so that when the language
 /// changes, the new repository and the new `.id` on SearchView are produced
 /// in the same render pass — the recreated SearchView always gets the correct
 /// client. Using `@State` + `onChange` caused a race where the .id changed
@@ -46,18 +47,18 @@ struct StreamInApp: App {
 /// the stale language.
 private struct RootView: View {
     let imageURLBuilder: ImageURLBuilder
-    let settings: SettingsViewModel
+    let prefs: Preferences
 
     @State private var showingSettings = false
 
     var body: some View {
-        let repository = Self.makeRepository(language: settings.language)
+        let repository = Self.makeRepository(language: prefs.language)
         TabView {
             Tab("Search", systemImage: "magnifyingglass") {
                 SearchTab(
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
-                    settings: settings,
+                    prefs: prefs,
                     showingSettings: $showingSettings
                 )
             }
@@ -67,7 +68,7 @@ private struct RootView: View {
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
-                SettingsView(model: settings)
+                SettingsView(prefs: prefs)
             }
         }
     }
@@ -95,7 +96,7 @@ private struct RootView: View {
 private struct SearchTab: View {
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
-    let settings: SettingsViewModel
+    let prefs: Preferences
     @Binding var showingSettings: Bool
 
     var body: some View {
@@ -103,19 +104,19 @@ private struct SearchTab: View {
             SearchView(model: SearchViewModel(
                 repository: repository,
                 imageURLBuilder: imageURLBuilder,
-                region: settings.region
+                region: prefs.region
             ))
             // Combined identity: rebuild SearchView (and its view model)
             // whenever EITHER region OR language changes. Stale results based
             // on the previous settings would be misleading; clean refresh is
             // the right behavior.
-            .id([settings.region.code, settings.language.code])
+            .id([prefs.region.code, prefs.language.code])
             .navigationDestination(for: Movie.self) { movie in
                 DetailsView(model: DetailsViewModel(
                     movie: movie,
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
-                    region: settings.region
+                    region: prefs.region
                 ))
             }
             .toolbar {

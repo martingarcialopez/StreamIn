@@ -10,23 +10,24 @@
 
 import SwiftUI
 import Domain
+import Preferences
 
 public struct SettingsView: View {
 
-    /// `@Bindable` instead of `@State`: the model is owned by the App's
-    /// composition root and passed in here. `@Bindable` lets us project
-    /// bindings (`$model.region`) onto the picker without taking ownership.
-    @Bindable var model: SettingsViewModel
+    /// `@Bindable` instead of `@State`: the preferences object is owned by the
+    /// App's composition root and passed in. `@Bindable` lets us project
+    /// bindings (`$prefs.region`) onto the pickers without taking ownership.
+    @Bindable var prefs: Preferences
     @Environment(\.dismiss) private var dismiss
 
-    public init(model: SettingsViewModel) {
-        self.model = model
+    public init(prefs: Preferences) {
+        self.prefs = prefs
     }
 
     public var body: some View {
         Form {
-            RegionSection(model: model)
-            LanguageSection(model: model)
+            RegionSection(prefs: prefs)
+            LanguageSection(prefs: prefs)
             SubscriptionsSection()
         }
         .navigationTitle("Settings")
@@ -41,17 +42,17 @@ public struct SettingsView: View {
 
 // MARK: - Sections
 //
-// One struct per section. Each receives the `@Observable` model and re-derives
-// its own `@Bindable` so it can project bindings (`$model.region`) onto the
-// picker. SwiftUI's per-property observation tracking means an unrelated
+// One struct per section. Each receives the `@Observable` preferences object and
+// re-derives its own `@Bindable` so it can project bindings (`$prefs.region`)
+// onto the picker. SwiftUI's per-property observation tracking means an unrelated
 // section won't re-render when a different one's value changes.
 
 private struct RegionSection: View {
-    @Bindable var model: SettingsViewModel
+    @Bindable var prefs: Preferences
 
     var body: some View {
         Section {
-            Picker("Region", selection: $model.region) {
+            Picker("Region", selection: $prefs.region) {
                 ForEach(Region.allKnown) { region in
                     Text(region.displayName).tag(region)
                 }
@@ -65,11 +66,11 @@ private struct RegionSection: View {
 }
 
 private struct LanguageSection: View {
-    @Bindable var model: SettingsViewModel
+    @Bindable var prefs: Preferences
 
     var body: some View {
         Section {
-            Picker("Language", selection: $model.language) {
+            Picker("Language", selection: $prefs.language) {
                 ForEach(Language.allKnown) { language in
                     Text(language.displayName).tag(language)
                 }
@@ -99,6 +100,6 @@ private struct SubscriptionsSection: View {
 
 #Preview {
     NavigationStack {
-        SettingsView(model: SettingsViewModel())
+        SettingsView(prefs: Preferences())
     }
 }
