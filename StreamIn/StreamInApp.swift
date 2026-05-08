@@ -37,25 +37,21 @@ struct StreamInApp: App {
 
 // MARK: - Root view (tabs + settings sheet)
 
-/// Hosts the bottom tab bar and the settings sheet, AND owns the data-layer
-/// repository (because the repository depends on `language`, a settings value
-/// that can change at runtime). When language changes we rebuild the
-/// repository; when either region OR language changes we force-rebuild the
-/// SearchView via `.id` so its view model is reconstructed fresh.
+/// Hosts the bottom tab bar and the settings sheet. The repository is derived
+/// directly from `settings.language` in `body` so that when the language
+/// changes, the new repository and the new `.id` on SearchView are produced
+/// in the same render pass — the recreated SearchView always gets the correct
+/// client. Using `@State` + `onChange` caused a race where the .id changed
+/// one frame before the repository did, so the new SearchView was built with
+/// the stale language.
 private struct RootView: View {
     let imageURLBuilder: ImageURLBuilder
     let settings: SettingsViewModel
 
-    @State private var repository: MovieRepository
     @State private var showingSettings = false
 
-    init(imageURLBuilder: ImageURLBuilder, settings: SettingsViewModel) {
-        self.imageURLBuilder = imageURLBuilder
-        self.settings = settings
-        _repository = State(initialValue: Self.makeRepository(language: settings.language))
-    }
-
     var body: some View {
+        let repository = Self.makeRepository(language: settings.language)
         TabView {
             Tab("Search", systemImage: "magnifyingglass") {
                 SearchTab(
@@ -74,17 +70,12 @@ private struct RootView: View {
                 SettingsView(model: settings)
             }
         }
-        // Language change → rebuild the repository so the new `language=`
-        // parameter rides on every subsequent TMDB call.
-        .onChange(of: settings.language) { _, newLanguage in
-            repository = Self.makeRepository(language: newLanguage)
-        }
     }
 
     // MARK: Repository factory
 
-    /// Builds a fresh data-layer client + repository for the given language.
-    /// Called on launch and whenever the user changes language in Settings.
+    /// `LiveTMDBClient` holds config + `URLSession.shared` — a cheap allocation,
+    /// safe to call on each body evaluation triggered by a settings change.
     private static func makeRepository(language: Language) -> MovieRepository {
         let client = LiveTMDBClient(
             config: TMDBConfig(
