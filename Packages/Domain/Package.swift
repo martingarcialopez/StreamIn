@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 // Place at: Packages/Domain/Package.swift
 //
 // The `Domain` package has NO dependencies. That's intentional and load-bearing.
@@ -10,7 +10,7 @@ import PackageDescription
 let package = Package(
     name: "Domain",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v26)
     ],
     products: [
         .library(name: "Domain", targets: ["Domain"]),
@@ -23,5 +23,6 @@ let package = Package(
             name: "DomainTests",
             dependencies: ["Domain"]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

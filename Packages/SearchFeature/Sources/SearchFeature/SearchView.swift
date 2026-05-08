@@ -23,27 +23,33 @@ public struct SearchView: View {
         // composition root), so this view simply contributes content + the
         // search bar + the submit handler. Rows below use NavigationLink(value:)
         // to push movies onto whichever stack contains us.
-        content
+        SearchContent(model: model, onRetry: retry)
             .navigationTitle("StreamFinder")
             .searchable(text: $searchText, prompt: "Search a movie")
-            .onSubmit(of: .search) {
-                Task { await model.search(query: searchText) }
-            }
+            .onSubmit(of: .search, retry)
     }
 
-    @ViewBuilder
-    private var content: some View {
+    private func retry() {
+        Task { await model.search(query: searchText) }
+    }
+}
+
+// MARK: - Content branching
+//
+// Per the project's view-structure convention, the content branches live in
+// their own `View` structs rather than `@ViewBuilder` computed properties on
+// `SearchView`. The struct receives the view model directly — `@Observable`
+// invalidation is automatic when its body reads observable properties.
+
+private struct SearchContent: View {
+    let model: SearchViewModel
+    let onRetry: () -> Void
+
+    var body: some View {
         if model.isLoading {
             ProgressView("Searching…")
         } else if let error = model.error {
-            VStack(spacing: 12) {
-                Text("Error: \(String(describing: error))")
-                    .foregroundStyle(.red)
-                Button("Retry") {
-                    Task { await model.search(query: searchText) }
-                }
-            }
-            .padding()
+            ErrorState(error: error, onRetry: onRetry)
         } else if model.results.isEmpty {
             ContentUnavailableView(
                 "Search a movie",
@@ -53,14 +59,32 @@ public struct SearchView: View {
         } else {
             List(model.results) { movie in
                 NavigationLink(value: movie) {
-                    row(for: movie)
+                    SearchResultRow(movie: movie, model: model)
                 }
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func row(for movie: Movie) -> some View {
+private struct ErrorState: View {
+    let error: MovieError
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("Error: \(String(describing: error))")
+                .foregroundStyle(.red)
+            Button("Retry", action: onRetry)
+        }
+        .padding()
+    }
+}
+
+private struct SearchResultRow: View {
+    let movie: Movie
+    let model: SearchViewModel
+
+    var body: some View {
         HStack(alignment: .top, spacing: 12) {
             PosterView(url: model.posterURL(for: movie))
 
@@ -75,25 +99,28 @@ public struct SearchView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                providerStrip(for: movie)
+                ProviderStrip(movie: movie, model: model)
             }
 
             Spacer(minLength: 0)
         }
         .padding(.vertical, 4)
     }
+}
 
-    @ViewBuilder
-    private func providerStrip(for movie: Movie) -> some View {
+private struct ProviderStrip: View {
+    let movie: Movie
+    let model: SearchViewModel
+
+    var body: some View {
         if let availability = model.availability[movie.id] {
-            let providers = availability.subscription
-            if providers.isEmpty {
+            if availability.subscription.isEmpty {
                 Text("Not on streaming in your region")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             } else {
                 HStack(spacing: 6) {
-                    ForEach(providers.prefix(5), id: \.id) { provider in
+                    ForEach(availability.subscription.prefix(5), id: \.id) { provider in
                         ProviderLogo(url: model.providerLogoURL(for: provider))
                     }
                 }
@@ -105,7 +132,7 @@ public struct SearchView: View {
     }
 }
 
-// MARK: - Subviews
+// MARK: - Image subviews
 
 private struct PosterView: View {
     let url: URL?
@@ -124,7 +151,7 @@ private struct PosterView: View {
             }
         }
         .frame(width: 60, height: 90)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(.rect(cornerRadius: 6))
     }
 }
 
@@ -139,7 +166,7 @@ private struct ProviderLogo: View {
             }
         }
         .frame(width: 28, height: 28)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(.rect(cornerRadius: 6))
     }
 }
 

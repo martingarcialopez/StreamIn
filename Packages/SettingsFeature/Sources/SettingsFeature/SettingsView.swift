@@ -25,21 +25,31 @@ public struct SettingsView: View {
 
     public var body: some View {
         Form {
-            regionSection
-            languageSection
-            subscriptionsSection
+            RegionSection(model: model)
+            LanguageSection(model: model)
+            SubscriptionsSection()
         }
         .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") { dismiss() }
-                    .fontWeight(.semibold)
             }
         }
     }
+}
 
-    private var regionSection: some View {
+// MARK: - Sections
+//
+// One struct per section. Each receives the `@Observable` model and re-derives
+// its own `@Bindable` so it can project bindings (`$model.region`) onto the
+// picker. SwiftUI's per-property observation tracking means an unrelated
+// section won't re-render when a different one's value changes.
+
+private struct RegionSection: View {
+    @Bindable var model: SettingsViewModel
+
+    var body: some View {
         Section {
             Picker("Region", selection: $model.region) {
                 ForEach(Region.allKnown, id: \.code) { region in
@@ -52,8 +62,12 @@ public struct SettingsView: View {
             Text("Determines which streaming services appear for each movie.")
         }
     }
+}
 
-    private var languageSection: some View {
+private struct LanguageSection: View {
+    @Bindable var model: SettingsViewModel
+
+    var body: some View {
         Section {
             Picker("Language", selection: $model.language) {
                 ForEach(Language.allKnown, id: \.code) { language in
@@ -66,8 +80,10 @@ public struct SettingsView: View {
             Text("Controls the language of movie titles, descriptions, and poster art returned by TMDB.")
         }
     }
+}
 
-    private var subscriptionsSection: some View {
+private struct SubscriptionsSection: View {
+    var body: some View {
         Section {
             Text("Tell us which streaming services you subscribe to so we can highlight them in search results.")
                 .font(.callout)
@@ -83,6 +99,6 @@ public struct SettingsView: View {
 
 #Preview {
     NavigationStack {
-        SettingsView(model: SettingsViewModel(region: .spain))
+        SettingsView(model: SettingsViewModel())
     }
 }

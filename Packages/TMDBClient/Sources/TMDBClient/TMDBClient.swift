@@ -250,16 +250,17 @@ public final class LiveTMDBClient: TMDBClient {
 
 public struct TMDBMovieRepository: MovieRepository {
     private let client: TMDBClient
-    private let dateFormatter: DateFormatter
+
+    /// TMDB returns release dates as plain `yyyy-MM-dd` strings (no time, no zone).
+    /// We parse them in UTC so a date doesn't shift by a day depending on where
+    /// the device is. Modern `Date.ISO8601FormatStyle` covers this exactly: the
+    /// builder `.year().month().day()` accepts the date-only form, and the
+    /// default `timeZone: .gmt` makes the assumed midnight unambiguous.
+    private static let releaseDateStrategy = Date.ISO8601FormatStyle(timeZone: .gmt)
+        .year().month().day()
 
     public init(client: TMDBClient) {
         self.client = client
-        let f = DateFormatter()
-        f.calendar = Calendar(identifier: .iso8601)
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = TimeZone(identifier: "UTC")
-        f.locale = Locale(identifier: "en_US_POSIX")
-        self.dateFormatter = f
     }
 
     public func searchMovies(query: String, page: Int) async throws -> SearchPage {
@@ -336,7 +337,7 @@ public struct TMDBMovieRepository: MovieRepository {
 
     private func parseDate(_ raw: String?) -> Date? {
         guard let raw, !raw.isEmpty else { return nil }
-        return dateFormatter.date(from: raw)
+        return try? Date(raw, strategy: Self.releaseDateStrategy)
     }
 
     /// Pulls people whose `job == "Director"` out of the crew. Excludes

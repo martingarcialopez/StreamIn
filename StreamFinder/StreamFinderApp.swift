@@ -57,8 +57,17 @@ private struct RootView: View {
 
     var body: some View {
         TabView {
-            searchTab
-            watchlistTab
+            Tab("Search", systemImage: "magnifyingglass") {
+                SearchTab(
+                    repository: repository,
+                    imageURLBuilder: imageURLBuilder,
+                    settings: settings,
+                    showingSettings: $showingSettings
+                )
+            }
+            Tab("Watchlist", systemImage: "bookmark") {
+                WatchlistTab(showingSettings: $showingSettings)
+            }
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
@@ -72,9 +81,33 @@ private struct RootView: View {
         }
     }
 
-    // MARK: Tabs
+    // MARK: Repository factory
 
-    private var searchTab: some View {
+    /// Builds a fresh data-layer client + repository for the given language.
+    /// Called on launch and whenever the user changes language in Settings.
+    private static func makeRepository(language: Language) -> MovieRepository {
+        let client = LiveTMDBClient(
+            config: TMDBConfig(
+                apiKey: AppConfig.tmdbAPIKey,
+                language: language.code
+            )
+        )
+        return TMDBMovieRepository(client: client)
+    }
+}
+
+// MARK: - Tabs
+//
+// Each tab lives in its own `View` struct (per the project convention against
+// breaking views up via computed properties).
+
+private struct SearchTab: View {
+    let repository: MovieRepository
+    let imageURLBuilder: ImageURLBuilder
+    let settings: SettingsViewModel
+    @Binding var showingSettings: Bool
+
+    var body: some View {
         NavigationStack {
             SearchView(model: SearchViewModel(
                 repository: repository,
@@ -94,48 +127,39 @@ private struct RootView: View {
                     region: settings.region
                 ))
             }
-            .toolbar { settingsToolbar }
-        }
-        .tabItem {
-            Label("Search", systemImage: "magnifyingglass")
+            .toolbar {
+                SettingsToolbar(showingSettings: $showingSettings)
+            }
         }
     }
+}
 
-    private var watchlistTab: some View {
+private struct WatchlistTab: View {
+    @Binding var showingSettings: Bool
+
+    var body: some View {
         NavigationStack {
             WatchlistView()
-                .toolbar { settingsToolbar }
-        }
-        .tabItem {
-            Label("Watchlist", systemImage: "bookmark")
+                .toolbar {
+                    SettingsToolbar(showingSettings: $showingSettings)
+                }
         }
     }
+}
 
-    // MARK: Shared toolbar
+// MARK: - Shared toolbar
 
-    @ToolbarContentBuilder
-    private var settingsToolbar: some ToolbarContent {
+private struct SettingsToolbar: ToolbarContent {
+    @Binding var showingSettings: Bool
+
+    var body: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button {
+            // Per the SwiftUI guideline, image-only buttons declare their text
+            // alongside the system image. SwiftUI renders just the icon in a
+            // toolbar context; the text becomes the accessibility label.
+            Button("Settings", systemImage: "gear") {
                 showingSettings = true
-            } label: {
-                Image(systemName: "gear")
             }
-            .accessibilityLabel("Settings")
         }
-    }
-
-    // MARK: Repository factory
-
-    /// Builds a fresh data-layer client + repository for the given language.
-    /// Called on launch and whenever the user changes language in Settings.
-    private static func makeRepository(language: Language) -> MovieRepository {
-        let client = LiveTMDBClient(
-            config: TMDBConfig(
-                apiKey: AppConfig.tmdbAPIKey,
-                language: language.code
-            )
-        )
-        return TMDBMovieRepository(client: client)
     }
 }

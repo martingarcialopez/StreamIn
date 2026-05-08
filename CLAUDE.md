@@ -5,12 +5,12 @@ Built to demonstrate senior-level architecture, testability, and concurrency pat
 
 ## Stack
 
-- Swift 6, strict concurrency
+- Swift 6.2+, strict concurrency
 - SwiftUI + `@Observable` + `NavigationStack`
 - async/await throughout (no Combine in feature code)
 - SwiftData for local persistence
 - Swift Testing for unit tests, XCTest for UI
-- iOS 17+ deployment target
+- iOS 26+ deployment target
 
 ## Architecture
 

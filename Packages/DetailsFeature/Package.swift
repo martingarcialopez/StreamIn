@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "DetailsFeature",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v26)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -34,5 +34,6 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

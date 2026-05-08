@@ -28,12 +28,12 @@ public struct DetailsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(model.movie.title)
                         .font(.title)
-                        .fontWeight(.bold)
+                        .bold()
 
-                    metadataRow
+                    MetadataRow(model: model)
 
-                    if !model.movie.directors.isEmpty {
-                        Text("Directed by \(model.movie.directors.map(\.name).joined(separator: ", "))")
+                    if let directors = model.formattedDirectors {
+                        Text(directors)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -46,17 +46,12 @@ public struct DetailsView: View {
 
                     Divider()
 
-                    providersSection
+                    ProvidersSection(model: model)
 
                     if let error = model.error {
                         Divider()
-                        VStack(spacing: 8) {
-                            Text("Couldn't load full details: \(String(describing: error))")
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                            Button("Retry") {
-                                Task { await model.load() }
-                            }
+                        ErrorRetry(error: error) {
+                            Task { await model.load() }
                         }
                     }
                 }
@@ -64,38 +59,46 @@ public struct DetailsView: View {
             }
             .padding(.bottom, 24)
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .task {
             await model.load()
         }
     }
+}
 
-    private var metadataRow: some View {
+// MARK: - Metadata strip
+
+private struct MetadataRow: View {
+    let model: DetailsViewModel
+
+    var body: some View {
         HStack(spacing: 16) {
-            if let date = model.movie.releaseDate {
-                Label(date.formatted(.dateTime.year()), systemImage: "calendar")
+            if let year = model.formattedReleaseYear {
+                Label(year, systemImage: "calendar")
             }
-            if let runtime = model.movie.runtime {
-                let minutes = Int(runtime.components.seconds / 60)
-                Label("\(minutes) min", systemImage: "clock")
+            if let runtime = model.formattedRuntime {
+                Label(runtime, systemImage: "clock")
             }
-            Label(String(format: "%.1f", model.movie.voteAverage), systemImage: "star.fill")
+            Label(model.formattedVoteAverage, systemImage: "star.fill")
         }
         .font(.caption)
         .foregroundStyle(.secondary)
     }
+}
 
-    @ViewBuilder
-    private var providersSection: some View {
+// MARK: - Providers
+
+private struct ProvidersSection: View {
+    let model: DetailsViewModel
+
+    var body: some View {
         if let availability = model.availability {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Where to watch")
                     .font(.headline)
 
-                providerRow(title: "Streaming", providers: availability.subscription)
-                //providerRow(title: "Rent",      providers: availability.rent)
-                //providerRow(title: "Buy",       providers: availability.buy)
-                providerRow(title: "Free",      providers: availability.free)
+                ProviderRow(title: "Streaming", providers: availability.subscription, model: model)
+                ProviderRow(title: "Free",      providers: availability.free,         model: model)
 
                 if availability.isEmpty {
                     Text("Not available in your region.")
@@ -111,9 +114,14 @@ public struct DetailsView: View {
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func providerRow(title: String, providers: [WatchProvider]) -> some View {
+private struct ProviderRow: View {
+    let title: String
+    let providers: [WatchProvider]
+    let model: DetailsViewModel
+
+    var body: some View {
         if !providers.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
@@ -129,7 +137,23 @@ public struct DetailsView: View {
     }
 }
 
-// MARK: - Subviews
+// MARK: - Error block
+
+private struct ErrorRetry: View {
+    let error: MovieError
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("Couldn't load full details: \(String(describing: error))")
+                .font(.caption)
+                .foregroundStyle(.red)
+            Button("Retry", action: onRetry)
+        }
+    }
+}
+
+// MARK: - Image subviews
 
 private struct BackdropView: View {
     let url: URL?
@@ -161,7 +185,7 @@ private struct ProviderLogo: View {
             }
         }
         .frame(width: 44, height: 44)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(.rect(cornerRadius: 8))
     }
 }
 

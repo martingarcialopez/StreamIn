@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "SearchFeature",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v26)
     ],
     products: [
         .library(
@@ -31,5 +31,6 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

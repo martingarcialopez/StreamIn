@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "TMDBClient",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v26)
     ],
     products: [
         .library(name: "TMDBClient", targets: ["TMDBClient"]),
@@ -29,5 +29,6 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )
