@@ -1,13 +1,13 @@
 //
-//  StreamFinderUITestsLaunchTests.swift
-//  StreamFinderUITests
+//  StreamInUITestsLaunchTests.swift
+//  StreamInUITests
 //
 //  Created by Martín on 28/04/2026.
 //
 
 import XCTest
 
-final class StreamFinderUITestsLaunchTests: XCTestCase {
+final class StreamInUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

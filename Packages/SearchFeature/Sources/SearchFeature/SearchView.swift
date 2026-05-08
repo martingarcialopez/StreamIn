@@ -24,7 +24,7 @@ public struct SearchView: View {
         // search bar + the submit handler. Rows below use NavigationLink(value:)
         // to push movies onto whichever stack contains us.
         SearchContent(model: model, onRetry: retry)
-            .navigationTitle("StreamFinder")
+            .navigationTitle("StreamIn")
             .searchable(text: $searchText, prompt: "Search a movie")
             .onSubmit(of: .search, retry)
     }

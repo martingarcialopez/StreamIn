@@ -1,6 +1,6 @@
 //
-//  StreamFinderApp.swift
-//  StreamFinder
+//  StreamInApp.swift
+//  StreamIn
 //
 //  Created by Martín on 28/04/2026.
 //
@@ -14,7 +14,7 @@ import WatchlistFeature
 import SettingsFeature
 
 @main
-struct StreamFinderApp: App {
+struct StreamInApp: App {
 
     /// Composition root.
     ///

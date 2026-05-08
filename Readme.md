@@ -1,4 +1,4 @@
-# StreamFinder
+# StreamIn
 
 > Search any movie, see where you can stream, rent, or buy it in your country.
 
@@ -20,8 +20,8 @@ Portfolio project. Single developer, ~2 weeks of work. Not in the App Store.
 1. Clone the repo.
 2. Get a free TMDB API key at <https://developer.themoviedb.org/>.
 3. Copy `Secrets.example.xcconfig` to `Secrets.xcconfig` and fill in `TMDB_API_KEY = your-key`. (`Secrets.xcconfig` is gitignored.)
-4. Open `StreamFinder.xcworkspace`, select the `App` scheme, run.
-5. Tests: `⌘U` on the `StreamFinderTests` scheme, or `make test`.
+4. Open `StreamIn.xcworkspace`, select the `App` scheme, run.
+5. Tests: `⌘U` on the `StreamInTests` scheme, or `make test`.
 
 Requires Xcode 16+, iOS 17+ deployment target.
 
@@ -147,7 +147,7 @@ Anything network-heavy is faked at the `MovieRepository` boundary. The `TMDBClie
 ## Project structure
 
 ```
-StreamFinder/
+StreamIn/
 ├── App/                        # App target (composition root)
 ├── Packages/
 │   ├── Domain/

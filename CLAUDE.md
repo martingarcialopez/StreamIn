@@ -1,4 +1,4 @@
-# StreamFinder — context for Claude
+# StreamIn — context for Claude
 
 Portfolio iOS app: search a movie, see where you can stream / rent / buy it in your region.
 Built to demonstrate senior-level architecture, testability, and concurrency patterns.
@@ -54,7 +54,7 @@ Adding both `Domain` and `TMDBClient` as project-level local packages collides w
 
 ### Composition root in the App target
 
-`StreamFinderApp.init()` is the **only** place concrete implementations (`LiveTMDBClient`, `TMDBMovieRepository`) are constructed. Everything downstream depends on `MovieRepository`, the protocol from Domain. No DI container — at this size, a framework would be vanity.
+`StreamInApp.init()` is the **only** place concrete implementations (`LiveTMDBClient`, `TMDBMovieRepository`) are constructed. Everything downstream depends on `MovieRepository`, the protocol from Domain. No DI container — at this size, a framework would be vanity.
 
 ### Typed domain errors mapped at the boundary
 
@@ -62,13 +62,13 @@ Adding both `Domain` and `TMDBClient` as project-level local packages collides w
 
 ### Build-time secrets via Run Script Phase, not Info.plist
 
-`Secrets.xcconfig` defines `TMDB_API_KEY` (gitignored). The App target has a "Generate Secrets" Run Script Phase before "Compile Sources" that writes `StreamFinder/GeneratedSecrets.swift` containing the value as a Swift constant. `AppConfig.tmdbAPIKey` reads from `GeneratedSecrets`, guards against the sentinel string `your_tmdb_api_key_here`, and `preconditionFailure`s with actionable instructions on misconfiguration.
+`Secrets.xcconfig` defines `TMDB_API_KEY` (gitignored). The App target has a "Generate Secrets" Run Script Phase before "Compile Sources" that writes `StreamIn/GeneratedSecrets.swift` containing the value as a Swift constant. `AppConfig.tmdbAPIKey` reads from `GeneratedSecrets`, guards against the sentinel string `your_tmdb_api_key_here`, and `preconditionFailure`s with actionable instructions on misconfiguration.
 
 Why not `INFOPLIST_KEY_TMDB_API_KEY = $(TMDB_API_KEY)`? Apple's `INFOPLIST_KEY_<name>` mechanism only honors recognized Info.plist keys when `GENERATE_INFOPLIST_FILE = YES`. Arbitrary custom keys are silently dropped — confirmed empirically. The Run Script approach is more reliable and more flexible.
 
 The placeholder string `your_tmdb_api_key_here` is the canonical "not configured" sentinel: same value in `Secrets.example.xcconfig`, in the bash `${TMDB_API_KEY:-...}` fallback, and in the AppConfig guard. One sentinel, one fix message.
 
-The Run Script Phase declares `$(SRCROOT)/StreamFinder/GeneratedSecrets.swift` as an Output File so Xcode's build sandbox permits the write. Optional Input File `$(SRCROOT)/Secrets.xcconfig` lets dependency analysis re-run the script when the key changes.
+The Run Script Phase declares `$(SRCROOT)/StreamIn/GeneratedSecrets.swift` as an Output File so Xcode's build sandbox permits the write. Optional Input File `$(SRCROOT)/Secrets.xcconfig` lets dependency analysis re-run the script when the key changes.
 
 ### `#Preview` uses a private fake repository
 

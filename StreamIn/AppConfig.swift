@@ -1,6 +1,6 @@
 //
 //  AppConfig.swift
-//  StreamFinder
+//  StreamIn
 //
 //  Single source of truth for runtime configuration values that come from the
 //  build environment (xcconfig → Run Script Phase → GeneratedSecrets.swift).
@@ -25,7 +25,7 @@ enum AppConfig {
                 1. Get a free key at https://developer.themoviedb.org/
                 2. Paste it into Secrets.xcconfig (replace the placeholder).
                 3. Confirm the "Generate Secrets" Run Script Phase is present
-                   on the StreamFinder target, BEFORE "Compile Sources".
+                   on the StreamIn target, BEFORE "Compile Sources".
                 4. Clean build folder (⇧⌘K) and rebuild.
                 """
             )

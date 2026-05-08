@@ -1,13 +1,13 @@
 //
-//  StreamFinderUITests.swift
-//  StreamFinderUITests
+//  StreamInUITests.swift
+//  StreamInUITests
 //
 //  Created by Martín on 28/04/2026.
 //
 
 import XCTest
 
-final class StreamFinderUITests: XCTestCase {
+final class StreamInUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

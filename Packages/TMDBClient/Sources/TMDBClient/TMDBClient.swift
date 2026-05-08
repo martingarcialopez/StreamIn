@@ -1,5 +1,5 @@
 //  TMDBClient.swift
-//  StreamFinder
+//  StreamIn
 //
 //  Data layer — knows about HTTP, JSON, TMDB's API shape, and how to translate
 //  those things into the Domain layer's vocabulary.

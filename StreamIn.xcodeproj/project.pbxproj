@@ -22,14 +22,14 @@
 			containerPortal = 5BBF59812FA119DC008CC68E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 5BBF59882FA119DC008CC68E;
-			remoteInfo = StreamFinder;
+			remoteInfo = StreamIn;
 		};
 		5BBF59A12FA119DD008CC68E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5BBF59812FA119DC008CC68E /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 5BBF59882FA119DC008CC68E;
-			remoteInfo = StreamFinder;
+			remoteInfo = StreamIn;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -39,9 +39,9 @@
 		5B63F2B22FA126C8002AB748 /* Claude.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Claude.md; sourceTree = "<group>"; };
 		5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		5B8B86FF2FA38DF50038B8ED /* SearchFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SearchFeature; path = Packages/SearchFeature; sourceTree = "<group>"; };
-		5BBF59892FA119DC008CC68E /* StreamFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamFinderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BBF59892FA119DC008CC68E /* StreamIn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamIn.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BBF59962FA119DD008CC68E /* StreamInTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamInTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5BBF59A02FA119DD008CC68E /* StreamInUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamInUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59B62FA11B88008CC68E /* TMDBClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = TMDBClient; path = Packages/TMDBClient; sourceTree = "<group>"; };
 		5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WatchlistFeature; path = Packages/WatchlistFeature; sourceTree = "<group>"; };
 		5BF57B562FAB9CD100BF5F39 /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SettingsFeature; path = Packages/SettingsFeature; sourceTree = "<group>"; };
@@ -49,19 +49,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5BBF598B2FA119DC008CC68E /* StreamFinder */ = {
+		5BBF598B2FA119DC008CC68E /* StreamIn */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StreamFinder;
+			path = StreamIn;
 			sourceTree = "<group>";
 		};
-		5BBF59992FA119DD008CC68E /* StreamFinderTests */ = {
+		5BBF59992FA119DD008CC68E /* StreamInTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StreamFinderTests;
+			path = StreamInTests;
 			sourceTree = "<group>";
 		};
-		5BBF59A32FA119DD008CC68E /* StreamFinderUITests */ = {
+		5BBF59A32FA119DD008CC68E /* StreamInUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StreamFinderUITests;
+			path = StreamInUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -109,9 +109,9 @@
 				5B20C7E92FA4C408006066E7 /* DetailsFeature */,
 				5BF89A012FA123DB005E8AF1 /* Domain */,
 				5BBF59B62FA11B88008CC68E /* TMDBClient */,
-				5BBF598B2FA119DC008CC68E /* StreamFinder */,
-				5BBF59992FA119DD008CC68E /* StreamFinderTests */,
-				5BBF59A32FA119DD008CC68E /* StreamFinderUITests */,
+				5BBF598B2FA119DC008CC68E /* StreamIn */,
+				5BBF59992FA119DD008CC68E /* StreamInTests */,
+				5BBF59A32FA119DD008CC68E /* StreamInUITests */,
 				5BBF59B72FA11F99008CC68E /* Frameworks */,
 				5BBF598A2FA119DC008CC68E /* Products */,
 			);
@@ -120,9 +120,9 @@
 		5BBF598A2FA119DC008CC68E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5BBF59892FA119DC008CC68E /* StreamFinder.app */,
-				5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */,
-				5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */,
+				5BBF59892FA119DC008CC68E /* StreamIn.app */,
+				5BBF59962FA119DD008CC68E /* StreamInTests.xctest */,
+				5BBF59A02FA119DD008CC68E /* StreamInUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -137,9 +137,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5BBF59882FA119DC008CC68E /* StreamFinder */ = {
+		5BBF59882FA119DC008CC68E /* StreamIn */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5BBF59AA2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinder" */;
+			buildConfigurationList = 5BBF59AA2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamIn" */;
 			buildPhases = (
 				5BB248AB2FA2246C00207ABE /* Generate Secrets */,
 				5BBF59852FA119DC008CC68E /* Sources */,
@@ -151,9 +151,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5BBF598B2FA119DC008CC68E /* StreamFinder */,
+				5BBF598B2FA119DC008CC68E /* StreamIn */,
 			);
-			name = StreamFinder;
+			name = StreamIn;
 			packageProductDependencies = (
 				5BF89A032FA123FF005E8AF1 /* Domain */,
 				5BF89A062FA12411005E8AF1 /* TMDBClient */,
@@ -162,13 +162,13 @@
 				5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */,
 				5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */,
 			);
-			productName = StreamFinder;
-			productReference = 5BBF59892FA119DC008CC68E /* StreamFinder.app */;
+			productName = StreamIn;
+			productReference = 5BBF59892FA119DC008CC68E /* StreamIn.app */;
 			productType = "com.apple.product-type.application";
 		};
-		5BBF59952FA119DD008CC68E /* StreamFinderTests */ = {
+		5BBF59952FA119DD008CC68E /* StreamInTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5BBF59AD2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinderTests" */;
+			buildConfigurationList = 5BBF59AD2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamInTests" */;
 			buildPhases = (
 				5BBF59922FA119DD008CC68E /* Sources */,
 				5BBF59932FA119DD008CC68E /* Frameworks */,
@@ -180,18 +180,18 @@
 				5BBF59982FA119DD008CC68E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				5BBF59992FA119DD008CC68E /* StreamFinderTests */,
+				5BBF59992FA119DD008CC68E /* StreamInTests */,
 			);
-			name = StreamFinderTests;
+			name = StreamInTests;
 			packageProductDependencies = (
 			);
-			productName = StreamFinderTests;
-			productReference = 5BBF59962FA119DD008CC68E /* StreamFinderTests.xctest */;
+			productName = StreamInTests;
+			productReference = 5BBF59962FA119DD008CC68E /* StreamInTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		5BBF599F2FA119DD008CC68E /* StreamFinderUITests */ = {
+		5BBF599F2FA119DD008CC68E /* StreamInUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5BBF59B02FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinderUITests" */;
+			buildConfigurationList = 5BBF59B02FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamInUITests" */;
 			buildPhases = (
 				5BBF599C2FA119DD008CC68E /* Sources */,
 				5BBF599D2FA119DD008CC68E /* Frameworks */,
@@ -203,13 +203,13 @@
 				5BBF59A22FA119DD008CC68E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				5BBF59A32FA119DD008CC68E /* StreamFinderUITests */,
+				5BBF59A32FA119DD008CC68E /* StreamInUITests */,
 			);
-			name = StreamFinderUITests;
+			name = StreamInUITests;
 			packageProductDependencies = (
 			);
-			productName = StreamFinderUITests;
-			productReference = 5BBF59A02FA119DD008CC68E /* StreamFinderUITests.xctest */;
+			productName = StreamInUITests;
+			productReference = 5BBF59A02FA119DD008CC68E /* StreamInUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -235,7 +235,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5BBF59842FA119DC008CC68E /* Build configuration list for PBXProject "StreamFinder" */;
+			buildConfigurationList = 5BBF59842FA119DC008CC68E /* Build configuration list for PBXProject "StreamIn" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -257,9 +257,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5BBF59882FA119DC008CC68E /* StreamFinder */,
-				5BBF59952FA119DD008CC68E /* StreamFinderTests */,
-				5BBF599F2FA119DD008CC68E /* StreamFinderUITests */,
+				5BBF59882FA119DC008CC68E /* StreamIn */,
+				5BBF59952FA119DD008CC68E /* StreamInTests */,
+				5BBF599F2FA119DD008CC68E /* StreamInUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -304,11 +304,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/StreamFinder/GeneratedSecrets.swift",
+				"$(SRCROOT)/StreamIn/GeneratedSecrets.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "KEY=\"${TMDB_API_KEY:-your_tmdb_api_key_here}\"\ncat > \"${SRCROOT}/StreamFinder/GeneratedSecrets.swift\" <<EOF\n// Auto-generated at build time. DO NOT EDIT. DO NOT COMMIT.\nenum GeneratedSecrets {\n    static let tmdbAPIKey = \"${KEY}\"\n}\nEOF\n";
+			shellScript = "KEY=\"${TMDB_API_KEY:-your_tmdb_api_key_here}\"\ncat > \"${SRCROOT}/StreamIn/GeneratedSecrets.swift\" <<EOF\n// Auto-generated at build time. DO NOT EDIT. DO NOT COMMIT.\nenum GeneratedSecrets {\n    static let tmdbAPIKey = \"${KEY}\"\n}\nEOF\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -339,12 +339,12 @@
 /* Begin PBXTargetDependency section */
 		5BBF59982FA119DD008CC68E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 5BBF59882FA119DC008CC68E /* StreamFinder */;
+			target = 5BBF59882FA119DC008CC68E /* StreamIn */;
 			targetProxy = 5BBF59972FA119DD008CC68E /* PBXContainerItemProxy */;
 		};
 		5BBF59A22FA119DD008CC68E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 5BBF59882FA119DC008CC68E /* StreamFinder */;
+			target = 5BBF59882FA119DC008CC68E /* StreamIn */;
 			targetProxy = 5BBF59A12FA119DD008CC68E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -495,7 +495,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinder;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -540,7 +540,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinder;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -566,7 +566,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinderTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -576,7 +576,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamFinder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamFinder";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamIn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamIn";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
@@ -591,7 +591,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinderTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -601,7 +601,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamFinder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamFinder";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamIn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamIn";
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
@@ -615,7 +615,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinderUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -625,7 +625,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = StreamFinder;
+				TEST_TARGET_NAME = StreamIn;
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
@@ -639,7 +639,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamFinderUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -649,7 +649,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = StreamFinder;
+				TEST_TARGET_NAME = StreamIn;
 				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
@@ -657,7 +657,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5BBF59842FA119DC008CC68E /* Build configuration list for PBXProject "StreamFinder" */ = {
+		5BBF59842FA119DC008CC68E /* Build configuration list for PBXProject "StreamIn" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5BBF59A82FA119DD008CC68E /* Debug */,
@@ -666,7 +666,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5BBF59AA2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinder" */ = {
+		5BBF59AA2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamIn" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5BBF59AB2FA119DD008CC68E /* Debug */,
@@ -675,7 +675,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5BBF59AD2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinderTests" */ = {
+		5BBF59AD2FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamInTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5BBF59AE2FA119DD008CC68E /* Debug */,
@@ -684,7 +684,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5BBF59B02FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamFinderUITests" */ = {
+		5BBF59B02FA119DD008CC68E /* Build configuration list for PBXNativeTarget "StreamInUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5BBF59B12FA119DD008CC68E /* Debug */,

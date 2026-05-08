@@ -1,5 +1,5 @@
 //  Domain.swift
-//  StreamFinder
+//  StreamIn
 //
 //  Domain layer — pure Swift, no Foundation networking, no UIKit/SwiftUI.
 //

@@ -19,7 +19,7 @@ Package.resolved
 
 # Secrets — never commit
 Secrets.xcconfig
-StreamFinder/GeneratedSecrets.swift
+StreamIn/GeneratedSecrets.swift
 
 # Claude Code working dir (session state, local config)
 .claude/
