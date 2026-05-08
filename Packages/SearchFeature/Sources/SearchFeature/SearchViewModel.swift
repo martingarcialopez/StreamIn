@@ -14,7 +14,6 @@ public final class SearchViewModel {
 
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
-    let region: Region
 
     private(set) var results: [Movie] = []
     /// Streaming availability per movie, populated as the parallel fan-out completes.
@@ -26,15 +25,15 @@ public final class SearchViewModel {
 
     public init(
         repository: MovieRepository,
-        imageURLBuilder: ImageURLBuilder,
-        region: Region = .currentLocale
+        imageURLBuilder: ImageURLBuilder
     ) {
         self.repository = repository
         self.imageURLBuilder = imageURLBuilder
-        self.region = region
     }
 
-    public func search(query: String) async {
+    /// Region is passed per-call rather than stored, so a runtime region change
+    /// flows through to the next search without rebuilding the view model.
+    public func search(query: String, region: Region) async {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
             results = []
@@ -49,7 +48,7 @@ public final class SearchViewModel {
             results = page.results
             availability = [:]      // clear stale entries before fanning out
             error = nil
-            await fetchAvailability(for: page.results)
+            await fetchAvailability(for: page.results, region: region)
         } catch let movieError as MovieError {
             error = movieError
             results = []
@@ -76,10 +75,10 @@ public final class SearchViewModel {
     /// back to the main actor through the `for await` loop, which serializes the
     /// dictionary writes safely. Per-movie failures are silently dropped — that
     /// row will keep its "loading" placeholder until the next search.
-    private func fetchAvailability(for movies: [Movie]) async {
+    private func fetchAvailability(for movies: [Movie], region: Region) async {
         await withTaskGroup(of: (MovieID, WatchAvailability?).self) { group in
             for movie in movies {
-                group.addTask { [repository, region] in
+                group.addTask { [repository] in
                     do {
                         let value = try await repository.availability(for: movie.id, in: region)
                         return (movie.id, value)

@@ -3,15 +3,17 @@
 //  DetailsFeature
 //
 //  Renders one movie's detail screen: backdrop, title, metadata strip,
-//  overview, and the per-category provider grid (subscription / rent / buy / free).
+//  overview, and the per-category provider grid (subscription / free).
 //
 
 import SwiftUI
 import Domain
+import Preferences
 
 public struct DetailsView: View {
 
     @State private var model: DetailsViewModel
+    @Environment(Preferences.self) private var prefs
 
     public init(model: DetailsViewModel) {
         _model = State(initialValue: model)
@@ -51,7 +53,7 @@ public struct DetailsView: View {
                     if let error = model.error {
                         Divider()
                         ErrorRetry(error: error) {
-                            Task { await model.load() }
+                            Task { await model.load(region: prefs.region) }
                         }
                     }
                 }
@@ -60,8 +62,10 @@ public struct DetailsView: View {
             .padding(.bottom, 24)
         }
         .toolbarTitleDisplayMode(.inline)
-        .task {
-            await model.load()
+        // Reload whenever language or region changes; the initial render also
+        // hits this once so the view doesn't need a separate `.task { ... }`.
+        .task(id: prefs.snapshot) {
+            await model.load(region: prefs.region)
         }
     }
 }
@@ -177,8 +181,6 @@ private struct BackdropView: View {
                 Color.gray.opacity(0.15)
             }
         }
-        // The screen already presents the movie title prominently below; the
-        // backdrop is a decorative hero image and shouldn't double-announce it.
         .accessibilityHidden(true)
     }
 }
@@ -207,22 +209,24 @@ private struct ProviderLogo: View {
 
 #Preview {
     NavigationStack {
-        DetailsView(model: DetailsViewModel(
-            movie: Movie(
-                id: MovieID(27205),
-                title: "Inception",
-                originalTitle: "Inception",
-                overview: "A thief who steals corporate secrets through dream-sharing technology…",
-                releaseDate: nil,
-                posterPath: nil,
-                backdropPath: nil,
-                voteAverage: 8.4,
-                runtime: nil
-            ),
-            repository: PreviewMovieRepository(),
-            imageURLBuilder: PreviewImageURLBuilder(),
-            region: .unitedStates
-        ))
+        DetailsView(
+            model: DetailsViewModel(
+                movie: Movie(
+                    id: MovieID(27205),
+                    title: "Inception",
+                    originalTitle: "Inception",
+                    overview: "A thief who steals corporate secrets through dream-sharing technology…",
+                    releaseDate: nil,
+                    posterPath: nil,
+                    backdropPath: nil,
+                    voteAverage: 8.4,
+                    runtime: nil
+                ),
+                repository: PreviewMovieRepository(),
+                imageURLBuilder: PreviewImageURLBuilder()
+            )
+        )
+        .environment(Preferences())
     }
 }
 

@@ -2,35 +2,35 @@
 //  SearchView.swift
 //  SearchFeature
 //
-//  TEMPORARY smoke-test screen — proves the wiring works end to end.
-//  Next iteration: real search field with debounce + cancellation, plus tests.
-//
 
 import SwiftUI
 import Domain
+import Preferences
 
 public struct SearchView: View {
 
     @State private var model: SearchViewModel
     @State private var searchText = ""
+    @Environment(Preferences.self) private var prefs
 
     public init(model: SearchViewModel) {
         _model = State(initialValue: model)
     }
 
     public var body: some View {
-        // The NavigationStack lives one level up (in the App target's
-        // composition root), so this view simply contributes content + the
-        // search bar + the submit handler. Rows below use NavigationLink(value:)
-        // to push movies onto whichever stack contains us.
         SearchContent(model: model, onRetry: retry)
             .navigationTitle("StreamIn")
             .searchable(text: $searchText, prompt: "Search a movie")
             .onSubmit(of: .search, retry)
+            // Re-run the active query whenever region or language changes.
+            .task(id: prefs.snapshot) {
+                guard !searchText.isEmpty else { return }
+                await model.search(query: searchText, region: prefs.region)
+            }
     }
 
     private func retry() {
-        Task { await model.search(query: searchText) }
+        Task { await model.search(query: searchText, region: prefs.region) }
     }
 }
 
@@ -141,8 +141,6 @@ private struct ProviderStrip: View {
 private struct PosterView: View {
     let url: URL?
 
-    /// Scales with Dynamic Type so the row stays in proportion when the user
-    /// bumps text size up. The 2:3 aspect ratio is the TMDB poster standard.
     @ScaledMetric(relativeTo: .headline) private var width: CGFloat = 60
 
     var body: some View {
@@ -163,8 +161,6 @@ private struct PosterView: View {
         }
         .frame(width: width, height: width * 1.5)
         .clipShape(.rect(cornerRadius: 6))
-        // The row's title/subtitle already announce the movie; the poster is
-        // decorative and would be redundant noise to VoiceOver.
         .accessibilityHidden(true)
     }
 }
@@ -196,15 +192,13 @@ private struct ProviderLogo: View {
         SearchView(
             model: SearchViewModel(
                 repository: PreviewMovieRepository(),
-                imageURLBuilder: PreviewImageURLBuilder(),
-                region: .unitedStates
+                imageURLBuilder: PreviewImageURLBuilder()
             )
         )
+        .environment(Preferences())
     }
 }
 
-/// Trivial fake used only for SwiftUI previews. Real test fakes will live in
-/// `SearchFeatureTests` once we add the view model tests.
 private struct PreviewMovieRepository: MovieRepository {
     func searchMovies(query: String, page: Int) async throws -> SearchPage {
         SearchPage(

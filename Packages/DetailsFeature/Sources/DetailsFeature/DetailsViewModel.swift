@@ -16,7 +16,6 @@ public final class DetailsViewModel {
 
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
-    let region: Region
 
     /// Starts with the summary that the search screen already had (so the title,
     /// year, and poster render instantly), then gets replaced by the richer
@@ -29,13 +28,11 @@ public final class DetailsViewModel {
     public init(
         movie: Movie,
         repository: MovieRepository,
-        imageURLBuilder: ImageURLBuilder,
-        region: Region = .currentLocale
+        imageURLBuilder: ImageURLBuilder
     ) {
         self.movie = movie
         self.repository = repository
         self.imageURLBuilder = imageURLBuilder
-        self.region = region
     }
 
     /// Fetches full detail and availability in parallel via `async let`.
@@ -45,7 +42,10 @@ public final class DetailsViewModel {
     /// structured concurrency guarantee). The whole load is cheap-failure: the
     /// previously-rendered summary stays on screen, and the error state surfaces
     /// for the user to retry.
-    public func load() async {
+    ///
+    /// Region is passed per-call so a runtime change in Settings flows through
+    /// to the next reload without rebuilding the view model.
+    public func load(region: Region) async {
         isLoading = true
         defer { isLoading = false }
         do {

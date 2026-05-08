@@ -14,14 +14,15 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // Sibling local package, resolved by relative path.
         .package(path: "../Domain"),
+        .package(path: "../Preferences"),
     ],
     targets: [
         .target(
             name: "SearchFeature",
             dependencies: [
                 .product(name: "Domain", package: "Domain"),
+                .product(name: "Preferences", package: "Preferences"),
             ]
         ),
         .testTarget(
@@ -29,6 +30,7 @@ let package = Package(
             dependencies: [
                 "SearchFeature",
                 .product(name: "Domain", package: "Domain"),
+                .product(name: "Preferences", package: "Preferences"),
             ]
         ),
     ],

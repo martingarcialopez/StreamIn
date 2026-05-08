@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import os
 import Domain
 
 private let logger = Logger(subsystem: "StreamIn.TMDBClient", category: "network")
@@ -168,16 +169,36 @@ public struct TMDBProviderDTO: Decodable, Sendable {
 // MARK: - Live Implementation
 
 public final class LiveTMDBClient: TMDBClient {
-    private let config: TMDBConfig
+    private let baseURL: URL
+    private let apiKey: String
+    /// Language is read fresh on every request, and `updateLanguage(_:)` is
+    /// called from the App's composition root when the user changes their
+    /// preference in Settings. This avoids rebuilding the client (and the
+    /// repository wrapping it) at runtime, which led to fragile interactions
+    /// between SwiftUI's `@State` reset semantics and `.id`-based identity
+    /// invalidation. The lock guarantees memory safety; reads/writes are short.
+    private let lockedLanguage: OSAllocatedUnfairLock<String>
     private let session: URLSession
     private let decoder: JSONDecoder
 
     public init(config: TMDBConfig, session: URLSession = .shared) {
-        self.config = config
+        self.baseURL = config.baseURL
+        self.apiKey = config.apiKey
+        self.lockedLanguage = OSAllocatedUnfairLock(initialState: config.language)
         self.session = session
         // No keyDecodingStrategy: TMDB casing isn't perfectly snake_case across
         // endpoints, so we keep CodingKeys explicit per-DTO.
         self.decoder = JSONDecoder()
+    }
+
+    /// Update the language sent on subsequent requests. Safe to call from
+    /// any actor.
+    public func updateLanguage(_ language: String) {
+        lockedLanguage.withLock { $0 = language }
+    }
+
+    private var currentLanguage: String {
+        lockedLanguage.withLock { $0 }
     }
 
     public func searchMovies(query: String, page: Int) async throws -> TMDBSearchResponse {
@@ -187,7 +208,7 @@ public final class LiveTMDBClient: TMDBClient {
                 "query": query,
                 "page": String(page),
                 "include_adult": "false",
-                "language": config.language
+                "language": currentLanguage
             ]
         )
     }
@@ -196,7 +217,7 @@ public final class LiveTMDBClient: TMDBClient {
         try await get(
             path: "/movie/\(id)",
             query: [
-                "language": config.language,
+                "language": currentLanguage,
                 // Bundles the credits endpoint into the same response so we
                 // get cast & crew (incl. director) without a second round trip.
                 "append_to_response": "credits"
@@ -211,12 +232,12 @@ public final class LiveTMDBClient: TMDBClient {
     // MARK: - HTTP
 
     private func get<T: Decodable>(path: String, query: [String: String]) async throws -> T {
-        let endpoint = config.baseURL.appending(path: path)
+        let endpoint = baseURL.appending(path: path)
         guard var components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false) else {
             throw MovieError.unknown
         }
         var items = query.map { URLQueryItem(name: $0.key, value: $0.value) }
-        items.append(URLQueryItem(name: "api_key", value: config.apiKey))
+        items.append(URLQueryItem(name: "api_key", value: apiKey))
         components.queryItems = items
 
         guard let url = components.url else { throw MovieError.unknown }
