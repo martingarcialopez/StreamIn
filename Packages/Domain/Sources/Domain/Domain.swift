@@ -2,14 +2,8 @@
 //  StreamIn
 //
 //  Domain layer — pure Swift, no Foundation networking, no UIKit/SwiftUI.
-//
-//  In a real project this would live in its own Swift Package called `Domain`
-//  with NO dependency on TMDB, networking, or persistence. The whole point of
-//  this layer is: it's the language your app speaks. Everything else (TMDB,
-//  SwiftData, the UI) translates to/from these types.
-//
-//  Read this top-to-bottom before touching anything else: every other module
-//  is an adapter to or consumer of what's in here.
+//  The language your app speaks; everything else (TMDB, SwiftData, the UI)
+//  translates to/from these types.
 
 import Foundation
 
@@ -49,9 +43,11 @@ public struct ImagePath: Hashable, Sendable {
 // (rather than passing String "ES" around) makes it explicit in every signature
 // and easy to extend later (currency, language preferences, etc.).
 
-public struct Region: Hashable, Sendable {
+public struct Region: Identifiable, Hashable, Sendable {
     /// ISO 3166-1 alpha-2 (e.g. "ES", "US", "GB").
     public let code: String
+
+    public var id: String { code }
 
     public init(code: String) { self.code = code.uppercased() }
 
@@ -137,7 +133,7 @@ public struct Person: Equatable, Hashable, Identifiable, Sendable {
 
 // MARK: - Watch Providers
 
-public struct WatchProvider: Equatable, Hashable, Sendable {
+public struct WatchProvider: Equatable, Hashable, Identifiable, Sendable {
     public let id: ProviderID
     public let name: String
     public let logoPath: ImagePath?
@@ -231,6 +227,34 @@ public enum MovieError: Error, Equatable, Sendable {
     case unknown
 }
 
+public extension MovieError {
+    /// Human-readable, end-user-facing description for each case. Routed
+    /// through `String(localized:)` so the strings are extractable into the
+    /// app's catalog when localization lands.
+    var userMessage: String {
+        switch self {
+        case .offline:
+            String(localized: "You appear to be offline. Check your connection and try again.")
+        case .timeout:
+            String(localized: "The request took too long. Please try again.")
+        case .rateLimited:
+            String(localized: "Too many requests right now. Please wait a moment and try again.")
+        case .unauthorized:
+            String(localized: "There's a problem with the app's API key.")
+        case .notFound:
+            String(localized: "We couldn't find what you were looking for.")
+        case .server:
+            String(localized: "The server is having trouble. Please try again later.")
+        case .decoding:
+            String(localized: "Something went wrong reading the response.")
+        case .cancelled:
+            String(localized: "The request was cancelled.")
+        case .unknown:
+            String(localized: "Something went wrong. Please try again.")
+        }
+    }
+}
+
 // MARK: - Repository (the boundary)
 //
 // THIS is the seam. Features depend on this protocol, never on TMDBClient
@@ -268,9 +292,11 @@ public extension Region {
 // localized call (search, movie detail). Driven from settings, defaults to the
 // device locale (constrained to the catalog).
 
-public struct Language: Hashable, Sendable {
+public struct Language: Identifiable, Hashable, Sendable {
     /// BCP-47 identifier, e.g. "en-US", "es-ES", "fr-FR".
     public let code: String
+
+    public var id: String { code }
 
     public init(code: String) { self.code = code }
 

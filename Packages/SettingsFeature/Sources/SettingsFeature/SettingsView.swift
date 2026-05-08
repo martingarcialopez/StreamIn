@@ -52,7 +52,7 @@ private struct RegionSection: View {
     var body: some View {
         Section {
             Picker("Region", selection: $model.region) {
-                ForEach(Region.allKnown, id: \.code) { region in
+                ForEach(Region.allKnown) { region in
                     Text(region.displayName).tag(region)
                 }
             }
@@ -70,7 +70,7 @@ private struct LanguageSection: View {
     var body: some View {
         Section {
             Picker("Language", selection: $model.language) {
-                ForEach(Language.allKnown, id: \.code) { language in
+                ForEach(Language.allKnown) { language in
                     Text(language.displayName).tag(language)
                 }
             }

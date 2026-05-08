@@ -72,8 +72,9 @@ private struct ErrorState: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Error: \(String(describing: error))")
+            Text(error.userMessage)
                 .foregroundStyle(.red)
+                .multilineTextAlignment(.center)
             Button("Retry", action: onRetry)
         }
         .padding()
@@ -116,12 +117,15 @@ private struct ProviderStrip: View {
         if let availability = model.availability[movie.id] {
             if availability.subscription.isEmpty {
                 Text("Not on streaming in your region")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             } else {
                 HStack(spacing: 6) {
-                    ForEach(availability.subscription.prefix(5), id: \.id) { provider in
-                        ProviderLogo(url: model.providerLogoURL(for: provider))
+                    ForEach(availability.subscription.prefix(5)) { provider in
+                        ProviderLogo(
+                            url: model.providerLogoURL(for: provider),
+                            providerName: provider.name
+                        )
                     }
                 }
             }
@@ -136,6 +140,11 @@ private struct ProviderStrip: View {
 
 private struct PosterView: View {
     let url: URL?
+
+    /// Scales with Dynamic Type so the row stays in proportion when the user
+    /// bumps text size up. The 2:3 aspect ratio is the TMDB poster standard.
+    @ScaledMetric(relativeTo: .headline) private var width: CGFloat = 60
+
     var body: some View {
         AsyncImage(url: url) { phase in
             switch phase {
@@ -145,18 +154,27 @@ private struct PosterView: View {
                 image.resizable().aspectRatio(contentMode: .fill)
             case .failure:
                 Color.gray.opacity(0.15)
-                    .overlay(Image(systemName: "photo").foregroundStyle(.tertiary))
+                    .overlay {
+                        Image(systemName: "photo").foregroundStyle(.tertiary)
+                    }
             @unknown default:
                 Color.gray.opacity(0.15)
             }
         }
-        .frame(width: 60, height: 90)
+        .frame(width: width, height: width * 1.5)
         .clipShape(.rect(cornerRadius: 6))
+        // The row's title/subtitle already announce the movie; the poster is
+        // decorative and would be redundant noise to VoiceOver.
+        .accessibilityHidden(true)
     }
 }
 
 private struct ProviderLogo: View {
     let url: URL?
+    let providerName: String
+
+    @ScaledMetric(relativeTo: .caption) private var size: CGFloat = 28
+
     var body: some View {
         AsyncImage(url: url) { phase in
             if case .success(let image) = phase {
@@ -165,8 +183,9 @@ private struct ProviderLogo: View {
                 Color.gray.opacity(0.15)
             }
         }
-        .frame(width: 28, height: 28)
+        .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: 6))
+        .accessibilityLabel(providerName)
     }
 }
 

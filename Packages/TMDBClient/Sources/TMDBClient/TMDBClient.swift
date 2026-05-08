@@ -2,14 +2,14 @@
 //  StreamIn
 //
 //  Data layer — knows about HTTP, JSON, TMDB's API shape, and how to translate
-//  those things into the Domain layer's vocabulary.
-//
-//  In a real project this lives in its own Swift Package called `TMDBClient`,
-//  which depends on `Domain`. The app target depends on `TMDBClient`; nothing
-//  in the app target ever sees a `TMDBMovieDTO` or constructs a URL.
+//  those things into the Domain layer's vocabulary. Nothing upstream of this
+//  module sees a `TMDBMovieDTO` or constructs a URL.
 
 import Foundation
+import OSLog
 import Domain
+
+private let logger = Logger(subsystem: "StreamIn.TMDBClient", category: "network")
 
 // MARK: - Configuration
 
@@ -211,15 +211,16 @@ public final class LiveTMDBClient: TMDBClient {
     // MARK: - HTTP
 
     private func get<T: Decodable>(path: String, query: [String: String]) async throws -> T {
-        var components = URLComponents(
-            url: config.baseURL.appendingPathComponent(path),
-            resolvingAgainstBaseURL: false
-        )!
+        let endpoint = config.baseURL.appending(path: path)
+        guard var components = URLComponents(url: endpoint, resolvingAgainstBaseURL: false) else {
+            throw MovieError.unknown
+        }
         var items = query.map { URLQueryItem(name: $0.key, value: $0.value) }
         items.append(URLQueryItem(name: "api_key", value: config.apiKey))
         components.queryItems = items
 
-        var request = URLRequest(url: components.url!)
+        guard let url = components.url else { throw MovieError.unknown }
+        var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
@@ -231,6 +232,9 @@ public final class LiveTMDBClient: TMDBClient {
             do {
                 return try decoder.decode(T.self, from: data)
             } catch {
+                // Surface the underlying decoding cause so schema drift is
+                // debuggable in the field — the user-facing enum still hides it.
+                logger.error("Decoding \(T.self) failed: \(String(describing: error), privacy: .public)")
                 throw MovieError.decoding
             }
         case 401:    throw MovieError.unauthorized

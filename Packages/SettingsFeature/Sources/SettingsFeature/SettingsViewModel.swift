@@ -31,17 +31,24 @@ public final class SettingsViewModel {
         didSet { persistLanguage() }
     }
 
+    /// Injected so tests can pass an isolated `UserDefaults(suiteName:)` and
+    /// verify the round-trip without polluting the standard suite.
+    private let defaults: UserDefaults
+
     public init(
         defaultRegion: Region = .currentLocale,
-        defaultLanguage: Language = .currentLocale
+        defaultLanguage: Language = .currentLocale,
+        defaults: UserDefaults = .standard
     ) {
-        if let stored = UserDefaults.standard.string(forKey: Self.regionKey), !stored.isEmpty {
+        self.defaults = defaults
+
+        if let stored = defaults.string(forKey: Self.regionKey), !stored.isEmpty {
             self.region = Region(code: stored)
         } else {
             self.region = defaultRegion
         }
 
-        if let stored = UserDefaults.standard.string(forKey: Self.languageKey), !stored.isEmpty {
+        if let stored = defaults.string(forKey: Self.languageKey), !stored.isEmpty {
             self.language = Language(code: stored)
         } else {
             self.language = defaultLanguage
@@ -54,10 +61,10 @@ public final class SettingsViewModel {
     private static let languageKey = "settings.language.code"
 
     private func persistRegion() {
-        UserDefaults.standard.set(region.code, forKey: Self.regionKey)
+        defaults.set(region.code, forKey: Self.regionKey)
     }
 
     private func persistLanguage() {
-        UserDefaults.standard.set(language.code, forKey: Self.languageKey)
+        defaults.set(language.code, forKey: Self.languageKey)
     }
 }

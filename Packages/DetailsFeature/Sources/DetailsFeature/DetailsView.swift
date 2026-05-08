@@ -128,8 +128,11 @@ private struct ProviderRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 HStack(spacing: 8) {
-                    ForEach(providers, id: \.id) { provider in
-                        ProviderLogo(url: model.providerLogoURL(for: provider))
+                    ForEach(providers) { provider in
+                        ProviderLogo(
+                            url: model.providerLogoURL(for: provider),
+                            providerName: provider.name
+                        )
                     }
                 }
             }
@@ -145,9 +148,10 @@ private struct ErrorRetry: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Couldn't load full details: \(String(describing: error))")
+            Text("Couldn't load full details. \(error.userMessage)")
                 .font(.caption)
                 .foregroundStyle(.red)
+                .multilineTextAlignment(.center)
             Button("Retry", action: onRetry)
         }
     }
@@ -166,16 +170,25 @@ private struct BackdropView: View {
                 image.resizable().aspectRatio(contentMode: .fill)
             case .failure:
                 Color.gray.opacity(0.15)
-                    .overlay(Image(systemName: "photo").foregroundStyle(.tertiary))
+                    .overlay {
+                        Image(systemName: "photo").foregroundStyle(.tertiary)
+                    }
             @unknown default:
                 Color.gray.opacity(0.15)
             }
         }
+        // The screen already presents the movie title prominently below; the
+        // backdrop is a decorative hero image and shouldn't double-announce it.
+        .accessibilityHidden(true)
     }
 }
 
 private struct ProviderLogo: View {
     let url: URL?
+    let providerName: String
+
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 44
+
     var body: some View {
         AsyncImage(url: url) { phase in
             if case .success(let image) = phase {
@@ -184,8 +197,9 @@ private struct ProviderLogo: View {
                 Color.gray.opacity(0.15)
             }
         }
-        .frame(width: 44, height: 44)
+        .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: 8))
+        .accessibilityLabel(providerName)
     }
 }
 
