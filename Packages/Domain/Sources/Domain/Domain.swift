@@ -233,24 +233,15 @@ public extension MovieError {
     /// app's catalog when localization lands.
     var userMessage: String {
         switch self {
-        case .offline:
-            String(localized: "You appear to be offline. Check your connection and try again.")
-        case .timeout:
-            String(localized: "The request took too long. Please try again.")
-        case .rateLimited:
-            String(localized: "Too many requests right now. Please wait a moment and try again.")
-        case .unauthorized:
-            String(localized: "There's a problem with the app's API key.")
-        case .notFound:
-            String(localized: "We couldn't find what you were looking for.")
-        case .server:
-            String(localized: "The server is having trouble. Please try again later.")
-        case .decoding:
-            String(localized: "Something went wrong reading the response.")
-        case .cancelled:
-            String(localized: "The request was cancelled.")
-        case .unknown:
-            String(localized: "Something went wrong. Please try again.")
+        case .offline:       String(localized: .errorOffline)
+        case .timeout:       String(localized: .errorTimeout)
+        case .rateLimited:   String(localized: .errorRateLimited)
+        case .unauthorized:  String(localized: .errorUnauthorized)
+        case .notFound:      String(localized: .errorNotFound)
+        case .server:        String(localized: .errorServer)
+        case .decoding:      String(localized: .errorDecoding)
+        case .cancelled:     String(localized: .errorCancelled)
+        case .unknown:       String(localized: .errorUnknown)
         }
     }
 }

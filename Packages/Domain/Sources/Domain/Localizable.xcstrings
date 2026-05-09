@@ -1,0 +1,114 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "errorOffline": {
+      "comment": "Shown when the device has no network connection",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You appear to be offline. Check your connection and try again."
+          }
+        }
+      }
+    },
+    "errorTimeout": {
+      "comment": "Shown when a network request exceeds its timeout",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The request took too long. Please try again."
+          }
+        }
+      }
+    },
+    "errorRateLimited": {
+      "comment": "Shown when the TMDB API rate-limits the client",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests right now. Please wait a moment and try again."
+          }
+        }
+      }
+    },
+    "errorUnauthorized": {
+      "comment": "Shown when the TMDB API key is invalid or missing",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There's a problem with the app's API key."
+          }
+        }
+      }
+    },
+    "errorNotFound": {
+      "comment": "Shown when a requested movie or resource does not exist",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't find what you were looking for."
+          }
+        }
+      }
+    },
+    "errorServer": {
+      "comment": "Shown for HTTP 5xx server errors",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server is having trouble. Please try again later."
+          }
+        }
+      }
+    },
+    "errorDecoding": {
+      "comment": "Shown when the API response cannot be parsed (schema drift)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong reading the response."
+          }
+        }
+      }
+    },
+    "errorCancelled": {
+      "comment": "Shown when a request is cancelled mid-flight",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The request was cancelled."
+          }
+        }
+      }
+    },
+    "errorUnknown": {
+      "comment": "Generic fallback error message",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong. Please try again."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -23,7 +23,8 @@ let package = Package(
             dependencies: [
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "Preferences", package: "Preferences"),
-            ]
+            ],
+            resources: [.process("Localizable.xcstrings")]
         ),
         .testTarget(
             name: "SearchFeatureTests",

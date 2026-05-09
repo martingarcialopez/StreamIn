@@ -1,0 +1,42 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "watchlistTitle": {
+      "comment": "Navigation bar title for the Watchlist tab",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watchlist"
+          }
+        }
+      }
+    },
+    "watchlistEmptyTitle": {
+      "comment": "Title shown on the watchlist screen when no movies have been saved",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your watchlist is empty"
+          }
+        }
+      }
+    },
+    "watchlistEmptyDescription": {
+      "comment": "Description on the empty watchlist screen explaining how to add movies",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save movies from search to find them here."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -1,0 +1,90 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "searchTitle": {
+      "comment": "Navigation bar title for the Search screen; \"StreamIn\" is the app brand name",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StreamIn"
+          }
+        }
+      }
+    },
+    "searchPrompt": {
+      "comment": "Placeholder text inside the search field",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search a movie"
+          }
+        }
+      }
+    },
+    "searchInProgress": {
+      "comment": "Shown while a search query is in flight",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching…"
+          }
+        }
+      }
+    },
+    "searchEmptyTitle": {
+      "comment": "Title on the empty search screen prompting the user to start a search",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search a movie"
+          }
+        }
+      }
+    },
+    "searchEmptyState": {
+      "comment": "Description on the empty search screen instructing the user to type and press Return",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a title and press Return."
+          }
+        }
+      }
+    },
+    "searchRetry": {
+      "comment": "Button that re-runs the failed search request",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        }
+      }
+    },
+    "searchNoStreamingInRegion": {
+      "comment": "Shown in a search result row when the movie has no streaming subscriptions in the user's region",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not on streaming in your region"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

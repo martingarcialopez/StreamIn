@@ -30,11 +30,11 @@ public struct SettingsView: View {
             LanguageSection(prefs: prefs)
             SubscriptionsSection()
         }
-        .navigationTitle("Settings")
+        .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Done") { dismiss() }
+                Button(.settingsDone) { dismiss() }
             }
         }
     }
@@ -52,15 +52,17 @@ private struct RegionSection: View {
 
     var body: some View {
         Section {
-            Picker("Region", selection: $prefs.region) {
+            Picker(selection: $prefs.region) {
                 ForEach(Region.allKnown) { region in
                     Text(region.displayName).tag(region)
                 }
+            } label: {
+                Text(.settingsRegionPicker)
             }
         } header: {
-            Text("Region")
+            Text(.settingsRegionHeader)
         } footer: {
-            Text("Determines which streaming services appear for each movie.")
+            Text(.settingsRegionFooter)
         }
     }
 }
@@ -70,15 +72,17 @@ private struct LanguageSection: View {
 
     var body: some View {
         Section {
-            Picker("Language", selection: $prefs.language) {
+            Picker(selection: $prefs.language) {
                 ForEach(Language.allKnown) { language in
                     Text(language.displayName).tag(language)
                 }
+            } label: {
+                Text(.settingsLanguagePicker)
             }
         } header: {
-            Text("Language")
+            Text(.settingsLanguageHeader)
         } footer: {
-            Text("Controls the language of movie titles, descriptions, and poster art returned by TMDB.")
+            Text(.settingsLanguageFooter)
         }
     }
 }
@@ -86,14 +90,14 @@ private struct LanguageSection: View {
 private struct SubscriptionsSection: View {
     var body: some View {
         Section {
-            Text("Tell us which streaming services you subscribe to so we can highlight them in search results.")
+            Text(.settingsSubscriptionsBlurb)
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            Text("Coming soon")
+            Text(.settingsSubscriptionsComingSoon)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         } header: {
-            Text("My subscriptions")
+            Text(.settingsSubscriptionsHeader)
         }
     }
 }

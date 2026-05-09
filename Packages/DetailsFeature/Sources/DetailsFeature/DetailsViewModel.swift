@@ -105,6 +105,6 @@ public final class DetailsViewModel {
     public var formattedDirectors: String? {
         guard !movie.directors.isEmpty else { return nil }
         let names = movie.directors.map(\.name).formatted(.list(type: .and))
-        return "Directed by \(names)"
+        return String(localized: .detailsDirectedBy(names))
     }
 }

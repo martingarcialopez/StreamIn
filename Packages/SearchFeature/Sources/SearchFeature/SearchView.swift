@@ -19,8 +19,8 @@ public struct SearchView: View {
 
     public var body: some View {
         SearchContent(model: model, onRetry: retry)
-            .navigationTitle("StreamIn")
-            .searchable(text: $searchText, prompt: "Search a movie")
+            .navigationTitle(Text(.searchTitle))
+            .searchable(text: $searchText, prompt: Text(.searchPrompt))
             .onSubmit(of: .search, retry)
             // Re-run the active query whenever region or language changes.
             .task(id: prefs.snapshot) {
@@ -47,15 +47,15 @@ private struct SearchContent: View {
 
     var body: some View {
         if model.isLoading {
-            ProgressView("Searching…")
+            ProgressView { Text(.searchInProgress) }
         } else if let error = model.error {
             ErrorState(error: error, onRetry: onRetry)
         } else if model.results.isEmpty {
-            ContentUnavailableView(
-                "Search a movie",
-                systemImage: "movieclapper",
-                description: Text("Type a title and press Return.")
-            )
+            ContentUnavailableView {
+                Label { Text(.searchEmptyTitle) } icon: { Image(systemName: "movieclapper") }
+            } description: {
+                Text(.searchEmptyState)
+            }
         } else {
             List(model.results) { movie in
                 NavigationLink(value: movie) {
@@ -75,7 +75,7 @@ private struct ErrorState: View {
             Text(error.userMessage)
                 .foregroundStyle(.red)
                 .multilineTextAlignment(.center)
-            Button("Retry", action: onRetry)
+            Button(.searchRetry, action: onRetry)
         }
         .padding()
     }
@@ -116,7 +116,7 @@ private struct ProviderStrip: View {
     var body: some View {
         if let availability = model.availability[movie.id] {
             if availability.subscription.isEmpty {
-                Text("Not on streaming in your region")
+                Text(.searchNoStreamingInRegion)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {

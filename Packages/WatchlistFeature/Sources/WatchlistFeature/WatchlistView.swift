@@ -15,12 +15,12 @@ public struct WatchlistView: View {
     public init() {}
 
     public var body: some View {
-        ContentUnavailableView(
-            "Your watchlist is empty",
-            systemImage: "bookmark",
-            description: Text("Save movies from search to find them here.")
-        )
-        .navigationTitle("Watchlist")
+        ContentUnavailableView {
+            Label { Text(.watchlistEmptyTitle) } icon: { Image(systemName: "bookmark") }
+        } description: {
+            Text(.watchlistEmptyDescription)
+        }
+        .navigationTitle(Text(.watchlistTitle))
     }
 }
 

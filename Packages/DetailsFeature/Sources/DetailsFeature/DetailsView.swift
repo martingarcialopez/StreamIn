@@ -98,14 +98,22 @@ private struct ProvidersSection: View {
     var body: some View {
         if let availability = model.availability {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Where to watch")
+                Text(.detailsWhereToWatch)
                     .font(.headline)
 
-                ProviderRow(title: "Streaming", providers: availability.subscription, model: model)
-                ProviderRow(title: "Free",      providers: availability.free,         model: model)
+                ProviderRow(
+                    title: String(localized: .detailsProvidersSubscription),
+                    providers: availability.subscription,
+                    model: model
+                )
+                ProviderRow(
+                    title: String(localized: .detailsProvidersFree),
+                    providers: availability.free,
+                    model: model
+                )
 
                 if availability.isEmpty {
-                    Text("Not available in your region.")
+                    Text(.detailsNotAvailable)
                         .font(.callout)
                         .foregroundStyle(.tertiary)
                 }
@@ -113,7 +121,7 @@ private struct ProvidersSection: View {
         } else if model.isLoading {
             HStack {
                 Spacer()
-                ProgressView("Checking availability…")
+                ProgressView { Text(.detailsCheckingAvailability) }
                 Spacer()
             }
         }
@@ -152,11 +160,11 @@ private struct ErrorRetry: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Couldn't load full details. \(error.userMessage)")
+            Text(.detailsLoadFailed(error.userMessage))
                 .font(.caption)
                 .foregroundStyle(.red)
                 .multilineTextAlignment(.center)
-            Button("Retry", action: onRetry)
+            Button(.detailsRetry, action: onRetry)
         }
     }
 }
