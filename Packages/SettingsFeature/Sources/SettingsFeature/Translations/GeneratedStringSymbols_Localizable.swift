@@ -55,6 +55,42 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Cancel button on the restart alert; defers the relaunch to the user's next manual app open
+     
+     Localized string for key “settingsLanguageRestartLater” in table “Localizable.xcstrings”.
+     */
+    static var settingsLanguageRestartLater: LocalizedStringResource {
+        LocalizedStringResource("settingsLanguageRestartLater", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Body of the restart alert, explaining that the change is saved even if the user defers the restart
+     
+     Localized string for key “settingsLanguageRestartMessage” in table “Localizable.xcstrings”.
+     */
+    static var settingsLanguageRestartMessage: LocalizedStringResource {
+        LocalizedStringResource("settingsLanguageRestartMessage", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Primary button on the restart alert, quits the app so the user can reopen it
+     
+     Localized string for key “settingsLanguageRestartNow” in table “Localizable.xcstrings”.
+     */
+    static var settingsLanguageRestartNow: LocalizedStringResource {
+        LocalizedStringResource("settingsLanguageRestartNow", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Title of the alert shown after the user changes the app language
+     
+     Localized string for key “settingsLanguageRestartTitle” in table “Localizable.xcstrings”.
+     */
+    static var settingsLanguageRestartTitle: LocalizedStringResource {
+        LocalizedStringResource("settingsLanguageRestartTitle", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Section footer explaining what the region picker affects
      
      Localized string for key “settingsRegionFooter” in table “Localizable.xcstrings”.

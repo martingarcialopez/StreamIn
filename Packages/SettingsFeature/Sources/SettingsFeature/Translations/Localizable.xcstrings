@@ -1,0 +1,276 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "settingsDone": {
+      "comment": "Toolbar button that dismisses the Settings sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho"
+          }
+        }
+      }
+    },
+    "settingsLanguageFooter": {
+      "comment": "Section footer explaining what the language picker affects",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sets the language for app text and movie information. Changing this requires restarting StreamIn."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Establece el idioma del texto de la app y de la información de las películas. Cambiar esto requiere reiniciar StreamIn."
+          }
+        }
+      }
+    },
+    "settingsLanguageHeader": {
+      "comment": "Section header above the language picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lenguaje"
+          }
+        }
+      }
+    },
+    "settingsLanguagePicker": {
+      "comment": "Label for the language picker control",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lenguaje"
+          }
+        }
+      }
+    },
+    "settingsRegionFooter": {
+      "comment": "Section footer explaining what the region picker affects",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Determines which streaming services appear for each movie."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Determina qué servicios de streaming se presentan para cada película"
+          }
+        }
+      }
+    },
+    "settingsRegionHeader": {
+      "comment": "Section header above the region picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Region"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Región"
+          }
+        }
+      }
+    },
+    "settingsRegionPicker": {
+      "comment": "Label for the region picker control",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Region"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Región"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsBlurb": {
+      "comment": "Body text introducing the subscriptions section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tell us which streaming services you subscribe to so we can highlight them in search results."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinos a qué servicios de streaming estás suscrito para que podamos destacarlos en los resultados"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsComingSoon": {
+      "comment": "Caption indicating the subscriptions feature is not yet available",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming soon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximamente disponible"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsHeader": {
+      "comment": "Section header for the user's streaming subscription preferences",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My subscriptions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mis suscripciones"
+          }
+        }
+      }
+    },
+    "settingsTitle": {
+      "comment": "Navigation bar title for the Settings sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración"
+          }
+        }
+      }
+    },
+    "settingsLanguageRestartTitle": {
+      "comment": "Title of the alert shown after the user changes the app language",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart required"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinicio necesario"
+          }
+        }
+      }
+    },
+    "settingsLanguageRestartMessage": {
+      "comment": "Body of the restart alert, explaining that the change is saved even if the user defers the restart",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StreamIn needs to relaunch to apply the new language. Your choice is saved either way."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "StreamIn necesita reiniciarse para aplicar el nuevo idioma. Tu elección se guarda de cualquier forma."
+          }
+        }
+      }
+    },
+    "settingsLanguageRestartNow": {
+      "comment": "Primary button on the restart alert, quits the app so the user can reopen it",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reiniciar ahora"
+          }
+        }
+      }
+    },
+    "settingsLanguageRestartLater": {
+      "comment": "Cancel button on the restart alert; defers the relaunch to the user's next manual app open",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más tarde"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

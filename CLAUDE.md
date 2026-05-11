@@ -78,6 +78,45 @@ ContentView is init-injected with a `MovieRepository`, so previews need an insta
 
 Two SwiftData stores (history, watchlist) with no expected migrations — ergonomics win. Swift Testing (`@Test`) for unit tests because iOS 17+ supports it and Apple is steering us there. UI tests stay on XCTest because Swift Testing doesn't cover that surface yet. Combine deliberately absent in feature code: `async/await` + `@Observable` covers our needs without adding a parallel reactive mental model.
 
+### Localization via per-package String Catalogs
+
+Every package with user-facing strings owns its own catalog under `Packages/<Pkg>/Sources/<Pkg>/Translations/`:
+
+```
+Translations/
+├── Localizable.xcstrings                       — the catalog itself, all keys + per-language values
+└── GeneratedStringSymbols_Localizable.swift    — generated typed symbols (committed)
+```
+
+Declared in `Package.swift` via `resources: [.process("Translations/Localizable.xcstrings")]`. Call sites use the symbol form for compile-time safety: `Text(.searchPrompt)`, `Button(.detailsRetry, action: …)`, `String(localized: .errorOffline)`. Interpolated keys generate function-style symbols (`Text(.detailsLoadFailed(error.userMessage))`).
+
+Per-package over a single shared catalog: matches the project's "boundaries enforced at build time" architecture, no third-party scripts, each feature is self-contained. Shared strings (`Cancel`, `OK`, `Loading…`) will move into `DesignSystem`'s catalog **only when a key duplicates more than twice** — not preemptively.
+
+**Symbol generation gotcha.** Xcode 26 auto-generates symbols for App-target catalogs but **not** for Swift Package catalogs — discovered empirically. We work around it by running Apple's own `xcstringstool generate-symbols` and committing the output as regular package source. Regenerate after adding/renaming keys; otherwise the call site fails to resolve.
+
+```bash
+for pkg in Domain SearchFeature WatchlistFeature SettingsFeature DetailsFeature; do
+  /Applications/Xcode.app/Contents/Developer/usr/bin/xcstringstool generate-symbols \
+    Packages/$pkg/Sources/$pkg/Translations/Localizable.xcstrings \
+    --output-directory Packages/$pkg/Sources/$pkg/Translations \
+    --language swift
+done
+```
+
+**App-target side of localization** (separate from per-package catalogs):
+
+- `StreamIn/InfoPlist.xcstrings` exists with `CFBundleDisplayName` registered in `en` + `es`. Load-bearing: it gives the App target its own localized resource, which produces top-level `en.lproj`/`es.lproj` directories in the built `.app`. iOS uses those to decide whether to show the per-app Language picker in **Settings → Apps → StreamIn → Language**. No App-level localized resource = no picker, even with package catalogs present.
+- `knownRegions = (en, es, Base)` in `StreamIn.xcodeproj/project.pbxproj`. Required at the project level to declare supported languages. Add new languages here AND in `InfoPlist.xcstrings`.
+- `INFOPLIST_KEY_CFBundleLocalizations` is **silently dropped** by `GENERATE_INFOPLIST_FILE = YES` — same family of gotcha as the other "Apple recognized keys" caveat in the Secrets section. Don't try to set it; use the `InfoPlist.xcstrings` route.
+
+### In-app language picker drives both app UI and TMDB
+
+The Settings → Language picker writes to **both** `prefs.language` (consumed by TMDB request params) and `UserDefaults.standard.AppleLanguages` (read by iOS at bundle init to choose the catalog locale). One control → both axes flip together, which is what users expect; the alternative two-knob model (TMDB language separate from app UI language) buys an audience of essentially zero.
+
+Switching language requires an app relaunch because iOS bundles cache their preferred-localizations at app start. The picker presents a "Restart now / Later" alert. **Restart now** calls `exit(0)`; **Later** still persists the choice and applies it on the next manual launch. `exit(0)` is technically against the HIG but is the de-facto pattern for language-switch flows in shipping apps; if App Store review ever flags it, the fix is one line (drop the `exit(0)` and rely on the next-launch path).
+
+The picker binding is **deferred** — `prefs.language` and `AppleLanguages` only mutate when the user explicitly taps one of the alert buttons. This is a deliberate data-correctness choice; the trade-off is a slight UX awkwardness (the picker visually snaps back to the old value when the alert opens) that's the inverse of how most pickers feel. See `project_localization.md` memory for the alternative "commit-on-tap" pattern in case it's reverted.
+
 ## Testing
 
 - Domain logic: unit tests, no fakes needed.

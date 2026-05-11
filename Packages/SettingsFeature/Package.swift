@@ -26,7 +26,7 @@ let package = Package(
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "Preferences", package: "Preferences"),
             ],
-            resources: [.process("Localizable.xcstrings")]
+            resources: [.process("Translations/Localizable.xcstrings")]
         ),
         .testTarget(
             name: "SettingsFeatureTests",

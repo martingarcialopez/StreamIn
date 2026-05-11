@@ -26,7 +26,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Domain", package: "Domain"),
             ],
-            resources: [.process("Localizable.xcstrings")]
+            resources: [.process("Translations/Localizable.xcstrings")]
         ),
         .testTarget(
             name: "WatchlistFeatureTests",

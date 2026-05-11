@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		354FB40B4F6C466B963DC9B8 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = B8CECB5AA23445E981B96C90 /* Preferences */; };
 		5B20C7EC2FA4C510006066E7 /* DetailsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B20C7EB2FA4C510006066E7 /* DetailsFeature */; };
 		5B63F2B32FA126C8002AB748 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* CLAUDE.md */; };
 		5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B8B87012FA38F9C0038B8ED /* SearchFeature */; };
 		5BF57B592FAB9D6C00BF5F39 /* SettingsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */; };
-		354FB40B4F6C466B963DC9B8 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = B8CECB5AA23445E981B96C90 /* Preferences */; };
 		5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
 		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
@@ -45,9 +45,9 @@
 		5BBF59A02FA119DD008CC68E /* StreamInUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamInUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59B62FA11B88008CC68E /* TMDBClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = TMDBClient; path = Packages/TMDBClient; sourceTree = "<group>"; };
 		5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WatchlistFeature; path = Packages/WatchlistFeature; sourceTree = "<group>"; };
-		A99EFD0F0E8E44AF8ECC29A1 /* Preferences */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Preferences; path = Packages/Preferences; sourceTree = "<group>"; };
 		5BF57B562FAB9CD100BF5F39 /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SettingsFeature; path = Packages/SettingsFeature; sourceTree = "<group>"; };
 		5BF89A012FA123DB005E8AF1 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
+		A99EFD0F0E8E44AF8ECC29A1 /* Preferences */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Preferences; path = Packages/Preferences; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -266,6 +266,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				es,
 				Base,
 			);
 			mainGroup = 5BBF59802FA119DC008CC68E;
@@ -723,6 +724,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		026A346B7A434B56B6B8EDE8 /* XCLocalSwiftPackageReference "Packages/Preferences" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Preferences;
+		};
 		5B20C7EA2FA4C510006066E7 /* XCLocalSwiftPackageReference "Packages/DetailsFeature" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/DetailsFeature;
@@ -746,10 +751,6 @@
 		5BF89A052FA12411005E8AF1 /* XCLocalSwiftPackageReference "Packages/TMDBClient" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/TMDBClient;
-		};
-		026A346B7A434B56B6B8EDE8 /* XCLocalSwiftPackageReference "Packages/Preferences" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/Preferences;
 		};
 /* End XCLocalSwiftPackageReference section */
 

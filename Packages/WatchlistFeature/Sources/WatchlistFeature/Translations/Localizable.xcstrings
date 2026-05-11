@@ -1,0 +1,60 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "watchlistEmptyDescription" : {
+      "comment" : "Description on the empty watchlist screen explaining how to add movies",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save movies from search to find them here."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Películas guardadas"
+          }
+        }
+      }
+    },
+    "watchlistEmptyTitle" : {
+      "comment" : "Title shown on the watchlist screen when no movies have been saved",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your watchlist is empty"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu watchlist está vacía"
+          }
+        }
+      }
+    },
+    "watchlistTitle" : {
+      "comment" : "Navigation bar title for the Watchlist tab",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watchlist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watchlist"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

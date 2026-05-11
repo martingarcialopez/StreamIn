@@ -1,0 +1,150 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "detailsCheckingAvailability" : {
+      "comment" : "Shown on the Details screen while the providers list is loading",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking availability…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmando disponibilidad…"
+          }
+        }
+      }
+    },
+    "detailsDirectedBy" : {
+      "comment" : "Director credit on the Details screen; %@ is a locale-formatted list of director names",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Directed by %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirigida por %@"
+          }
+        }
+      }
+    },
+    "detailsLoadFailed" : {
+      "comment" : "Error message on the Details screen when full details fail to load; %@ is the localized underlying error description",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load full details. %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron cargar los detalles. %@"
+          }
+        }
+      }
+    },
+    "detailsNotAvailable" : {
+      "comment" : "Shown on the Details screen when no streaming providers cover the user's region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available in your region."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible en tu región."
+          }
+        }
+      }
+    },
+    "detailsProvidersFree" : {
+      "comment" : "Sub-section header for movies available to watch for free",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratuito"
+          }
+        }
+      }
+    },
+    "detailsProvidersSubscription" : {
+      "comment" : "Sub-section header for movies available via a streaming subscription",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streaming"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streaming"
+          }
+        }
+      }
+    },
+    "detailsRetry" : {
+      "comment" : "Button on the Details screen that re-runs the failed full-details load",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        }
+      }
+    },
+    "detailsWhereToWatch" : {
+      "comment" : "Section header on the Details screen above the streaming providers",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where to watch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donde ver "
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

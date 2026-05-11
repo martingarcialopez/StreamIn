@@ -69,10 +69,17 @@ private struct RegionSection: View {
 
 private struct LanguageSection: View {
     @Bindable var prefs: Preferences
+    @State private var showRestartAlert = false
+    /// The language the user just picked in the UI but hasn't confirmed via
+    /// the alert yet. Held in local state instead of being written straight to
+    /// `prefs.language` so that nothing observable changes (TMDB requests,
+    /// `AppleLanguages` override) until the user explicitly chooses Restart
+    /// or Later. Cleared in `apply()` once the change is committed.
+    @State private var pendingLanguage: Language?
 
     var body: some View {
         Section {
-            Picker(selection: $prefs.language) {
+            Picker(selection: languageBinding) {
                 ForEach(Language.allKnown) { language in
                     Text(language.displayName).tag(language)
                 }
@@ -84,6 +91,53 @@ private struct LanguageSection: View {
         } footer: {
             Text(.settingsLanguageFooter)
         }
+        .alert(Text(.settingsLanguageRestartTitle), isPresented: $showRestartAlert) {
+            Button(.settingsLanguageRestartNow) {
+                apply()
+                exit(0)
+            }
+            Button(.settingsLanguageRestartLater, role: .cancel) {
+                apply()
+            }
+        } message: {
+            Text(.settingsLanguageRestartMessage)
+        }
+    }
+
+    /// Drives the picker UI without mutating `prefs.language` directly.
+    /// - get: always returns the currently-applied language so the picker UI
+    ///   keeps showing the old value until the user confirms the alert. SwiftUI
+    ///   re-renders after `set` updates `pendingLanguage`, and the picker reads
+    ///   this getter again — which still returns `prefs.language`, so the
+    ///   visible selection snaps back to the committed value.
+    /// - set: picking a new language stashes it as pending and presents the
+    ///   alert. Picking the already-applied language while a pending value
+    ///   exists (i.e. the user changed their mind back) just clears the
+    ///   pending state without re-presenting the alert.
+    private var languageBinding: Binding<Language> {
+        Binding(
+            get: { prefs.language },
+            set: { newValue in
+                if newValue == prefs.language {
+                    pendingLanguage = nil
+                } else {
+                    pendingLanguage = newValue
+                    showRestartAlert = true
+                }
+            }
+        )
+    }
+
+    /// Commits `pendingLanguage` to `prefs.language` and to the per-app
+    /// `AppleLanguages` UserDefaults override (which iOS reads at next launch
+    /// to pick the bundle's preferred localization). Bundles cache their
+    /// preferred-localizations list at app start, so the UI only actually
+    /// switches after a relaunch — the alert exists to make that explicit.
+    private func apply() {
+        guard let language = pendingLanguage else { return }
+        prefs.language = language
+        UserDefaults.standard.set([language.code], forKey: "AppleLanguages")
+        pendingLanguage = nil
     }
 }
 

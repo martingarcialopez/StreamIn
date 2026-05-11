@@ -18,7 +18,7 @@ let package = Package(
     targets: [
         .target(
             name: "Domain",
-            resources: [.process("Localizable.xcstrings")]
+            resources: [.process("Translations/Localizable.xcstrings")]
         ),
         .testTarget(
             name: "DomainTests",
