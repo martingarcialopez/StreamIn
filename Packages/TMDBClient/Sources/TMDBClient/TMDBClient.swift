@@ -43,6 +43,9 @@ public protocol TMDBClient: Sendable {
     func searchMovies(query: String, page: Int) async throws -> TMDBSearchResponse
     func movieDetails(id: Int) async throws -> TMDBMovieDetailDTO
     func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse
+    /// `/watch/providers/movie?watch_region=XX` if `watchRegion != nil`,
+    /// `/watch/providers/movie` otherwise (every provider globally).
+    func providerList(watchRegion: String?) async throws -> TMDBProviderListResponse
 }
 
 // MARK: - DTOs (transport types)
@@ -166,6 +169,33 @@ public struct TMDBProviderDTO: Decodable, Sendable {
     }
 }
 
+// MARK: - Provider catalog DTOs
+//
+// `/watch/providers/movie` returns the list of every streaming service TMDB
+// knows about (optionally filtered by `watch_region`). The shape includes a
+// `display_priorities` dictionary per provider for region-specific ordering;
+// we don't need that yet, but it's left here as a TODO marker so we can sort
+// per-region without a wire-format change.
+
+public struct TMDBProviderListResponse: Decodable, Sendable {
+    public let results: [TMDBProviderListItemDTO]
+}
+
+public struct TMDBProviderListItemDTO: Decodable, Sendable {
+    public let providerId: Int
+    public let providerName: String
+    public let logoPath: String?
+    /// Aggregate priority TMDB uses when no region filter is applied.
+    public let displayPriority: Int
+
+    enum CodingKeys: String, CodingKey {
+        case providerId = "provider_id"
+        case providerName = "provider_name"
+        case logoPath = "logo_path"
+        case displayPriority = "display_priority"
+    }
+}
+
 // MARK: - Live Implementation
 
 public final class LiveTMDBClient: TMDBClient {
@@ -181,11 +211,25 @@ public final class LiveTMDBClient: TMDBClient {
     private let session: URLSession
     private let decoder: JSONDecoder
 
-    public init(config: TMDBConfig, session: URLSession = .shared) {
+    public init(config: TMDBConfig, session: URLSession? = nil) {
         self.baseURL = config.baseURL
         self.apiKey = config.apiKey
         self.lockedLanguage = OSAllocatedUnfairLock(initialState: config.language)
-        self.session = session
+        // Use the caller's session if provided (tests inject a URLProtocol-
+        // backed one), otherwise build a non-caching default. `URLSession.shared`
+        // has a URLCache that serves stable URLs (movie details, watch
+        // providers) from disk, which means those requests never appear in
+        // Proxyman / Charles. During the test phase we want every request on
+        // the wire — see CLAUDE.md "TODO: caching strategy" for the longer-
+        // term plan of reintroducing caches with an opt-out flag.
+        if let session {
+            self.session = session
+        } else {
+            let configuration = URLSessionConfiguration.default
+            configuration.urlCache = nil
+            configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+            self.session = URLSession(configuration: configuration)
+        }
         // No keyDecodingStrategy: TMDB casing isn't perfectly snake_case across
         // endpoints, so we keep CodingKeys explicit per-DTO.
         self.decoder = JSONDecoder()
@@ -227,6 +271,14 @@ public final class LiveTMDBClient: TMDBClient {
 
     public func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse {
         try await get(path: "/movie/\(movieID)/watch/providers", query: [:])
+    }
+
+    public func providerList(watchRegion: String?) async throws -> TMDBProviderListResponse {
+        var query: [String: String] = ["language": currentLanguage]
+        if let watchRegion {
+            query["watch_region"] = watchRegion
+        }
+        return try await get(path: "/watch/providers/movie", query: query)
     }
 
     // MARK: - HTTP
@@ -276,6 +328,11 @@ public final class LiveTMDBClient: TMDBClient {
 public struct TMDBMovieRepository: MovieRepository {
     private let client: TMDBClient
 
+    // NOTE: caching deliberately omitted for now — see CLAUDE.md "TODO: caching
+    // strategy" for the rationale. During the test phase we want every request
+    // visible in Proxyman; we'll reintroduce an actor-backed cache once the
+    // network shape is locked in.
+
     /// TMDB returns release dates as plain `yyyy-MM-dd` strings (no time, no zone).
     /// We parse them in UTC so a date doesn't shift by a day depending on where
     /// the device is. Modern `Date.ISO8601FormatStyle` covers this exactly: the
@@ -323,16 +380,79 @@ public struct TMDBMovieRepository: MovieRepository {
         let response = try await mapErrors {
             try await client.watchProviders(movieID: id.rawValue)
         }
-        let regional = response.results[region.code]
-        return WatchAvailability(
-            movieID: id,
-            region: region,
-            subscription: regional?.flatrate?.map(map(dto:)) ?? [],
-            rent: regional?.rent?.map(map(dto:)) ?? [],
-            buy: regional?.buy?.map(map(dto:)) ?? [],
-            free: regional?.free?.map(map(dto:)) ?? [],
-            externalLink: regional?.link.flatMap(URL.init(string:))
+        return mapRegional(response: response, id: id, region: region)
+    }
+
+    public func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
+        // One HTTP call. The response contains the full per-region matrix, so
+        // we derive both the regional view and the cross-region aggregation
+        // from the same payload.
+        let response = try await mapErrors {
+            try await client.watchProviders(movieID: id.rawValue)
+        }
+        return AvailabilityBundle(
+            regional: mapRegional(response: response, id: id, region: region),
+            global: aggregateGlobal(response: response, id: id)
         )
+    }
+
+    public func allProviders(in region: Region?) async throws -> [WatchProvider] {
+        let response = try await mapErrors {
+            try await client.providerList(watchRegion: region?.code)
+        }
+        // Map to Domain types, then dedupe by canonical id so aliased variants
+        // (e.g. Prime Video ids 9 / 119 / 2100) collapse into a single row.
+        //
+        // When two DTOs reduce to the same canonical id, we prefer the one
+        // whose original id IS the canonical — that's almost always the entry
+        // with the "main" name (e.g. "Amazon Prime Video" rather than "Amazon
+        // Prime Video with Ads"). Priority is taken as the lower of the two.
+        var byCanonical: [ProviderID: WatchProvider] = [:]
+        for dto in response.results {
+            let originalID = ProviderID(dto.providerId)
+            let canonicalID = ProviderAliases.canonical(originalID)
+            let candidate = WatchProvider(
+                id: canonicalID,
+                name: dto.providerName,
+                logoPath: dto.logoPath.map(ImagePath.init),
+                priority: dto.displayPriority
+            )
+            if let existing = byCanonical[canonicalID] {
+                // Tie-breaker: prefer the candidate whose original id was
+                // canonical. Detect that by comparing original id and
+                // canonical — but `existing` no longer remembers its original
+                // id. The heuristic that works in practice: if `candidate`'s
+                // original was canonical AND `existing` wasn't generated from
+                // the canonical original (we can't fully tell), bias toward
+                // it. The simpler rule below is "lower priority wins; ties
+                // broken by canonical-originality of this candidate."
+                let candidateIsCanonicalOriginal = (originalID == canonicalID)
+                if candidate.priority < existing.priority ||
+                    (candidate.priority == existing.priority && candidateIsCanonicalOriginal) {
+                    byCanonical[canonicalID] = WatchProvider(
+                        id: canonicalID,
+                        name: candidate.name,
+                        logoPath: candidate.logoPath,
+                        priority: min(existing.priority, candidate.priority)
+                    )
+                } else {
+                    byCanonical[canonicalID] = WatchProvider(
+                        id: canonicalID,
+                        name: existing.name,
+                        logoPath: existing.logoPath,
+                        priority: min(existing.priority, candidate.priority)
+                    )
+                }
+            } else {
+                byCanonical[canonicalID] = candidate
+            }
+        }
+        return byCanonical.values.sorted { lhs, rhs in
+            if lhs.priority != rhs.priority {
+                return lhs.priority < rhs.priority
+            }
+            return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+        }
     }
 
     // MARK: - Private mapping
@@ -358,6 +478,103 @@ public struct TMDBMovieRepository: MovieRepository {
             logoPath: dto.logoPath.map(ImagePath.init),
             priority: dto.displayPriority
         )
+    }
+
+    // MARK: - Watch-providers response mapping
+    //
+    // Both helpers consume the same raw TMDB response. Pulled out so the single-
+    // call `availabilities(...)` and the still-supported `availability(...)`
+    // share their logic without duplicating mapping code.
+
+    private func mapRegional(
+        response: TMDBWatchProvidersResponse,
+        id: MovieID,
+        region: Region
+    ) -> WatchAvailability {
+        let regional = response.results[region.code]
+        return WatchAvailability(
+            movieID: id,
+            region: region,
+            subscription: regional?.flatrate?.map(map(dto:)) ?? [],
+            rent: regional?.rent?.map(map(dto:)) ?? [],
+            buy: regional?.buy?.map(map(dto:)) ?? [],
+            free: regional?.free?.map(map(dto:)) ?? [],
+            externalLink: regional?.link.flatMap(URL.init(string:))
+        )
+    }
+
+    /// Walk every region's flatrate list; accumulate per-provider region sets.
+    /// Keyed by *canonical* provider id so aliased TMDB variants (Prime Video
+    /// ids 9 / 119 / 2100) merge into a single entry whose `regions` covers
+    /// every country where the brand appears under any variant.
+    ///
+    /// When two variants of the same brand appear, we keep the metadata
+    /// (name, logo) from whichever DTO had the canonical id originally — the
+    /// "Amazon Prime Video" entry beats "Amazon Prime Video with Ads" — and
+    /// fall back to the first-seen DTO if no canonical-id DTO ever shows up.
+    /// Lowest TMDB priority across regions wins for the per-provider sort key.
+    private func aggregateGlobal(
+        response: TMDBWatchProvidersResponse,
+        id: MovieID
+    ) -> GlobalWatchAvailability {
+        struct Accumulator {
+            var provider: WatchProvider
+            /// True once we've seen a DTO whose original id matched the
+            /// canonical — locks the metadata so a later variant-only DTO
+            /// can't downgrade the name to e.g. "with Ads".
+            var hasCanonicalMetadata: Bool
+            var regions: Set<Region> = []
+            var bestPriority: Int
+        }
+        var byCanonical: [ProviderID: Accumulator] = [:]
+
+        for (regionCode, regional) in response.results {
+            guard let flatrate = regional.flatrate, !flatrate.isEmpty else { continue }
+            let region = Region(code: regionCode)
+            for dto in flatrate {
+                let originalID = ProviderID(dto.providerId)
+                let canonicalID = ProviderAliases.canonical(originalID)
+                let isCanonicalOriginal = (originalID == canonicalID)
+                let provider = WatchProvider(
+                    id: canonicalID,
+                    name: dto.providerName,
+                    logoPath: dto.logoPath.map(ImagePath.init),
+                    priority: dto.displayPriority
+                )
+                if var existing = byCanonical[canonicalID] {
+                    existing.regions.insert(region)
+                    existing.bestPriority = min(existing.bestPriority, dto.displayPriority)
+                    if isCanonicalOriginal && !existing.hasCanonicalMetadata {
+                        existing.provider = provider
+                        existing.hasCanonicalMetadata = true
+                    }
+                    byCanonical[canonicalID] = existing
+                } else {
+                    byCanonical[canonicalID] = Accumulator(
+                        provider: provider,
+                        hasCanonicalMetadata: isCanonicalOriginal,
+                        regions: [region],
+                        bestPriority: dto.displayPriority
+                    )
+                }
+            }
+        }
+
+        let subscription: [ProviderRegionalAvailability] = byCanonical.values
+            .sorted { lhs, rhs in
+                if lhs.bestPriority != rhs.bestPriority {
+                    return lhs.bestPriority < rhs.bestPriority
+                }
+                return lhs.provider.name.localizedStandardCompare(rhs.provider.name) == .orderedAscending
+            }
+            .map { acc in
+                let regions = acc.regions.sorted { a, b in
+                    a.displayName.localizedStandardCompare(b.displayName) == .orderedAscending
+                }
+                return ProviderRegionalAvailability(provider: acc.provider, regions: regions)
+            }
+
+        return GlobalWatchAvailability(movieID: id, subscription: subscription)
     }
 
     private func parseDate(_ raw: String?) -> Date? {

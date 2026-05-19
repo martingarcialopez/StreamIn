@@ -134,31 +134,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tell us which streaming services you subscribe to so we can highlight them in search results."
+            "value": "Pick the streaming services you pay for. We'll show you which countries carry each film on those services — handy if you have a VPN."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dinos a qué servicios de streaming estás suscrito para que podamos destacarlos en los resultados"
-          }
-        }
-      }
-    },
-    "settingsSubscriptionsComingSoon": {
-      "comment": "Caption indicating the subscriptions feature is not yet available",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Coming soon"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Próximamente disponible"
+            "value": "Elige los servicios de streaming que pagas. Te mostraremos los países donde cada película está disponible en esos servicios — útil si tienes una VPN."
           }
         }
       }
@@ -267,6 +249,420 @@
           "stringUnit": {
             "state": "translated",
             "value": "Más tarde"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsMajor": {
+      "comment": "Sub-header for the curated/major streaming services in the My Subscriptions section",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Major services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servicios principales"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsOther": {
+      "comment": "Sub-header for non-curated streaming services the user added via the More Providers sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other subscriptions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otras suscripciones"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsAddMore": {
+      "comment": "Button that opens the sheet for adding non-curated streaming providers",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add more providers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir más proveedores"
+          }
+        }
+      }
+    },
+    "settingsSubscriptionsLoading": {
+      "comment": "Placeholder shown while the provider catalog is loading",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading providers…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando proveedores…"
+          }
+        }
+      }
+    },
+    "settingsMoreProvidersTitle": {
+      "comment": "Navigation title for the sheet that lists all TMDB providers the user can add",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More providers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más proveedores"
+          }
+        }
+      }
+    },
+    "settingsMoreProvidersWorldwideToggle": {
+      "comment": "Toggle in the More Providers sheet that switches between home-region and worldwide provider lists",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show providers worldwide"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar proveedores en todo el mundo"
+          }
+        }
+      }
+    },
+    "settingsMoreProvidersSearchPrompt": {
+      "comment": "Prompt text for the search field in the More Providers sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search providers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar proveedores"
+          }
+        }
+      }
+    },
+    "settingsMoreProvidersEmpty": {
+      "comment": "Empty-state text shown in the More Providers sheet when the search returns no matches",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No providers match your search."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún proveedor coincide con tu búsqueda."
+          }
+        }
+      }
+    },
+    "settingsMoreProvidersDone": {
+      "comment": "Done button on the More Providers sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesRow": {
+      "comment": "Label for the navigation row in Settings that opens the streaming services picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streaming services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servicios de streaming"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesNone": {
+      "comment": "Trailing summary on the Settings row when the user hasn't selected any streaming services",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguno"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesCount": {
+      "comment": "Trailing summary on the Settings row showing how many streaming services the user has selected. %lld is the count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld selected"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld seleccionados"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesTitle": {
+      "comment": "Navigation title of the pushed streaming services picker screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streaming Services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servicios de streaming"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesYourSubs": {
+      "comment": "Section header above the user's currently-selected streaming services on the picker screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your subscriptions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus suscripciones"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesAvailableInRegion": {
+      "comment": "Section header on the picker screen above providers available in the user's home region. %@ is the localized region name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available in %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disponibles en %@"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesAvailableWorldwide": {
+      "comment": "Section header on the picker screen when the worldwide toggle is on",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available worldwide"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disponibles en todo el mundo"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesWorldwideFooter": {
+      "comment": "Footer explaining when to enable the worldwide toggle on the picker screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Useful if you have a VPN or accounts in other regions."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Útil si usas una VPN o tienes cuentas en otras regiones."
+          }
+        }
+      }
+    },
+    "onboardingNavTitle": {
+      "comment": "Navigation bar title for the first-launch onboarding screen",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bienvenido"
+          }
+        }
+      }
+    },
+    "onboardingHeaderTitle": {
+      "comment": "Large header on the onboarding screen, above the picker list",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to StreamIn"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te damos la bienvenida a StreamIn"
+          }
+        }
+      }
+    },
+    "onboardingHeaderSubtitle": {
+      "comment": "Sub-header on the onboarding screen explaining what to do",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick the streaming services you pay for. We'll show you where to watch every film with them."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige los servicios de streaming que pagas. Te mostraremos dónde puedes ver cada película con ellos."
+          }
+        }
+      }
+    },
+    "onboardingDone": {
+      "comment": "Toolbar button that dismisses the onboarding sheet",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho"
+          }
+        }
+      }
+    },
+    "providerIconStripOverflowAccessibility": {
+      "comment": "VoiceOver-friendly form of the '+N' overflow pill on the Settings streaming-services row. %lld is the count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld more"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld más"
+          }
+        }
+      }
+    },
+    "providerRowSubscribedAccessibility": {
+      "comment": "VoiceOver label for the checkmark next to a subscribed provider in the picker",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscribed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suscrito"
           }
         }
       }

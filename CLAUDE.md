@@ -126,6 +126,97 @@ The picker binding is **deferred** — `prefs.language` and `AppleLanguages` onl
 - Critical UI flow: one UI test (search → detail → providers).
 - Before opening a PR, run `swift test` in each package and `⌘U` on the App scheme.
 
+## TODO: caching strategy
+
+Currently `TMDBMovieRepository` has **no caching layer** — every repository call hits the network. This is deliberate while the multi-region subscriptions feature is in active test/debug: caches hide requests from Proxyman, which makes it harder to verify what's actually going over the wire.
+
+When the feature is stable, reintroduce caching:
+
+- **Provider catalog** (`allProviders(in:)`) — actor-backed, keyed by `Region?` (`nil` = worldwide), in-memory for the app session. Names and logos are stable enough that refetching on next launch is acceptable. Previous implementation existed as `ProviderCatalogCache` — git history has the actor if useful.
+- **Watch providers per movie** (`availabilities(for:in:)`) — actor-backed, keyed by `MovieID`, TTL of maybe an hour. Currently every Details screen visit re-fetches, which is fine for testing but wasteful in production.
+- **Movie detail** (`movie(id:)`) — same actor pattern, keyed by `MovieID`. Lifetime of movie detail data is essentially "forever" (title and runtime don't change), so an app-session cache with no TTL is fine.
+- **URLSession URLCache** (`LiveTMDBClient`) — `URLSession.shared` ships with a default disk cache that honours TMDB's `Cache-Control` headers. The constructor currently builds its own `URLSession` with `urlCache = nil` + `requestCachePolicy = .reloadIgnoringLocalCacheData` so Proxyman sees every request. When putting caching back, the right grain is probably an in-memory-only `URLCache` (no disk) + the app-level actor caches above; or trust the URLCache entirely and remove the actor caches.
+
+Before adding any cache back, add a test that verifies it can be bypassed (an `init(skipCache:)` flag or similar) so Proxyman-driven debugging keeps working.
+
+## TODO: DesignSystem package
+
+A `DesignSystem` package is referenced in the architecture section above but doesn't exist yet. Two concrete things to centralise there once it does:
+
+### 1. Typed SF Symbol names
+
+Today every call site uses raw string literals: `Image(systemName: "popcorn.fill")`, `Label(year, systemImage: "calendar")`, etc. Typos compile fine and fail silently at render time (blank icon). A typed namespace fixes this at build time:
+
+```swift
+public enum Symbol {
+    public static let popcornFill    = "popcorn.fill"
+    public static let bookmark       = "bookmark"
+    public static let gear           = "gear"
+    public static let gearshape      = "gearshape"
+    public static let magnifyingglass = "magnifyingglass"
+    public static let checkmark      = "checkmark"
+    public static let photo          = "photo"
+    public static let calendar       = "calendar"
+    public static let clock          = "clock"
+    public static let starFill       = "star.fill"
+    public static let movieclapper   = "movieclapper"
+}
+```
+
+Call sites become `Image(systemName: Symbol.popcornFill)`. Naming mirrors SF Symbol names with `.` → camelCase. Xcode 16+ asset catalog symbols (drag SF Symbols into `Assets.xcassets`, get `Image(.popcorn)`) is the even-more-idiomatic alternative — usable from a `DesignSystem` package the same way.
+
+Current symbols in use across the app: `popcorn.fill`, `bookmark`, `gear`, `gearshape`, `magnifyingglass`, `checkmark`, `photo`, `calendar`, `clock`, `star.fill`, `movieclapper`.
+
+### 2. Shared design constants
+
+Magic numbers scattered across the view code that would benefit from a single source of truth:
+
+- **Spacing** — `spacing: 8` / `10` / `12` / `14` / `16` / `20` in `VStack`/`HStack` initialisers.
+- **Padding** — bare `.padding(.vertical, 16)` style calls.
+- **Logo / icon sizes** — `@ScaledMetric ... CGFloat = 22` / `28` / `36` / `44` for provider logos in three different views.
+- **Corner radii** — `.rect(cornerRadius: 4)` / `6` / `8`.
+
+A nested namespace works:
+
+```swift
+public enum DesignSystem {
+    public enum Spacing {
+        public static let tight: CGFloat = 4
+        public static let `default`: CGFloat = 8
+        public static let comfortable: CGFloat = 12
+        public static let sectionGap: CGFloat = 20
+    }
+    public enum LogoSize {
+        public static let small: CGFloat = 22   // Settings row strip
+        public static let medium: CGFloat = 28  // Picker row
+        public static let large: CGFloat = 36   // Details home row
+        public static let hero: CGFloat = 44    // Details legacy row
+    }
+    public enum Radius {
+        public static let small: CGFloat = 4
+        public static let medium: CGFloat = 6
+        public static let large: CGFloat = 8
+    }
+}
+```
+
+### Not urgent
+
+No current pain point — SF Symbol typos haven't bitten yet, and the magic numbers haven't needed coordinated tweaks. Worth doing as the first cleanup PR once the `DesignSystem` package lands, before adding more screens that introduce yet more magic numbers.
+
+## TODO: onboarding trigger
+
+The first-launch onboarding sheet (`OnboardingView` in `SettingsFeature`) is currently presented from `RootView` whenever `prefs.subscribedProviderIDs.isEmpty`. This is deliberately permissive for the test phase: tapping Skip / closing the cover leaves subs empty, so the next launch re-presents the sheet. Easy to iterate on the flow.
+
+Before shipping, swap the trigger to a one-shot flag:
+
+1. Add `hasCompletedOnboarding: Bool` to `Preferences`, persisted in `UserDefaults` under a key like `"settings.hasCompletedOnboarding"`. Default `false`.
+2. In `RootView.task`, replace `prefs.subscribedProviderIDs.isEmpty` with `!prefs.hasCompletedOnboarding`.
+3. In `OnboardingView`, set `prefs.hasCompletedOnboarding = true` inside the "Done" button action (and ideally an explicit "Skip" button too, if you add one).
+4. The "Done" button stays always-enabled — picking zero services and tapping Done is a valid choice (the user can configure later via Settings).
+
+Optional polish for shipping: separate "Skip for now" and "Continue" buttons, where Continue is only enabled with ≥1 selection. Both set the completion flag; only the labelling differs.
+
 ## Non-goals (do not add without discussing first)
 
 No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts.

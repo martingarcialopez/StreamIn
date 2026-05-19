@@ -3,7 +3,8 @@
 //  DetailsFeature
 //
 //  Renders one movie's detail screen: backdrop, title, metadata strip,
-//  overview, and the per-category provider grid (subscription / free).
+//  overview, the cross-region "Watch with your subscriptions" section, and the
+//  legacy per-region provider grid.
 //
 
 import SwiftUI
@@ -23,8 +24,11 @@ public struct DetailsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 BackdropView(url: model.backdropURL())
+                    // Use `aspectRatio` instead of a fixed height: backdrops
+                    // are 16:9, and this scales correctly across phone sizes
+                    // (iPhone SE through iPhone Pro Max) and iPad.
+                    .aspectRatio(16 / 9, contentMode: .fill)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 220)
                     .clipped()
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -45,6 +49,10 @@ public struct DetailsView: View {
                             .font(.body)
                             .foregroundStyle(.secondary)
                     }
+
+                    Divider()
+
+                    SubscribedAvailabilitySection(model: model)
 
                     Divider()
 
@@ -90,7 +98,264 @@ private struct MetadataRow: View {
     }
 }
 
-// MARK: - Providers
+// MARK: - Subscribed availability (region-partitioned: home + other regions)
+
+/// Top-level container. Just wraps `SubscribedAvailabilityContent` in a
+/// `VStack` — the branching logic lives in the content view, which keeps
+/// each state (loading / empty / no-matches / has-data) easy to read.
+private struct SubscribedAvailabilitySection: View {
+    let model: DetailsViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            SubscribedAvailabilityContent(model: model)
+        }
+    }
+}
+
+/// Dispatches between the four mutually-exclusive states of the subscribed-
+/// availability area:
+///   - loading (first fetch, no data yet)
+///   - no subscriptions configured → prompt to open Settings
+///   - has subscriptions but no matches → "not available with your subs"
+///   - has matches → `HomeRegionSubsection` + optional `OtherRegionsSubsection`
+private struct SubscribedAvailabilityContent: View {
+    let model: DetailsViewModel
+
+    var body: some View {
+        if model.isLoading && model.globalAvailability == nil {
+            HStack {
+                Spacer()
+                ProgressView()
+                Spacer()
+            }
+        } else if !model.hasAnySubscriptions {
+            EmptyStateConfigure()
+        } else if model.subscribedAvailability.isEmpty {
+            Text(.detailsSubscriptionsNoMatches)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        } else {
+            HomeRegionSubsection(model: model)
+            // Render the "other regions" subsection only if there's anything
+            // to show — otherwise an empty header is noise.
+            if !model.providersAvailableElsewhere.isEmpty {
+                OtherRegionsSubsection(model: model)
+            }
+        }
+    }
+}
+
+private struct EmptyStateConfigure: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(.detailsSubscriptionsEmptyConfigure)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            // We don't push to Settings here — Settings is a sheet on the
+            // search tab, not a destination on the details stack. A label
+            // pointing the user there is honest and avoids a confusing nav.
+            Label {
+                Text(.detailsSubscriptionsConfigureButton)
+            } icon: {
+                Image(systemName: "gearshape")
+            }
+            .font(.caption)
+            .foregroundStyle(.tertiary)
+        }
+    }
+}
+
+// MARK: - Section 1: home region
+
+private struct HomeRegionSubsection: View {
+    let model: DetailsViewModel
+
+    private var homeRegionLabel: String {
+        "\(model.homeRegion.flag) \(model.homeRegion.displayName)"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if model.providersAvailableAtHome.isEmpty {
+                Text(.detailsSubscriptionsHomeNotAvailable(homeRegionLabel))
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(.detailsSubscriptionsHomeRegion(homeRegionLabel))
+                    .font(.headline)
+                ForEach(model.providersAvailableAtHome) { provider in
+                    HomeProviderRow(provider: provider, model: model)
+                }
+            }
+        }
+    }
+}
+
+private struct HomeProviderRow: View {
+    let provider: WatchProvider
+    let model: DetailsViewModel
+
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = 36
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ProviderLogo(
+                url: model.providerLogoURL(for: provider),
+                providerName: provider.name
+            )
+            .frame(width: logoSize, height: logoSize)
+            Text(provider.name)
+                .font(.subheadline)
+                .bold()
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+// MARK: - Section 2: other regions (VPN territory)
+
+private struct OtherRegionsSubsection: View {
+    let model: DetailsViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(.detailsSubscriptionsOtherRegions)
+                .font(.headline)
+            ForEach(model.providersAvailableElsewhere, id: \.provider.id) { entry in
+                OtherRegionProviderRow(entry: entry, model: model)
+            }
+        }
+    }
+}
+
+private struct OtherRegionProviderRow: View {
+    let entry: ProviderRegionalAvailability
+    let model: DetailsViewModel
+
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = 36
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                ProviderLogo(
+                    url: model.providerLogoURL(for: entry.provider),
+                    providerName: entry.provider.name
+                )
+                .frame(width: logoSize, height: logoSize)
+                Text(entry.provider.name)
+                    .font(.subheadline)
+                    .bold()
+                Spacer(minLength: 0)
+            }
+            RegionFlagStrip(
+                regions: entry.regions,
+                providerName: entry.provider.name
+            )
+        }
+    }
+}
+
+// MARK: - Region flag strip + overflow sheet
+
+/// Inline horizontal strip of `flag + ISO-code` pills. Shows up to
+/// `maxInline` entries; anything beyond surfaces as a `+N` pill at the end.
+/// The whole strip (including whitespace between pills) is one tap target
+/// that presents `RegionListSheet` — Fitts's law over tiny `+N` hit boxes.
+private struct RegionFlagStrip: View {
+    let regions: [Region]
+    /// Used as the sheet's navigation title and for VoiceOver context.
+    let providerName: String
+
+    @State private var showAll = false
+
+    /// Six entries fit comfortably on the smallest iPhone at default
+    /// Dynamic Type. At larger Dynamic Type sizes the row wraps to a
+    /// second line which is also fine.
+    private static let maxInline = 6
+
+    private var inlineRegions: [Region] {
+        Array(regions.prefix(Self.maxInline))
+    }
+
+    private var overflow: Int {
+        max(0, regions.count - Self.maxInline)
+    }
+
+    var body: some View {
+        Button {
+            showAll = true
+        } label: {
+            HStack(spacing: 8) {
+                ForEach(inlineRegions) { region in
+                    HStack(spacing: 3) {
+                        Text(region.flag)
+                        Text(region.code)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(region.displayName)
+                }
+                if overflow > 0 {
+                    Text(verbatim: "+\(overflow)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(.quaternary, in: .capsule)
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(.detailsRegionStripAccessibility(providerName, regions.count)))
+        // No hint: SwiftUI auto-provides "Double-tap to activate" for buttons.
+        .sheet(isPresented: $showAll) {
+            RegionListSheet(regions: regions, title: providerName)
+        }
+    }
+}
+
+/// Full list of regions for one provider. Reached by tapping the flag strip.
+/// Rows are `flag` + localized country name + ISO code. No interactivity per
+/// row in v1 — pure reference.
+private struct RegionListSheet: View {
+    let regions: [Region]
+    let title: String
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List(regions) { region in
+                HStack(spacing: 12) {
+                    Text(region.flag)
+                        .font(.title2)
+                    Text(region.displayName)
+                        .font(.body)
+                    Spacer()
+                    Text(region.code)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(region.displayName)
+            }
+            .navigationTitle(Text(verbatim: title))
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(.detailsRegionsSheetDone) { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+// MARK: - Providers (legacy region-scoped)
 
 private struct ProvidersSection: View {
     let model: DetailsViewModel
@@ -101,12 +366,12 @@ private struct ProvidersSection: View {
                 Text(.detailsWhereToWatch)
                     .font(.headline)
 
-                ProviderRow(
+                ProviderCategoryRow(
                     title: String(localized: .detailsProvidersSubscription),
                     providers: availability.subscription,
                     model: model
                 )
-                ProviderRow(
+                ProviderCategoryRow(
                     title: String(localized: .detailsProvidersFree),
                     providers: availability.free,
                     model: model
@@ -128,7 +393,11 @@ private struct ProvidersSection: View {
     }
 }
 
-private struct ProviderRow: View {
+/// A category-titled strip of provider logos (e.g. "Subscription: Netflix,
+/// Prime, Disney+"). Renamed from `ProviderRow` to disambiguate from
+/// `SettingsFeature.ProviderToggleRow`, which has a different shape and
+/// purpose entirely.
+private struct ProviderCategoryRow: View {
     let title: String
     let providers: [WatchProvider]
     let model: DetailsViewModel
@@ -177,22 +446,25 @@ private struct BackdropView: View {
         AsyncImage(url: url) { phase in
             switch phase {
             case .empty:
-                Color.gray.opacity(0.15)
+                Rectangle().fill(.quaternary)
             case .success(let image):
                 image.resizable().aspectRatio(contentMode: .fill)
             case .failure:
-                Color.gray.opacity(0.15)
+                Rectangle().fill(.quaternary)
                     .overlay {
                         Image(systemName: "photo").foregroundStyle(.tertiary)
                     }
             @unknown default:
-                Color.gray.opacity(0.15)
+                Rectangle().fill(.quaternary)
             }
         }
         .accessibilityHidden(true)
     }
 }
 
+/// Watch-provider logo. Sibling of `SettingsFeature.ProviderLogoImage`;
+/// kept separate because cross-package sharing needs a DesignSystem
+/// package we haven't introduced yet. See CLAUDE.md.
 private struct ProviderLogo: View {
     let url: URL?
     let providerName: String
@@ -204,7 +476,7 @@ private struct ProviderLogo: View {
             if case .success(let image) = phase {
                 image.resizable().aspectRatio(contentMode: .fit)
             } else {
-                Color.gray.opacity(0.15)
+                Rectangle().fill(.quaternary)
             }
         }
         .frame(width: size, height: size)
@@ -231,7 +503,8 @@ private struct ProviderLogo: View {
                     runtime: nil
                 ),
                 repository: PreviewMovieRepository(),
-                imageURLBuilder: PreviewImageURLBuilder()
+                imageURLBuilder: PreviewImageURLBuilder(),
+                prefs: Preferences()
             )
         )
         .environment(Preferences())
@@ -256,6 +529,16 @@ private struct PreviewMovieRepository: MovieRepository {
             externalLink: nil
         )
     }
+    func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
+        AvailabilityBundle(
+            regional: WatchAvailability(
+                movieID: id, region: region,
+                subscription: [], rent: [], buy: [], free: [], externalLink: nil
+            ),
+            global: GlobalWatchAvailability(movieID: id, subscription: [])
+        )
+    }
+    func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

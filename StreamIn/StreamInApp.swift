@@ -61,6 +61,7 @@ private struct RootView: View {
     let tmdbClient: LiveTMDBClient
 
     @State private var showingSettings = false
+    @State private var showingOnboarding = false
 
     var body: some View {
         TabView {
@@ -68,6 +69,7 @@ private struct RootView: View {
                 SearchTab(
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
+                    prefs: prefs,
                     showingSettings: $showingSettings
                 )
             }
@@ -75,13 +77,45 @@ private struct RootView: View {
                 WatchlistTab(showingSettings: $showingSettings)
             }
         }
+        // `.sheet(showingSettings)` and `.fullScreenCover(showingOnboarding)`
+        // coexist intentionally. They're coordinated by their bindings:
+        //   - `showingOnboarding` is flipped exactly once per launch by the
+        //     `.task` below, only when the user has no subscriptions.
+        //   - `showingSettings` is flipped only via the user tapping the
+        //     gear button in the toolbar — unreachable while the onboarding
+        //     cover is up.
+        // If a future change ever makes both fire simultaneously, chain them
+        // (e.g. open Settings on the `OnboardingView` dismiss) rather than
+        // racing.
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
-                SettingsView(prefs: prefs)
+                SettingsView(
+                    prefs: prefs,
+                    repository: repository,
+                    imageURLBuilder: imageURLBuilder
+                )
             }
+        }
+        .fullScreenCover(isPresented: $showingOnboarding) {
+            OnboardingView(
+                prefs: prefs,
+                repository: repository,
+                imageURLBuilder: imageURLBuilder
+            )
         }
         .onChange(of: prefs.language) { _, newLanguage in
             tmdbClient.updateLanguage(newLanguage.code)
+        }
+        // TODO: ship-time trigger should be a first-launch flag persisted in
+        // `Preferences` (e.g. `hasCompletedOnboarding: Bool`). The current
+        // "empty subscriptions" rule re-triggers the sheet every launch
+        // until the user picks at least one service, which is exactly what
+        // we want during the test phase to make the flow easy to retrigger.
+        // See CLAUDE.md "TODO: onboarding trigger".
+        .task {
+            if prefs.subscribedProviderIDs.isEmpty {
+                showingOnboarding = true
+            }
         }
     }
 }
@@ -91,6 +125,7 @@ private struct RootView: View {
 private struct SearchTab: View {
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
+    let prefs: Preferences
     @Binding var showingSettings: Bool
 
     var body: some View {
@@ -106,7 +141,8 @@ private struct SearchTab: View {
                     model: DetailsViewModel(
                         movie: movie,
                         repository: repository,
-                        imageURLBuilder: imageURLBuilder
+                        imageURLBuilder: imageURLBuilder,
+                        prefs: prefs
                     )
                 )
             }

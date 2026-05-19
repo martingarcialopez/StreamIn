@@ -72,6 +72,26 @@ public struct Region: Identifiable, Hashable, Sendable {
     public var displayName: String {
         Locale.current.localizedString(forRegionCode: code) ?? code
     }
+
+    /// Unicode flag emoji built from regional indicator symbols. The base
+    /// offset `127397` is `0x1F1E6 - "A"` — adding each ASCII letter's
+    /// codepoint to that base produces the regional indicator letter; two
+    /// regional indicator letters together form the country flag.
+    ///
+    /// Falls back to the raw ISO code if the codepoint conversion fails
+    /// (shouldn't happen for valid alpha-2 codes). Note that a few flags
+    /// don't render in iOS (Taiwan, England, etc.) — in those cases the
+    /// emoji string contains the regional indicator pair but the system
+    /// glyph is blank.
+    public var flag: String {
+        let base: UInt32 = 127397
+        var result = ""
+        for scalar in code.uppercased().unicodeScalars {
+            guard let new = UnicodeScalar(base + scalar.value) else { continue }
+            result.unicodeScalars.append(new)
+        }
+        return result.isEmpty ? code : result
+    }
 }
 
 // MARK: - Movie
@@ -185,6 +205,60 @@ public struct WatchAvailability: Equatable, Sendable {
     }
 }
 
+/// One provider's availability across regions, for a single movie. Subscription-
+/// only for v1 (rent/buy/free can be added as sibling fields later).
+///
+/// Used by the "Watch with your subscriptions" feature: given a film, list the
+/// countries where each of the user's subscribed providers carries it.
+public struct ProviderRegionalAvailability: Equatable, Hashable, Sendable {
+    public let provider: WatchProvider
+    /// Regions where `provider` offers this movie via subscription (TMDB's "flatrate").
+    /// Sorted by localized display name at construction.
+    public let regions: [Region]
+
+    public init(provider: WatchProvider, regions: [Region]) {
+        self.provider = provider
+        self.regions = regions
+    }
+}
+
+/// The whole region matrix for one film, distilled to subscription-only.
+///
+/// TMDB returns availability for every region in a single call — this is the
+/// Domain-side shape of that data. Callers filter `subscription` by the user's
+/// chosen providers to render the multi-region availability view.
+public struct GlobalWatchAvailability: Equatable, Sendable {
+    public let movieID: MovieID
+    /// One entry per provider that appears in at least one region's flatrate.
+    /// Sorted by TMDB display priority (lower = more prominent).
+    public let subscription: [ProviderRegionalAvailability]
+
+    public var isEmpty: Bool { subscription.isEmpty }
+
+    public init(movieID: MovieID, subscription: [ProviderRegionalAvailability]) {
+        self.movieID = movieID
+        self.subscription = subscription
+    }
+}
+
+/// Both region-scoped and cross-region availability for one film, derived from
+/// a single TMDB request.
+///
+/// The reason this exists: TMDB's `/movie/{id}/watch/providers` returns the
+/// full per-region matrix in one response. If callers fan-out separate
+/// repository methods for "the regional view" and "the global view," they
+/// end up making two identical HTTP calls. `AvailabilityBundle` collapses
+/// that into one fetch and exposes both shapes.
+public struct AvailabilityBundle: Equatable, Sendable {
+    public let regional: WatchAvailability
+    public let global: GlobalWatchAvailability
+
+    public init(regional: WatchAvailability, global: GlobalWatchAvailability) {
+        self.regional = regional
+        self.global = global
+    }
+}
+
 // MARK: - Search
 
 public struct SearchPage: Equatable, Sendable {
@@ -261,7 +335,23 @@ public protocol MovieRepository: Sendable {
     func movie(id: MovieID) async throws -> Movie
 
     /// Streaming / rent / buy availability for a given region.
+    /// Used by the search list, where only the regional view is needed.
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability
+
+    /// Region-scoped *and* cross-region subscription availability from a single
+    /// TMDB request. Used by the Details screen so we don't issue two identical
+    /// `/movie/{id}/watch/providers` calls in parallel.
+    func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle
+
+    /// The list of watch providers TMDB knows about.
+    ///
+    /// - `region == nil`: every provider globally (used for VPN users who
+    ///   subscribe to services outside their home region).
+    /// - `region == .some(r)`: only providers TMDB lists as active in `r`
+    ///   (the common case — shorter list, no search UI needed).
+    ///
+    /// Sorted by TMDB display priority.
+    func allProviders(in region: Region?) async throws -> [WatchProvider]
 }
 
 // MARK: - Region helpers

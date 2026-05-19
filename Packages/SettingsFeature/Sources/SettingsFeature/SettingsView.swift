@@ -2,10 +2,10 @@
 //  SettingsView.swift
 //  SettingsFeature
 //
-//  Presented as a sheet from the search screen's gear icon. Shape: a Form with
-//  the region picker (working) and a placeholder section for streaming-service
-//  subscription preferences (will be implemented once we have a per-region
-//  provider catalog). Includes a Done button in the toolbar to dismiss.
+//  Presented as a sheet from the search screen's gear icon. Hosts region,
+//  language, and a `NavigationLink` row that pushes to the streaming-services
+//  picker. We deliberately don't show provider rows inline — the picker is a
+//  dedicated screen so the form stays scannable.
 //
 
 import SwiftUI
@@ -18,17 +18,36 @@ public struct SettingsView: View {
     /// App's composition root and passed in. `@Bindable` lets us project
     /// bindings (`$prefs.region`) onto the pickers without taking ownership.
     @Bindable var prefs: Preferences
+
+    @State private var streamingServicesModel: StreamingServicesViewModel
+
+    private let repository: MovieRepository
+    private let imageURLBuilder: ImageURLBuilder
+
     @Environment(\.dismiss) private var dismiss
 
-    public init(prefs: Preferences) {
+    public init(
+        prefs: Preferences,
+        repository: MovieRepository,
+        imageURLBuilder: ImageURLBuilder
+    ) {
         self.prefs = prefs
+        self.repository = repository
+        self.imageURLBuilder = imageURLBuilder
+        _streamingServicesModel = State(
+            initialValue: StreamingServicesViewModel(repository: repository, prefs: prefs)
+        )
     }
 
     public var body: some View {
         Form {
             RegionSection(prefs: prefs)
             LanguageSection(prefs: prefs)
-            SubscriptionsSection()
+            StreamingServicesSection(
+                prefs: prefs,
+                model: streamingServicesModel,
+                imageURLBuilder: imageURLBuilder
+            )
         }
         .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
@@ -36,6 +55,13 @@ public struct SettingsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(.settingsDone) { dismiss() }
             }
+        }
+        // Load the streaming-services catalog as soon as Settings appears so
+        // the row summary can render provider logos (and the pushed picker
+        // doesn't have to wait for a network round-trip). Re-fires when the
+        // user changes their region.
+        .task(id: prefs.region) {
+            await streamingServicesModel.load(region: prefs.region)
         }
     }
 }
@@ -141,23 +167,161 @@ private struct LanguageSection: View {
     }
 }
 
-private struct SubscriptionsSection: View {
+// MARK: - Streaming services row
+
+/// Single-row section: "Streaming services" with a trailing summary and a
+/// chevron via `NavigationLink`. The summary morphs through three states:
+///   0 selected → "None" text
+///   N selected, catalog still loading → "N selected" text
+///   N selected, catalog loaded → strip of small provider icons + `+N` overflow
+/// Tapping pushes `StreamingServicesView` for the actual multi-select UI.
+private struct StreamingServicesSection: View {
+    let prefs: Preferences
+    let model: StreamingServicesViewModel
+    let imageURLBuilder: ImageURLBuilder
+
     var body: some View {
         Section {
-            Text(.settingsSubscriptionsBlurb)
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            Text(.settingsSubscriptionsComingSoon)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            NavigationLink {
+                StreamingServicesView(
+                    model: model,
+                    imageURLBuilder: imageURLBuilder
+                )
+                .environment(prefs)
+            } label: {
+                HStack {
+                    Text(.settingsStreamingServicesRow)
+                    Spacer()
+                    StreamingServicesSummary(model: model, imageURLBuilder: imageURLBuilder)
+                }
+            }
         } header: {
             Text(.settingsSubscriptionsHeader)
+        } footer: {
+            Text(.settingsSubscriptionsBlurb)
         }
+    }
+}
+
+/// Trailing summary on the Streaming Services row. Three states:
+///   - 0 selected → "None" text.
+///   - N selected, catalog still loading → "N selected" text (avoids a row
+///     of gray placeholder squares while logos haven't arrived).
+///   - N selected, catalog loaded → strip of provider logos with `+N` overflow.
+private struct StreamingServicesSummary: View {
+    let model: StreamingServicesViewModel
+    let imageURLBuilder: ImageURLBuilder
+
+    var body: some View {
+        let selected = model.selectedProviders
+        if selected.isEmpty {
+            Text(.settingsStreamingServicesNone)
+                .foregroundStyle(.secondary)
+        } else if !model.hasLoadedAnyCatalog {
+            Text(.settingsStreamingServicesCount(selected.count))
+                .foregroundStyle(.secondary)
+        } else {
+            ProviderIconStrip(providers: selected, imageURLBuilder: imageURLBuilder)
+        }
+    }
+}
+
+// MARK: - Provider icon strip (Settings row trailing summary)
+
+/// Compact horizontal strip of provider logos shown on the Settings
+/// "Streaming services" row. Caps at 3 inline icons + a `+N` capsule —
+/// the row shares space with the label and chevron so we stay conservative
+/// on width.
+private struct ProviderIconStrip: View {
+    let providers: [WatchProvider]
+    let imageURLBuilder: ImageURLBuilder
+
+    /// Three logos comfortably fit on the smallest iPhone after the label
+    /// ("Streaming services") + chevron. Anything beyond surfaces as `+N`.
+    private static let maxInline = 3
+
+    private var inlineProviders: [WatchProvider] {
+        Array(providers.prefix(Self.maxInline))
+    }
+
+    private var overflow: Int {
+        max(0, providers.count - Self.maxInline)
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(inlineProviders) { provider in
+                ProviderIcon(provider: provider, imageURLBuilder: imageURLBuilder)
+            }
+            if overflow > 0 {
+                Text(verbatim: "+\(overflow)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(.quaternary, in: .capsule)
+                    .accessibilityLabel(Text(.providerIconStripOverflowAccessibility(overflow)))
+            }
+        }
+    }
+}
+
+private struct ProviderIcon: View {
+    let provider: WatchProvider
+    let imageURLBuilder: ImageURLBuilder
+
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 22
+
+    var body: some View {
+        ProviderLogoImage(
+            url: provider.logoPath.flatMap {
+                imageURLBuilder.url(for: $0, size: .providerLogo)
+            },
+            size: size,
+            cornerRadius: 4
+        )
+        .accessibilityLabel(provider.name)
     }
 }
 
 #Preview {
     NavigationStack {
-        SettingsView(prefs: Preferences())
+        SettingsView(
+            prefs: Preferences(),
+            repository: PreviewMovieRepository(),
+            imageURLBuilder: PreviewImageURLBuilder()
+        )
     }
+}
+
+private struct PreviewMovieRepository: MovieRepository {
+    func searchMovies(query: String, page: Int) async throws -> SearchPage {
+        fatalError("not used in preview")
+    }
+    func movie(id: MovieID) async throws -> Movie {
+        fatalError("not used in preview")
+    }
+    func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
+        fatalError("not used in preview")
+    }
+    func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
+        AvailabilityBundle(
+            regional: WatchAvailability(
+                movieID: id, region: region,
+                subscription: [], rent: [], buy: [], free: [], externalLink: nil
+            ),
+            global: GlobalWatchAvailability(movieID: id, subscription: [])
+        )
+    }
+    func allProviders(in region: Region?) async throws -> [WatchProvider] {
+        [
+            WatchProvider(id: ProviderID(8), name: "Netflix", logoPath: nil, priority: 1),
+            WatchProvider(id: ProviderID(9), name: "Amazon Prime Video", logoPath: nil, priority: 2),
+            WatchProvider(id: ProviderID(337), name: "Disney Plus", logoPath: nil, priority: 3)
+        ]
+    }
+}
+
+private struct PreviewImageURLBuilder: ImageURLBuilder {
+    func url(for path: ImagePath, size: ImageSize) -> URL? { nil }
 }

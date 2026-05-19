@@ -144,6 +144,186 @@
           }
         }
       }
+    },
+    "detailsSubscriptionsSectionTitle" : {
+      "comment" : "Section header for the multi-region availability across the user's subscriptions",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch with your subscriptions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver con tus suscripciones"
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsEmptyConfigure" : {
+      "comment" : "Empty state shown when the user has not configured any subscriptions",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up your subscriptions in Settings to see where you can watch this."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configura tus suscripciones en Ajustes para ver dónde puedes ver esta película."
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsNoMatches" : {
+      "comment" : "Empty state shown when the film isn't available with any of the user's subscriptions in any region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available with any of your subscriptions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible con ninguna de tus suscripciones."
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsConfigureButton" : {
+      "comment" : "Button label that takes the user to Settings to configure subscriptions",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Ajustes"
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsAvailableIn" : {
+      "comment" : "Caption next to a list of regions where a given provider carries the film",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available in"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible en"
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsHomeRegion" : {
+      "comment" : "Section header above providers carrying the film in the user's home region. %@ is a 'flag + name' label, e.g. '🇪🇸 Spain'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch with your subscription in %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible con tu suscripción en %@"
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsHomeNotAvailable" : {
+      "comment" : "Shown when none of the user's subscriptions carry the film in their home region. %@ is the 'flag + name' label for the home region.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available with your subscriptions in %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No disponible con tus suscripciones en %@"
+          }
+        }
+      }
+    },
+    "detailsSubscriptionsOtherRegions" : {
+      "comment" : "Section header above the per-provider flag strips for regions other than home (accessible via VPN)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch with your subscriptions in other regions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible con tus suscripciones en otras regiones"
+          }
+        }
+      }
+    },
+    "detailsRegionsSheetDone" : {
+      "comment" : "Done button that dismisses the full region list sheet",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hecho"
+          }
+        }
+      }
+    },
+    "detailsRegionStripAccessibility" : {
+      "comment" : "VoiceOver label for the region flag strip on a Details provider row. %1$@ is the provider name, %2$lld is the count of regions.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, available in %2$lld other regions"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, disponible en otras %2$lld regiones"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

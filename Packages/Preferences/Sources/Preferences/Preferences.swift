@@ -25,6 +25,18 @@ public final class Preferences {
         didSet { defaults.set(language.code, forKey: Self.languageKey) }
     }
 
+    /// The streaming services the user pays for. Persisted as a JSON-encoded
+    /// sorted `[Int]` in UserDefaults so values are deterministic across runs
+    /// (useful for debugging and for the "did the user change anything?" check
+    /// some screens may want).
+    ///
+    /// No region scoping — the feature's mental model is "I have a Netflix
+    /// account, my VPN handles the rest." If multi-region account tagging
+    /// becomes a real need, this would graduate to a `Set<Subscription>` value.
+    public var subscribedProviderIDs: Set<ProviderID> {
+        didSet { persistSubscribedProviders() }
+    }
+
     /// A value type snapshot of both axes. Use this as the `id:` argument of
     /// `.task(id:)` in any view that needs to re-fire a query when either
     /// setting changes.
@@ -41,8 +53,9 @@ public final class Preferences {
 
     private let defaults: UserDefaults
 
-    private static let regionKey   = "settings.region.code"
-    private static let languageKey = "settings.language.code"
+    private static let regionKey               = "settings.region.code"
+    private static let languageKey             = "settings.language.code"
+    private static let subscribedProvidersKey  = "settings.subscribedProviders.ids"
 
     public init(
         defaultRegion: Region = .currentLocale,
@@ -62,5 +75,32 @@ public final class Preferences {
         } else {
             self.language = defaultLanguage
         }
+
+        self.subscribedProviderIDs = Self.loadSubscribedProviders(from: defaults)
+    }
+
+    // MARK: - Subscribed providers persistence
+    //
+    // `Set<ProviderID>` doesn't survive UserDefaults' plist constraints
+    // directly, so we serialise to a JSON-encoded `[Int]`. Sorted on write
+    // for deterministic on-disk values; sorting is cheap at this size
+    // (subscriptions are O(10), not O(1000)).
+
+    private func persistSubscribedProviders() {
+        let raw = subscribedProviderIDs.map(\.rawValue).sorted()
+        if let data = try? JSONEncoder().encode(raw) {
+            defaults.set(data, forKey: Self.subscribedProvidersKey)
+        }
+    }
+
+    /// Reads the persisted set, falling back to empty on any decode failure.
+    /// Graceful fallback is the right call here: if the stored value is
+    /// corrupt, the user just sees an empty subscriptions list and can
+    /// re-pick — preferable to a crash on launch.
+    private static func loadSubscribedProviders(from defaults: UserDefaults) -> Set<ProviderID> {
+        guard let data = defaults.data(forKey: Self.subscribedProvidersKey),
+              let raw = try? JSONDecoder().decode([Int].self, from: data)
+        else { return [] }
+        return Set(raw.map(ProviderID.init))
     }
 }

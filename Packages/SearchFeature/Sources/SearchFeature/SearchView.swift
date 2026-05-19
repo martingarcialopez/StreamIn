@@ -235,6 +235,16 @@ private struct PreviewMovieRepository: MovieRepository {
             externalLink: nil
         )
     }
+    func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
+        AvailabilityBundle(
+            regional: WatchAvailability(
+                movieID: id, region: region,
+                subscription: [], rent: [], buy: [], free: [], externalLink: nil
+            ),
+            global: GlobalWatchAvailability(movieID: id, subscription: [])
+        )
+    }
+    func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {
