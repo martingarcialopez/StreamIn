@@ -11,6 +11,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import DesignSystem
 
 public struct SettingsView: View {
 
@@ -270,17 +271,17 @@ private struct ProviderIcon: View {
     let provider: WatchProvider
     let imageURLBuilder: ImageURLBuilder
 
-    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 22
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = LogoSize.small
 
     var body: some View {
-        ProviderLogoImage(
+        ProviderLogo(
             url: provider.logoPath.flatMap {
                 imageURLBuilder.url(for: $0, size: .providerLogo)
             },
+            providerName: provider.name,
             size: size,
-            cornerRadius: 4
+            cornerRadius: Radius.small
         )
-        .accessibilityLabel(provider.name)
     }
 }
 

@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import DesignSystem
 
 public struct WatchlistView: View {
 
@@ -16,7 +17,7 @@ public struct WatchlistView: View {
 
     public var body: some View {
         ContentUnavailableView {
-            Label { Text(.watchlistEmptyTitle) } icon: { Image(systemName: "bookmark") }
+            Label { Text(.watchlistEmptyTitle) } icon: { Image(systemName: Symbol.bookmark) }
         } description: {
             Text(.watchlistEmptyDescription)
         }

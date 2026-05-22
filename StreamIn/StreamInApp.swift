@@ -13,6 +13,7 @@ import SearchFeature
 import DetailsFeature
 import WatchlistFeature
 import SettingsFeature
+import DesignSystem
 
 @main
 struct StreamInApp: App {
@@ -65,7 +66,7 @@ private struct RootView: View {
 
     var body: some View {
         TabView {
-            Tab("Search", systemImage: "magnifyingglass") {
+            Tab("Search", systemImage: Symbol.magnifyingglass) {
                 SearchTab(
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
@@ -73,7 +74,7 @@ private struct RootView: View {
                     showingSettings: $showingSettings
                 )
             }
-            Tab("Watchlist", systemImage: "bookmark") {
+            Tab("Watchlist", systemImage: Symbol.bookmark) {
                 WatchlistTab(showingSettings: $showingSettings)
             }
         }
@@ -128,14 +129,22 @@ private struct SearchTab: View {
     let prefs: Preferences
     @Binding var showingSettings: Bool
 
+    @State private var path = NavigationPath()
+
     var body: some View {
-        NavigationStack {
-            SearchView(
-                model: SearchViewModel(
-                    repository: repository,
-                    imageURLBuilder: imageURLBuilder
+        NavigationStack(path: $path) {
+            SearchView(onSearch: { query in
+                path.append(SearchResultsRoute(query: query))
+            })
+            .navigationDestination(for: SearchResultsRoute.self) { route in
+                SearchResultsView(
+                    model: SearchViewModel(
+                        repository: repository,
+                        imageURLBuilder: imageURLBuilder
+                    ),
+                    initialQuery: route.query
                 )
-            )
+            }
             .navigationDestination(for: Movie.self) { movie in
                 DetailsView(
                     model: DetailsViewModel(
@@ -173,7 +182,7 @@ private struct SettingsToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Settings", systemImage: "gear") {
+            Button("Settings", systemImage: Symbol.gear) {
                 showingSettings = true
             }
         }

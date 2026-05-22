@@ -22,6 +22,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import DesignSystem
 
 // MARK: - View model
 
@@ -266,17 +267,18 @@ struct ProviderToggleRow: View {
     let imageURLBuilder: ImageURLBuilder
     let toggle: () -> Void
 
-    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = 28
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.medium
 
     var body: some View {
         Button(action: toggle) {
             HStack(spacing: 12) {
-                ProviderLogoImage(
+                ProviderLogo(
                     url: provider.logoPath.flatMap {
                         imageURLBuilder.url(for: $0, size: .providerLogo)
                     },
+                    providerName: provider.name,
                     size: logoSize,
-                    cornerRadius: 6
+                    cornerRadius: Radius.medium
                 )
                 .accessibilityHidden(true)
 
@@ -286,7 +288,7 @@ struct ProviderToggleRow: View {
                 Spacer()
 
                 if isSubscribed {
-                    Image(systemName: "checkmark")
+                    Image(systemName: Symbol.checkmark)
                         .foregroundStyle(.tint)
                         .accessibilityLabel(Text(.providerRowSubscribedAccessibility))
                 }
@@ -294,32 +296,5 @@ struct ProviderToggleRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Shared logo image
-//
-// Used by every place in SettingsFeature that renders a provider logo:
-// `ProviderToggleRow` (picker / settings row), `ProviderIcon` (Settings
-// summary strip), and `OnboardingView` (via the picker). DetailsFeature
-// has a sibling copy — once a DesignSystem package exists, both move there.
-
-/// `AsyncImage` wrapper for a watch-provider logo. Falls back to a
-/// hierarchical-style placeholder when the URL is nil or fails to load.
-struct ProviderLogoImage: View {
-    let url: URL?
-    let size: CGFloat
-    let cornerRadius: CGFloat
-
-    var body: some View {
-        AsyncImage(url: url) { phase in
-            if case .success(let image) = phase {
-                image.resizable().aspectRatio(contentMode: .fit)
-            } else {
-                Rectangle().fill(.quaternary)
-            }
-        }
-        .frame(width: size, height: size)
-        .clipShape(.rect(cornerRadius: cornerRadius))
     }
 }

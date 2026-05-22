@@ -10,6 +10,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import DesignSystem
 
 public struct DetailsView: View {
 
@@ -86,12 +87,12 @@ private struct MetadataRow: View {
     var body: some View {
         HStack(spacing: 16) {
             if let year = model.formattedReleaseYear {
-                Label(year, systemImage: "calendar")
+                Label(year, systemImage: Symbol.calendar)
             }
             if let runtime = model.formattedRuntime {
-                Label(runtime, systemImage: "clock")
+                Label(runtime, systemImage: Symbol.clock)
             }
-            Label(model.formattedVoteAverage, systemImage: "star.fill")
+            Label(model.formattedVoteAverage, systemImage: Symbol.starFill)
         }
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -158,7 +159,7 @@ private struct EmptyStateConfigure: View {
             Label {
                 Text(.detailsSubscriptionsConfigureButton)
             } icon: {
-                Image(systemName: "gearshape")
+                Image(systemName: Symbol.gearshape)
             }
             .font(.caption)
             .foregroundStyle(.tertiary)
@@ -196,15 +197,16 @@ private struct HomeProviderRow: View {
     let provider: WatchProvider
     let model: DetailsViewModel
 
-    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = 36
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.large
 
     var body: some View {
         HStack(spacing: 12) {
             ProviderLogo(
                 url: model.providerLogoURL(for: provider),
-                providerName: provider.name
+                providerName: provider.name,
+                size: logoSize,
+                cornerRadius: Radius.large
             )
-            .frame(width: logoSize, height: logoSize)
             Text(provider.name)
                 .font(.subheadline)
                 .bold()
@@ -233,16 +235,17 @@ private struct OtherRegionProviderRow: View {
     let entry: ProviderRegionalAvailability
     let model: DetailsViewModel
 
-    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = 36
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.large
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 ProviderLogo(
                     url: model.providerLogoURL(for: entry.provider),
-                    providerName: entry.provider.name
+                    providerName: entry.provider.name,
+                    size: logoSize,
+                    cornerRadius: Radius.large
                 )
-                .frame(width: logoSize, height: logoSize)
                 Text(entry.provider.name)
                     .font(.subheadline)
                     .bold()
@@ -402,6 +405,8 @@ private struct ProviderCategoryRow: View {
     let providers: [WatchProvider]
     let model: DetailsViewModel
 
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.hero
+
     var body: some View {
         if !providers.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
@@ -412,7 +417,9 @@ private struct ProviderCategoryRow: View {
                     ForEach(providers) { provider in
                         ProviderLogo(
                             url: model.providerLogoURL(for: provider),
-                            providerName: provider.name
+                            providerName: provider.name,
+                            size: logoSize,
+                            cornerRadius: Radius.large
                         )
                     }
                 }
@@ -452,36 +459,13 @@ private struct BackdropView: View {
             case .failure:
                 Rectangle().fill(.quaternary)
                     .overlay {
-                        Image(systemName: "photo").foregroundStyle(.tertiary)
+                        Image(systemName: Symbol.photo).foregroundStyle(.tertiary)
                     }
             @unknown default:
                 Rectangle().fill(.quaternary)
             }
         }
         .accessibilityHidden(true)
-    }
-}
-
-/// Watch-provider logo. Sibling of `SettingsFeature.ProviderLogoImage`;
-/// kept separate because cross-package sharing needs a DesignSystem
-/// package we haven't introduced yet. See CLAUDE.md.
-private struct ProviderLogo: View {
-    let url: URL?
-    let providerName: String
-
-    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 44
-
-    var body: some View {
-        AsyncImage(url: url) { phase in
-            if case .success(let image) = phase {
-                image.resizable().aspectRatio(contentMode: .fit)
-            } else {
-                Rectangle().fill(.quaternary)
-            }
-        }
-        .frame(width: size, height: size)
-        .clipShape(.rect(cornerRadius: 8))
-        .accessibilityLabel(providerName)
     }
 }
 

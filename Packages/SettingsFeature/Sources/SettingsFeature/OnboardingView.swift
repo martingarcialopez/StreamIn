@@ -17,6 +17,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import DesignSystem
 
 public struct OnboardingView: View {
 
@@ -70,7 +71,7 @@ private struct OnboardingHeader: View {
         VStack(spacing: 10) {
             // Icon uses Dynamic Type via `.largeTitle`, so it grows with
             // accessibility text sizes instead of staying fixed at 44pt.
-            Image(systemName: "popcorn.fill")
+            Image(systemName: Symbol.popcornFill)
                 .font(.largeTitle)
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
