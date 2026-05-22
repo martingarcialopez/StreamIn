@@ -28,16 +28,28 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            Tab("Search", systemImage: Symbol.magnifyingglass) {
+            Tab {
                 SearchTab(
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
                     prefs: prefs,
                     showingSettings: $showingSettings
                 )
+            } label: {
+                Label {
+                    Text(.tabSearch)
+                } icon: {
+                    Image(systemName: Symbol.magnifyingglass)
+                }
             }
-            Tab("Watchlist", systemImage: Symbol.bookmark) {
+            Tab {
                 WatchlistTab(showingSettings: $showingSettings)
+            } label: {
+                Label {
+                    Text(.tabWatchlist)
+                } icon: {
+                    Image(systemName: Symbol.bookmark)
+                }
             }
         }
         .tint(AppPalette.accent)
