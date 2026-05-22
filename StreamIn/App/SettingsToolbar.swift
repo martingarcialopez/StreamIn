@@ -18,6 +18,11 @@ struct SettingsToolbar: ToolbarContent {
             Button("Settings", systemImage: Symbol.gear) {
                 showingSettings = true
             }
+            // The TabView's `.tint(AppPalette.accent)` propagates down the
+            // view tree to toolbar items by default. The gear is chrome, not
+            // a primary action — override back to the system primary color
+            // so only the active tab tab indicator carries the accent.
+            .tint(.primary)
         }
     }
 }

@@ -40,6 +40,7 @@ struct RootView: View {
                 WatchlistTab(showingSettings: $showingSettings)
             }
         }
+        .tint(AppPalette.accent)
         // `.sheet(showingSettings)` and `.fullScreenCover(showingOnboarding)`
         // coexist intentionally. They're coordinated by their bindings:
         //   - `showingOnboarding` is flipped exactly once per launch by the

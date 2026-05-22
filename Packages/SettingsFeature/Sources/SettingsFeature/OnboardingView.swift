@@ -73,7 +73,7 @@ private struct OnboardingHeader: View {
             // accessibility text sizes instead of staying fixed at 44pt.
             Image(systemName: Symbol.popcornFill)
                 .font(.largeTitle)
-                .foregroundStyle(.tint)
+                .foregroundStyle(AppPalette.accent)
                 .accessibilityHidden(true)
             Text(.onboardingHeaderTitle)
                 .font(.title3)
