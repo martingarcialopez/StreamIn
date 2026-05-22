@@ -338,11 +338,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRCROOT)/StreamIn/GeneratedSecrets.swift",
+				"$(SRCROOT)/StreamIn/Secrets/GeneratedSecrets.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "KEY=\"${TMDB_API_KEY:-your_tmdb_api_key_here}\"\ncat > \"${SRCROOT}/StreamIn/GeneratedSecrets.swift\" <<EOF\n// Auto-generated at build time. DO NOT EDIT. DO NOT COMMIT.\nenum GeneratedSecrets {\n    static let tmdbAPIKey = \"${KEY}\"\n}\nEOF\n";
+			shellScript = "KEY=\"${TMDB_API_KEY:-your_tmdb_api_key_here}\"\nmkdir -p \"${SRCROOT}/StreamIn/Secrets\"\ncat > \"${SRCROOT}/StreamIn/Secrets/GeneratedSecrets.swift\" <<EOF\n// Auto-generated at build time. DO NOT EDIT. DO NOT COMMIT.\nenum GeneratedSecrets {\n    static let tmdbAPIKey = \"${KEY}\"\n}\nEOF\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
