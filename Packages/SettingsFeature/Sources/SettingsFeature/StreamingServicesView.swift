@@ -22,6 +22,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import ReferenceData
 import DesignSystem
 
 // MARK: - View model
@@ -30,43 +31,26 @@ import DesignSystem
 @MainActor
 public final class StreamingServicesViewModel {
 
-    private let repository: MovieRepository
+    private let catalog: ProviderCatalog
     private let prefs: Preferences
 
     /// User-flipped: false = home region, true = worldwide catalog.
     var showWorldwide = false
     var searchText = ""
 
-    private(set) var regionalCatalog: [WatchProvider] = []
-    private(set) var worldwideCatalog: [WatchProvider] = []
-    private(set) var isLoading = false
-    private(set) var loadError: MovieError?
-
-    public init(repository: MovieRepository, prefs: Preferences) {
-        self.repository = repository
+    public init(catalog: ProviderCatalog, prefs: Preferences) {
+        self.catalog = catalog
         self.prefs = prefs
     }
 
-    /// Loads both catalogs in parallel so:
-    ///   - the "Your subscriptions" section can resolve names/logos for
-    ///     providers chosen via the worldwide toggle, even when worldwide
-    ///     isn't the active scope;
-    ///   - flipping the worldwide toggle is instant (no second round-trip).
-    public func load(region: Region) async {
-        isLoading = true
-        defer { isLoading = false }
-        do {
-            async let regionalTask = repository.allProviders(in: region)
-            async let worldwideTask = repository.allProviders(in: nil)
-            let (regional, worldwide) = try await (regionalTask, worldwideTask)
-            self.regionalCatalog = regional
-            self.worldwideCatalog = worldwide
-            self.loadError = nil
-        } catch let movieError as MovieError {
-            self.loadError = movieError
-        } catch {
-            self.loadError = .unknown
-        }
+    /// Makes sure the home-region and worldwide catalogs are loaded. Both are
+    /// needed: the "Your subscriptions" section resolves providers picked via
+    /// the worldwide toggle, and flipping the toggle must be instant.
+    ///
+    /// The app preloads both at launch, so this normally returns immediately;
+    /// it matters when that preload failed or the region just changed.
+    public func load() async {
+        await catalog.load(region: prefs.region)
     }
 
     // MARK: - Derived
@@ -75,45 +59,45 @@ public final class StreamingServicesViewModel {
         prefs.subscribedProviderIDs.count
     }
 
-    /// Selected providers, with metadata resolved from either catalog.
+    /// Selected providers, with metadata resolved from the catalog.
     /// **Not** filtered by `searchText` — the Settings row summary and the
     /// picker's "Your subscriptions" section both rely on this being the
     /// complete list. Search only narrows the "Available" section.
     public var selectedProviders: [WatchProvider] {
-        let ids = prefs.subscribedProviderIDs
-        return ids.map { id in
-            regionalCatalog.first(where: { $0.id == id })
-                ?? worldwideCatalog.first(where: { $0.id == id })
-                ?? WatchProvider(id: id, name: "Provider \(id.rawValue)", logoPath: nil, priority: Int.max)
-        }
-        .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        prefs.subscribedProviderIDs
+            .map { id in
+                catalog.provider(id: id)
+                    ?? WatchProvider(id: id, name: "Provider \(id.rawValue)", logoPath: nil, priority: Int.max)
+            }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
-    /// True once at least one of the two catalogs has loaded — i.e. the
-    /// metadata in `selectedProviders` is real and not the
-    /// `"Provider <id>"` placeholder. The Settings row uses this to choose
-    /// between a count summary and the icon strip so the user never sees
-    /// a row full of gray placeholder squares.
+    /// True once either catalog has loaded — i.e. the metadata in
+    /// `selectedProviders` is real and not the `"Provider <id>"` placeholder.
+    /// The Settings row uses this to choose between a count summary and the
+    /// icon strip so the user never sees a row of gray placeholder squares.
     public var hasLoadedAnyCatalog: Bool {
-        !regionalCatalog.isEmpty || !worldwideCatalog.isEmpty
+        catalog.providers(in: prefs.region) != nil || catalog.providers(in: nil) != nil
     }
 
-    /// First-load state: spinning a `ProgressView` is appropriate. Used by
-    /// the picker's "Available" section to decide between a spinner and the
-    /// regular content/empty branches.
+    /// The catalog behind the "Available" section hasn't arrived and nothing
+    /// has failed yet: show a spinner rather than the empty-state text.
     public var isInitialLoad: Bool {
-        isLoading && regionalCatalog.isEmpty && worldwideCatalog.isEmpty
+        scopedCatalog == nil && catalog.lastError == nil
     }
 
     /// Catalog under the current scope. Excludes already-selected providers
     /// (those live in the "Your subscriptions" section above to avoid
     /// duplicated rows) and applies the search filter.
     public var availableProviders: [WatchProvider] {
-        let base = showWorldwide ? worldwideCatalog : regionalCatalog
         let selectedIDs = prefs.subscribedProviderIDs
-        return base
+        return (scopedCatalog ?? [])
             .filter { !selectedIDs.contains($0.id) }
             .filter(matchesSearch)
+    }
+
+    private var scopedCatalog: [WatchProvider]? {
+        catalog.providers(in: showWorldwide ? nil : prefs.region)
     }
 
     public func isSubscribed(_ id: ProviderID) -> Bool {

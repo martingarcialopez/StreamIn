@@ -17,6 +17,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import ReferenceData
 import DesignSystem
 
 public struct OnboardingView: View {
@@ -29,13 +30,13 @@ public struct OnboardingView: View {
 
     public init(
         prefs: Preferences,
-        repository: MovieRepository,
+        catalog: ProviderCatalog,
         imageURLBuilder: ImageURLBuilder
     ) {
         self.prefs = prefs
         self.imageURLBuilder = imageURLBuilder
         _model = State(
-            initialValue: StreamingServicesViewModel(repository: repository, prefs: prefs)
+            initialValue: StreamingServicesViewModel(catalog: catalog, prefs: prefs)
         )
     }
 
@@ -55,7 +56,7 @@ public struct OnboardingView: View {
                 }
             }
             .task(id: prefs.region) {
-                await model.load(region: prefs.region)
+                await model.load()
             }
             .environment(prefs)
         }

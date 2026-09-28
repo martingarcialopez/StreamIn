@@ -2,9 +2,9 @@
 //  SettingsToolbar.swift
 //  StreamIn
 //
-//  Gear button used by every tab's NavigationStack toolbar. Flips the
-//  `showingSettings` binding owned by `RootView`, which presents the
-//  Settings sheet.
+//  Gear button on the first screen of each tab. Flips the `showingSettings`
+//  binding owned by `RootView`, which presents the Settings sheet. Pushed
+//  screens don't show it: their toolbar is for actions about their content.
 //
 
 import SwiftUI

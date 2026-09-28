@@ -109,7 +109,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Button label that takes the user to Settings to configure subscriptions
+     Button in the no-subscriptions state that opens the streaming-services picker
      
      Localized string for key “detailsSubscriptionsConfigureButton” in table “Localizable.xcstrings”.
      */

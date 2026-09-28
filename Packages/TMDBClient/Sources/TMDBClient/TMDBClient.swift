@@ -216,12 +216,10 @@ public final class LiveTMDBClient: TMDBClient {
         self.apiKey = config.apiKey
         self.lockedLanguage = OSAllocatedUnfairLock(initialState: config.language)
         // Use the caller's session if provided (tests inject a URLProtocol-
-        // backed one), otherwise build a non-caching default. `URLSession.shared`
-        // has a URLCache that serves stable URLs (movie details, watch
-        // providers) from disk, which means those requests never appear in
-        // Proxyman / Charles. During the test phase we want every request on
-        // the wire — see CLAUDE.md "TODO: caching strategy" for the longer-
-        // term plan of reintroducing caches with an opt-out flag.
+        // backed one), otherwise build a non-caching default. Caching lives
+        // one level up, in `CachingMovieRepository`, where keys and lifetimes
+        // are explicit and the whole layer can be switched off for Proxyman.
+        // A URLCache here would silently serve responses from disk instead.
         if let session {
             self.session = session
         } else {
@@ -241,7 +239,8 @@ public final class LiveTMDBClient: TMDBClient {
         lockedLanguage.withLock { $0 = language }
     }
 
-    private var currentLanguage: String {
+    /// The language sent with localized requests right now.
+    public var language: String {
         lockedLanguage.withLock { $0 }
     }
 
@@ -252,7 +251,7 @@ public final class LiveTMDBClient: TMDBClient {
                 "query": query,
                 "page": String(page),
                 "include_adult": "false",
-                "language": currentLanguage
+                "language": language
             ]
         )
     }
@@ -261,7 +260,7 @@ public final class LiveTMDBClient: TMDBClient {
         try await get(
             path: "/movie/\(id)",
             query: [
-                "language": currentLanguage,
+                "language": language,
                 // Bundles the credits endpoint into the same response so we
                 // get cast & crew (incl. director) without a second round trip.
                 "append_to_response": "credits"
@@ -274,7 +273,7 @@ public final class LiveTMDBClient: TMDBClient {
     }
 
     public func providerList(watchRegion: String?) async throws -> TMDBProviderListResponse {
-        var query: [String: String] = ["language": currentLanguage]
+        var query: [String: String] = ["language": language]
         if let watchRegion {
             query["watch_region"] = watchRegion
         }
@@ -328,10 +327,8 @@ public final class LiveTMDBClient: TMDBClient {
 public struct TMDBMovieRepository: MovieRepository {
     private let client: TMDBClient
 
-    // NOTE: caching deliberately omitted for now — see CLAUDE.md "TODO: caching
-    // strategy" for the rationale. During the test phase we want every request
-    // visible in Proxyman; we'll reintroduce an actor-backed cache once the
-    // network shape is locked in.
+    // No caching here: every call reaches the client. Caching is layered on
+    // by `CachingMovieRepository` so this adapter stays a pure translation.
 
     /// TMDB returns release dates as plain `yyyy-MM-dd` strings (no time, no zone).
     /// We parse them in UTC so a date doesn't shift by a day depending on where

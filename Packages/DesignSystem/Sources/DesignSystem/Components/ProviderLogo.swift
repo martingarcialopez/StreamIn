@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// A streaming provider's logo. Backed by `RemoteImageStore`, so a logo the
+/// app has already shown (or prefetched at launch) renders on the first frame.
 public struct ProviderLogo: View {
     public let url: URL?
     public let providerName: String
@@ -19,16 +21,16 @@ public struct ProviderLogo: View {
     }
 
     public var body: some View {
-        AsyncImage(url: url) { phase in
-            if case .success(let image) = phase {
-                image.resizable().aspectRatio(contentMode: .fit)
-            } else {
-                Rectangle().fill(.quaternary)
-            }
+        RemoteImage(url: url) { image in
+            image.resizable().aspectRatio(contentMode: .fit)
+        } placeholder: {
+            Rectangle().fill(.quaternary)
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(providerName)
+        .accessibilityAddTraits(.isImage)
     }
 }
 

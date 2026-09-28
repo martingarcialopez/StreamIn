@@ -18,6 +18,7 @@ let package = Package(
     dependencies: [
         .package(path: "../Domain"),
         .package(path: "../Preferences"),
+        .package(path: "../ReferenceData"),
         .package(path: "../DesignSystem"),
     ],
     targets: [
@@ -26,6 +27,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "Preferences", package: "Preferences"),
+                .product(name: "ReferenceData", package: "ReferenceData"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
             ],
             resources: [.process("Translations/Localizable.xcstrings")]
@@ -36,6 +38,7 @@ let package = Package(
                 "SettingsFeature",
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "Preferences", package: "Preferences"),
+                .product(name: "ReferenceData", package: "ReferenceData"),
             ]
         ),
     ],

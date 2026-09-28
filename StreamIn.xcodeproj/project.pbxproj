@@ -12,6 +12,7 @@
 		5B2B3D662FC079D100C8C204 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 5B2B3D652FC079D100C8C204 /* DesignSystem */; };
 		5B63F2B32FA126C8002AB748 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* CLAUDE.md */; };
 		5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B8B87012FA38F9C0038B8ED /* SearchFeature */; };
+		5BA0D0042FD1000100C8C204 /* ReferenceData in Frameworks */ = {isa = PBXBuildFile; productRef = 5BA0D0032FD1000100C8C204 /* ReferenceData */; };
 		5BF57B592FAB9D6C00BF5F39 /* SettingsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */; };
 		5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
@@ -42,6 +43,7 @@
 		5B63F2B22FA126C8002AB748 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		5B63F2B42FA126E6002AB748 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		5B8B86FF2FA38DF50038B8ED /* SearchFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SearchFeature; path = Packages/SearchFeature; sourceTree = "<group>"; };
+		5BA0D0012FD1000100C8C204 /* ReferenceData */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ReferenceData; path = Packages/ReferenceData; sourceTree = "<group>"; };
 		5BBF59892FA119DC008CC68E /* StreamIn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamIn.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59962FA119DD008CC68E /* StreamInTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamInTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BBF59A02FA119DD008CC68E /* StreamInUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamInUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,6 +104,7 @@
 				5BF57B592FAB9D6C00BF5F39 /* SettingsFeature in Frameworks */,
 				5B20C7EC2FA4C510006066E7 /* DetailsFeature in Frameworks */,
 				5B2B3D662FC079D100C8C204 /* DesignSystem in Frameworks */,
+				5BA0D0042FD1000100C8C204 /* ReferenceData in Frameworks */,
 				5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */,
 				5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */,
 				5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */,
@@ -131,6 +134,7 @@
 			children = (
 				5B2B3D632FC0789300C8C204 /* DesignSystem */,
 				A99EFD0F0E8E44AF8ECC29A1 /* Preferences */,
+				5BA0D0012FD1000100C8C204 /* ReferenceData */,
 				5BF57B562FAB9CD100BF5F39 /* SettingsFeature */,
 				5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */,
 				5B8B86FF2FA38DF50038B8ED /* SearchFeature */,
@@ -194,6 +198,7 @@
 				5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */,
 				B8CECB5AA23445E981B96C90 /* Preferences */,
 				5B2B3D652FC079D100C8C204 /* DesignSystem */,
+				5BA0D0032FD1000100C8C204 /* ReferenceData */,
 			);
 			productName = StreamIn;
 			productReference = 5BBF59892FA119DC008CC68E /* StreamIn.app */;
@@ -285,6 +290,7 @@
 				5BF57B5A2FAB9D7900BF5F39 /* XCLocalSwiftPackageReference "Packages/WatchlistFeature" */,
 				026A346B7A434B56B6B8EDE8 /* XCLocalSwiftPackageReference "Packages/Preferences" */,
 				5B2B3D642FC079D100C8C204 /* XCLocalSwiftPackageReference "Packages/DesignSystem" */,
+				5BA0D0022FD1000100C8C204 /* XCLocalSwiftPackageReference "Packages/ReferenceData" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF598A2FA119DC008CC68E /* Products */;
@@ -506,13 +512,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 62W2WQ9TFY;
-				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -522,26 +525,24 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.2;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -551,13 +552,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 62W2WQ9TFY;
-				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -567,26 +565,24 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamIn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.2;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -598,20 +594,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamIn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamIn";
-				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
 		};
@@ -623,20 +617,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StreamIn.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StreamIn";
-				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
 		};
@@ -647,20 +639,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = StreamIn;
-				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Debug;
 		};
@@ -671,20 +661,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.martin.StreamInUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = auto;
+				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = StreamIn;
-				XROS_DEPLOYMENT_TARGET = 26.2;
 			};
 			name = Release;
 		};
@@ -746,6 +734,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/SearchFeature;
 		};
+		5BA0D0022FD1000100C8C204 /* XCLocalSwiftPackageReference "Packages/ReferenceData" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ReferenceData;
+		};
 		5BF57B572FAB9D6C00BF5F39 /* XCLocalSwiftPackageReference "Packages/SettingsFeature" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/SettingsFeature;
@@ -776,6 +768,10 @@
 		5B8B87012FA38F9C0038B8ED /* SearchFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SearchFeature;
+		};
+		5BA0D0032FD1000100C8C204 /* ReferenceData */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReferenceData;
 		};
 		5BF57B582FAB9D6C00BF5F39 /* SettingsFeature */ = {
 			isa = XCSwiftPackageProductDependency;
