@@ -1,335 +1,124 @@
 # StreamIn — context for Claude
 
-Portfolio iOS app: search a movie, see where you can stream / rent / buy it in your region.
-Built to demonstrate senior-level architecture, testability, and concurrency patterns.
+Portfolio iOS app: search a movie and see where you can stream it — in your
+region, and on the services you pay for in other regions (the VPN use case).
+Built to demonstrate senior-level architecture, testability and Swift
+concurrency, and to be built with a state-of-the-art agentic workflow
+(see **How we work**).
 
 ## Stack
 
-- Swift 6.2+, strict concurrency
+- Swift 6.2+, strict concurrency; iOS 26+, **iPhone only**
 - SwiftUI + `@Observable` + `NavigationStack`
 - async/await throughout (no Combine in feature code)
-- SwiftData for local persistence
-- Swift Testing for unit tests, XCTest for UI
-- iOS 26+ deployment target
+- SwiftData for local persistence (watchlist, Phase 3)
+- Swift Testing for unit tests, XCTest for UI tests
 
 ## Architecture
 
-Three layers, hard boundaries enforced by Swift Package separation. See `README.md` for the full diagram.
+One Swift Package per layer; boundaries are enforced at build time.
 
-- **Domain** (no deps) — entities, value types, errors, `MovieRepository` protocol.
-- **TMDBClient** (depends on Domain) — HTTP, DTOs, adapter to `MovieRepository`.
-- **Persistence** (depends on Domain) — SwiftData stores for history and watchlist.
-- **ReferenceData** (depends on Domain) — app-wide reference data loaded at launch (`ProviderCatalog`).
-- **DesignSystem** (no deps) — reusable views, colors, typography.
-- ***Feature** (depends on Domain + DesignSystem) — one package per screen, e.g. `SearchFeature`, `MovieDetailFeature`. PascalCase suffix style for consistency with the other packages.
-- **App** (depends on all) — composition root that wires concrete implementations.
+| Package | Depends on | Holds |
+|---|---|---|
+| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError` |
+| `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
+| `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
+| `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
+| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `AppLogoMark`, `RemoteImage` |
+| `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData) | One screen each, with its view model |
+| App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
-The single most important rule: **Features depend on Domain protocols, never on TMDB or SwiftData directly.**
+Planned: `Persistence` (Phase 3) — the SwiftData watchlist store.
+
+**The most important rule: features depend on Domain protocols, never on
+TMDBClient or SwiftData directly.**
 
 ## Conventions
 
-- One feature = one Swift Package. Don't share view code across features; promote it to `DesignSystem`.
-- DTOs (Decodable types) live only in `TMDBClient` and never leak.
-- Errors at the Domain boundary are mapped to `MovieError`; `URLError` and decoding errors die in the adapter.
-- Typed IDs (`MovieID`, `ProviderID`) over raw `Int`.
-- `Region` is a value type, never a String.
-- View models are `@Observable` classes that depend on `MovieRepository` injected via init. Never construct dependencies inside view models.
-- Search-as-you-type uses 300 ms debounce + Task cancellation via `.task(id:)`.
-- New work goes on a feature branch; PR titles follow Conventional Commits.
+- One feature = one package. Shared view code is promoted to DesignSystem, never imported across features.
+- DTOs live only in TMDBClient; `URLError` / decoding errors are mapped to `MovieError` in the adapter.
+- Typed IDs (`MovieID`, `ProviderID`); `Region` and `Language` are value types, never strings.
+- View models are `@MainActor @Observable` classes with dependencies injected through `init`.
+- Search: Landing pushes `SearchResultsRoute`; results re-run through `.task(id:)` (query + region + language) with cancellation.
+- User-facing strings come from the package's String Catalog in en + es (`localize` skill).
+- Settings is reachable from each tab's first screen only; pushed screens keep their toolbar for content actions.
+- Swift/SwiftUI style rules: `.claude/rules/swift-swiftui.md` (loaded when editing Swift).
 
-## Decisions made so far
+## How we work
 
-Captured so future Claude sessions don't relitigate settled questions. If you want to challenge one, surface it explicitly — there's reasoning behind each.
+- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. Roadmap and phase plans: `~/.claude/plans/`.
+- **One branch and one PR per phase** (`feat/…`, `chore/…`) into `main`. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`.
+- **Verify at the end of each task, not per edit**: app build + tests of the packages touched. Prefer the Xcode MCP; fall back to the simulator build tool or `xcodebuild` (commands in the `ship-phase` skill). If verification can't run, say so.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → verify → log → commit → PR.
+- **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
-### Data source: TMDB, not per-service APIs
+| Tool | What it's for |
+|---|---|
+| `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
+| `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
+| `ship-phase` skill | Finish a phase and open its PR (only when Martín asks) |
+| `ios-reviewer` subagent | Read-only review against these rules before every PR |
+| Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
+| `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
+| Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 
-Netflix / Disney+ / HBO / etc. don't expose public availability APIs. The realistic options were aggregators: **TMDB** (free, JustWatch-backed), Watchmode (paid), RapidAPI Streaming Availability (paid trial). Picked TMDB for price + data quality (JustWatch-sourced, same as the paid options). The "fan-out concurrency" exercise the project promises lives now in the detail screen — `async let` over movie details, providers, similar movies — not in calls to N different services.
+## Decisions
 
-### One Swift Package per layer
+Settled — surface it explicitly before challenging one.
 
-`Domain`, `TMDBClient`, `Persistence`, `DesignSystem`, one `*Feature` per screen (e.g. `SearchFeature`), App target on top. Boundaries enforced at *build time* by package separation, not just convention. Cost: a few minutes per new package. Benefit: the rule "features can't import TMDB" is physically impossible to violate.
-
-### Local packages: only outermost ones added at project level
-
-Adding both `Domain` and `TMDBClient` as project-level local packages collides with `TMDBClient`'s `.package(path: "../Domain")` declaration, producing "multiple top-level packages named 'Domain'" SPM errors. Rule: only packages the App target *directly* uses get added at the project level; transitive deps resolve through their parent's `Package.swift`. The App target still adds both as frameworks in `General → Frameworks, Libraries, and Embedded Content`.
-
-### Composition root in the App target
-
-`StreamInApp.init()` is the **only** place concrete implementations (`LiveTMDBClient`, `TMDBMovieRepository`) are constructed. Everything downstream depends on `MovieRepository`, the protocol from Domain. No DI container — at this size, a framework would be vanity.
-
-### Typed domain errors mapped at the boundary
-
-`MovieError` enumerates user-visible failure states (offline, timeout, rateLimited, unauthorized, notFound, server, decoding, cancelled, unknown). `URLError`, `DecodingError`, `CancellationError` die inside `TMDBMovieRepository.mapErrors` and never reach feature code. View error states can switch exhaustively over `MovieError`.
-
-### Build-time secrets via Run Script Phase, not Info.plist
-
-`Secrets.xcconfig` defines `TMDB_API_KEY` (gitignored). The App target has a "Generate Secrets" Run Script Phase before "Compile Sources" that writes `StreamIn/GeneratedSecrets.swift` containing the value as a Swift constant. `AppConfig.tmdbAPIKey` reads from `GeneratedSecrets`, guards against the sentinel string `your_tmdb_api_key_here`, and `preconditionFailure`s with actionable instructions on misconfiguration.
-
-Why not `INFOPLIST_KEY_TMDB_API_KEY = $(TMDB_API_KEY)`? Apple's `INFOPLIST_KEY_<name>` mechanism only honors recognized Info.plist keys when `GENERATE_INFOPLIST_FILE = YES`. Arbitrary custom keys are silently dropped — confirmed empirically. The Run Script approach is more reliable and more flexible.
-
-The placeholder string `your_tmdb_api_key_here` is the canonical "not configured" sentinel: same value in `Secrets.example.xcconfig`, in the bash `${TMDB_API_KEY:-...}` fallback, and in the AppConfig guard. One sentinel, one fix message.
-
-The Run Script Phase declares `$(SRCROOT)/StreamIn/GeneratedSecrets.swift` as an Output File so Xcode's build sandbox permits the write. Optional Input File `$(SRCROOT)/Secrets.xcconfig` lets dependency analysis re-run the script when the key changes.
-
-### `#Preview` uses a private fake repository
-
-ContentView is init-injected with a `MovieRepository`, so previews need an instance. A `private struct PreviewMovieRepository` at the bottom of `ContentView.swift` provides minimal answers; methods not exercised by the preview just `fatalError`. Acceptable in preview-only code; **not** acceptable in test fakes (those need full implementations or explicit XCTUnimplemented patterns).
-
-### SwiftData over Core Data, Swift Testing over XCTest, no Combine in features
-
-Two SwiftData stores (history, watchlist) with no expected migrations — ergonomics win. Swift Testing (`@Test`) for unit tests because iOS 17+ supports it and Apple is steering us there. UI tests stay on XCTest because Swift Testing doesn't cover that surface yet. Combine deliberately absent in feature code: `async/await` + `@Observable` covers our needs without adding a parallel reactive mental model.
-
-### Localization via per-package String Catalogs
-
-Every package with user-facing strings owns its own catalog under `Packages/<Pkg>/Sources/<Pkg>/Translations/`:
-
-```
-Translations/
-├── Localizable.xcstrings                       — the catalog itself, all keys + per-language values
-└── GeneratedStringSymbols_Localizable.swift    — generated typed symbols (committed)
-```
-
-Declared in `Package.swift` via `resources: [.process("Translations/Localizable.xcstrings")]`. Call sites use the symbol form for compile-time safety: `Text(.searchPrompt)`, `Button(.detailsRetry, action: …)`, `String(localized: .errorOffline)`. Interpolated keys generate function-style symbols (`Text(.detailsLoadFailed(error.userMessage))`).
-
-Per-package over a single shared catalog: matches the project's "boundaries enforced at build time" architecture, no third-party scripts, each feature is self-contained. Shared strings (`Cancel`, `OK`, `Loading…`) will move into `DesignSystem`'s catalog **only when a key duplicates more than twice** — not preemptively.
-
-**Symbol generation gotcha.** Xcode 26 auto-generates symbols for App-target catalogs but **not** for Swift Package catalogs — discovered empirically. We work around it by running Apple's own `xcstringstool generate-symbols` and committing the output as regular package source. Regenerate after adding/renaming keys; otherwise the call site fails to resolve.
-
-```bash
-for pkg in Domain SearchFeature WatchlistFeature SettingsFeature DetailsFeature; do
-  /Applications/Xcode.app/Contents/Developer/usr/bin/xcstringstool generate-symbols \
-    Packages/$pkg/Sources/$pkg/Translations/Localizable.xcstrings \
-    --output-directory Packages/$pkg/Sources/$pkg/Translations \
-    --language swift
-done
-```
-
-**App-target side of localization** (separate from per-package catalogs):
-
-- `StreamIn/InfoPlist.xcstrings` exists with `CFBundleDisplayName` registered in `en` + `es`. Load-bearing: it gives the App target its own localized resource, which produces top-level `en.lproj`/`es.lproj` directories in the built `.app`. iOS uses those to decide whether to show the per-app Language picker in **Settings → Apps → StreamIn → Language**. No App-level localized resource = no picker, even with package catalogs present.
-- `knownRegions = (en, es, Base)` in `StreamIn.xcodeproj/project.pbxproj`. Required at the project level to declare supported languages. Add new languages here AND in `InfoPlist.xcstrings`.
-- `INFOPLIST_KEY_CFBundleLocalizations` is **silently dropped** by `GENERATE_INFOPLIST_FILE = YES` — same family of gotcha as the other "Apple recognized keys" caveat in the Secrets section. Don't try to set it; use the `InfoPlist.xcstrings` route.
-
-### In-app language picker drives both app UI and TMDB
-
-The Settings → Language picker writes to **both** `prefs.language` (consumed by TMDB request params) and `UserDefaults.standard.AppleLanguages` (read by iOS at bundle init to choose the catalog locale). One control → both axes flip together, which is what users expect; the alternative two-knob model (TMDB language separate from app UI language) buys an audience of essentially zero.
-
-Switching language requires an app relaunch because iOS bundles cache their preferred-localizations at app start. The picker presents a "Restart now / Later" alert. **Restart now** calls `exit(0)`; **Later** still persists the choice and applies it on the next manual launch. `exit(0)` is technically against the HIG but is the de-facto pattern for language-switch flows in shipping apps; if App Store review ever flags it, the fix is one line (drop the `exit(0)` and rely on the next-launch path).
-
-The picker binding is **deferred** — `prefs.language` and `AppleLanguages` only mutate when the user explicitly taps one of the alert buttons. This is a deliberate data-correctness choice; the trade-off is a slight UX awkwardness (the picker visually snaps back to the old value when the alert opens) that's the inverse of how most pickers feel. See `project_localization.md` memory for the alternative "commit-on-tap" pattern in case it's reverted.
-
-## Testing
-
-- Domain logic: unit tests, no fakes needed.
-- View models: unit tests against a fake `MovieRepository`.
-- TMDB adapter: unit tests with a stubbed `TMDBClient`.
-- `LiveTMDBClient`: integration tests with `URLProtocol` against fixture JSON in `Tests/Fixtures/`.
-- Critical UI flow: one UI test (search → detail → providers).
-- Before opening a PR, run `swift test` in each package and `⌘U` on the App scheme.
+- **TMDB as the only data source.** Streaming services have no public availability APIs; TMDB is free and JustWatch-backed (same data as the paid aggregators). The concurrency showcase lives in the Details fan-out (`async let`) and the search-row availability fan-out.
+- **One package per layer**, so "features can't import TMDB" is impossible to violate rather than a convention.
+- **Every local package is referenced at project level**, and the App target links the products it imports. This builds cleanly with Xcode 26.6; the old "only the outermost packages" rule came from a "multiple top-level packages named 'Domain'" error that no longer reproduces.
+- **Composition root in `StreamInApp.init()`** is the only place concrete types are built (`LiveTMDBClient`, `TMDBMovieRepository`, `CachingMovieRepository`, `ProviderCatalog`). No DI container.
+- **Typed `MovieError`** (offline, timeout, rateLimited, unauthorized, notFound, server, decoding, cancelled, unknown): views switch exhaustively; transport errors never leave the adapter.
+- **Build-time secrets** via a Run Script that generates `GeneratedSecrets.swift` from `Secrets.xcconfig` — details in `.claude/rules/secrets.md`.
+- **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file (`fatalError` for unused methods is fine there). Test fakes must be complete.
+- **SwiftData over Core Data, Swift Testing over XCTest, no Combine.** One SwiftData store (watchlist); search history was dropped from scope.
+- **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
+- **Caching and reference data** — see the next section.
+- **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
+- **iPhone only**: `TARGETED_DEVICE_FAMILY = 1`, iOS platforms only, "Designed for iPhone" on Mac / Vision Pro disabled.
 
 ## Caching and reference data
 
-Three separate mechanisms, each for a different kind of data:
+Three mechanisms, one per kind of data:
 
-- **Provider reference data** — `ProviderCatalog` (`ReferenceData` package). A `@MainActor @Observable` class, not an actor, so views read it synchronously and render complete on their first frame. Loaded by `RootView` at launch (worldwide + home region) and on region change; screens call `load(region:)` too, which is a no-op for loaded scopes and shares in-flight requests. No expiry — refetched next launch.
-- **Response caching** — `CachingMovieRepository` (`TMDBClient`), a decorator the composition root wraps around `TMDBMovieRepository`. Backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language) and movie detail (id + language) live for the session; availability (id + region) expires after 30 min. `availability(for:in:)` is served from the same entry as `availabilities(for:in:)`, so a movie seen in search results opens on Details without a request. Failures are never cached.
-- **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`). `AsyncImage` always shows its placeholder first, even on a URLCache hit; `ProviderLogo` uses `RemoteImage` instead, which renders synchronously when the decoded image is in memory. `RootView` prefetches the user's subscribed providers' logos after the catalog loads.
+- **Provider reference data** — `ProviderCatalog` (`ReferenceData`), a `@MainActor @Observable` class rather than an actor, so views read it synchronously and render complete on their first frame. `RootView` loads it at launch (worldwide + home region) and on region change; screens may call `load(region:)` too — a no-op for loaded scopes that shares in-flight requests. No expiry.
+- **Response caching** — `CachingMovieRepository` (`TMDBClient`) wraps `TMDBMovieRepository`, backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language) and movie detail (id + language) last the session; availability (id + region) expires after 30 min and is shared between `availability(for:in:)` and `availabilities(for:in:)`. Failures are never cached.
+- **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`): `AsyncImage` always starts on its placeholder, so `ProviderLogo` uses `RemoteImage`, which renders synchronously from memory. `RootView` prefetches subscribed providers' logos.
 
-`LiveTMDBClient` keeps `urlCache = nil`: all caching is app-level, explicit, and testable. To put every request back on the wire for Proxyman, launch with `STREAMIN_DISABLE_CACHE=1` (Edit Scheme → Run → Arguments → Environment Variables); `AppConfig.isResponseCachingEnabled` then skips the decorator.
+`LiveTMDBClient` keeps `urlCache = nil`, so all caching is app-level and testable. Launch with `STREAMIN_DISABLE_CACHE=1` (scheme → Run → Environment Variables) to put every request on the wire for Proxyman.
 
-`SearchViewModel` also remembers the request behind the results on screen. `SearchResultsView`'s `.task` re-fires every time the screen reappears (e.g. Details popped); a repeated request keeps the results and only retries rows whose availability never arrived.
+`SearchViewModel` remembers the request behind the results on screen: the results screen's `.task` re-fires whenever it reappears (e.g. Details popped), and a repeated request keeps the results, only retrying rows whose availability never arrived.
 
-## TODO: DesignSystem package
+## Testing
 
-A `DesignSystem` package is referenced in the architecture section above but doesn't exist yet. Two concrete things to centralise there once it does:
+- Unit tests with Swift Testing: Domain logic, view models against fake repositories, the TMDB adapter against a stubbed client, caches with an injected clock.
+- The packages are iOS-only, so `swift test` doesn't run them on macOS. Run each package from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
+- Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`, and one UI test for search → details → providers. The app-level test targets still hold Xcode's templates.
 
-### 1. Typed SF Symbol names
+## TODO: onboarding trigger (Phase 6)
 
-Today every call site uses raw string literals: `Image(systemName: "popcorn.fill")`, `Label(year, systemImage: "calendar")`, etc. Typos compile fine and fail silently at render time (blank icon). A typed namespace fixes this at build time:
+Onboarding is presented whenever `prefs.subscribedProviderIDs.isEmpty` — handy while testing, wrong for release. Before shipping:
 
-```swift
-public enum Symbol {
-    public static let popcornFill    = "popcorn.fill"
-    public static let bookmark       = "bookmark"
-    public static let gear           = "gear"
-    public static let gearshape      = "gearshape"
-    public static let magnifyingglass = "magnifyingglass"
-    public static let checkmark      = "checkmark"
-    public static let photo          = "photo"
-    public static let calendar       = "calendar"
-    public static let clock          = "clock"
-    public static let starFill       = "star.fill"
-    public static let movieclapper   = "movieclapper"
-}
-```
+1. Add `hasCompletedOnboarding: Bool` to `Preferences` (UserDefaults key `settings.hasCompletedOnboarding`, default `false`).
+2. In `RootView`'s launch `.task`, trigger on `!prefs.hasCompletedOnboarding`.
+3. Set it from `OnboardingView`'s Done (and any Skip) button. Done stays enabled with zero services picked.
 
-Call sites become `Image(systemName: Symbol.popcornFill)`. Naming mirrors SF Symbol names with `.` → camelCase. Xcode 16+ asset catalog symbols (drag SF Symbols into `Assets.xcassets`, get `Image(.popcorn)`) is the even-more-idiomatic alternative — usable from a `DesignSystem` package the same way.
+To see onboarding today, launch with `-settings.subscribedProviders.ids none`.
 
-Current symbols in use across the app: `popcorn.fill`, `bookmark`, `gear`, `gearshape`, `magnifyingglass`, `checkmark`, `photo`, `calendar`, `clock`, `star.fill`, `movieclapper`.
+## Non-goals
 
-### 2. Shared design constants
-
-Magic numbers scattered across the view code that would benefit from a single source of truth:
-
-- **Spacing** — `spacing: 8` / `10` / `12` / `14` / `16` / `20` in `VStack`/`HStack` initialisers.
-- **Padding** — bare `.padding(.vertical, 16)` style calls.
-- **Logo / icon sizes** — `@ScaledMetric ... CGFloat = 22` / `28` / `36` / `44` for provider logos in three different views.
-- **Corner radii** — `.rect(cornerRadius: 4)` / `6` / `8`.
-
-A nested namespace works:
-
-```swift
-public enum DesignSystem {
-    public enum Spacing {
-        public static let tight: CGFloat = 4
-        public static let `default`: CGFloat = 8
-        public static let comfortable: CGFloat = 12
-        public static let sectionGap: CGFloat = 20
-    }
-    public enum LogoSize {
-        public static let small: CGFloat = 22   // Settings row strip
-        public static let medium: CGFloat = 28  // Picker row
-        public static let large: CGFloat = 36   // Details home row
-        public static let hero: CGFloat = 44    // Details legacy row
-    }
-    public enum Radius {
-        public static let small: CGFloat = 4
-        public static let medium: CGFloat = 6
-        public static let large: CGFloat = 8
-    }
-}
-```
-
-### Not urgent
-
-No current pain point — SF Symbol typos haven't bitten yet, and the magic numbers haven't needed coordinated tweaks. Worth doing as the first cleanup PR once the `DesignSystem` package lands, before adding more screens that introduce yet more magic numbers.
-
-## TODO: onboarding trigger
-
-The first-launch onboarding sheet (`OnboardingView` in `SettingsFeature`) is currently presented from `RootView` whenever `prefs.subscribedProviderIDs.isEmpty`. This is deliberately permissive for the test phase: tapping Skip / closing the cover leaves subs empty, so the next launch re-presents the sheet. Easy to iterate on the flow.
-
-Before shipping, swap the trigger to a one-shot flag:
-
-1. Add `hasCompletedOnboarding: Bool` to `Preferences`, persisted in `UserDefaults` under a key like `"settings.hasCompletedOnboarding"`. Default `false`.
-2. In `RootView.task`, replace `prefs.subscribedProviderIDs.isEmpty` with `!prefs.hasCompletedOnboarding`.
-3. In `OnboardingView`, set `prefs.hasCompletedOnboarding = true` inside the "Done" button action (and ideally an explicit "Skip" button too, if you add one).
-4. The "Done" button stays always-enabled — picking zero services and tapping Done is a valid choice (the user can configure later via Settings).
-
-Optional polish for shipping: separate "Skip for now" and "Continue" buttons, where Continue is only enabled with ≥1 selection. Both set the completion flag; only the labelling differs.
-
-## Non-goals (do not add without discussing first)
-
-No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts. The app target is iPhone-only (`TARGETED_DEVICE_FAMILY = 1`, iOS platforms only, "Designed for iPhone" on Mac / Vision Pro disabled).
+No auth, social features, video playback, analytics, iCloud sync or iPad layouts. AI features inside the app only if they add real user value (candidate after 1.0: on-device Foundation Models for natural-language search).
 
 ## Setup
 
-See `README.md` "Quick start". A free TMDB API key is required and goes in `Secrets.xcconfig` (gitignored).
+See `README.md` → Quick start. A free TMDB API key goes in `Secrets.xcconfig` (gitignored). For the Xcode MCP server, open the project in Xcode and allow external agents when Xcode asks.
 
-## Working agreements with Claude
+## Working agreements
 
-- Always propose the change as a diff before applying broad edits across multiple files.
-- When adding a new feature package, copy the structure of an existing one (`SearchFeature`) — don't invent a new layout.
-- When adding a dependency, justify it in the PR description.
-- Tests are not optional; new behavior ships with tests in the same PR.
-- If you find yourself wanting to bypass a layer (e.g. importing `TMDBClient` from a feature), stop and surface it — it's almost always a smell.
-
-
-
-
-# Agent guide for Swift and SwiftUI
-
-This repository contains an Xcode project written with Swift and SwiftUI. Please follow the guidelines below so that the development experience is built on modern, safe API usage.
-
-
-## Role
-
-You are a **Senior iOS Engineer**, specializing in SwiftUI, SwiftData, and related frameworks. Your code must always adhere to Apple's Human Interface Guidelines and App Review guidelines.
-
-
-## Core instructions
-
-- Target iOS 26.0 or later. (Yes, it definitely exists.)
-- Swift 6.2 or later, using modern Swift concurrency. Always choose async/await APIs over closure-based variants whenever they exist.
-- SwiftUI backed up by `@Observable` classes for shared data.
-- Do not introduce third-party frameworks without asking first.
-- Avoid UIKit unless requested.
-
-
-## Swift instructions
-
-- `@Observable` classes must be marked `@MainActor` unless the project has Main Actor default actor isolation. Flag any `@Observable` class missing this annotation.
-- All shared data should use `@Observable` classes with `@State` (for ownership) and `@Bindable` / `@Environment` (for passing).
-- Strongly prefer not to use `ObservableObject`, `@Published`, `@StateObject`, `@ObservedObject`, or `@EnvironmentObject` unless they are unavoidable, or if they exist in legacy/integration contexts when changing architecture would be complicated.
-- Assume strict Swift concurrency rules are being applied.
-- Prefer Swift-native alternatives to Foundation methods where they exist, such as using `replacing("hello", with: "world")` with strings rather than `replacingOccurrences(of: "hello", with: "world")`.
-- Prefer modern Foundation API, for example `URL.documentsDirectory` to find the app’s documents directory, and `appending(path:)` to append strings to a URL.
-- Never use C-style number formatting such as `Text(String(format: "%.2f", abs(myNumber)))`; always use `Text(abs(change), format: .number.precision(.fractionLength(2)))` instead.
-- Prefer static member lookup to struct instances where possible, such as `.circle` rather than `Circle()`, and `.borderedProminent` rather than `BorderedProminentButtonStyle()`.
-- Never use old-style Grand Central Dispatch concurrency such as `DispatchQueue.main.async()`. If behavior like this is needed, always use modern Swift concurrency.
-- Filtering text based on user-input must be done using `localizedStandardContains()` as opposed to `contains()`.
-- Avoid force unwraps and force `try` unless it is unrecoverable.
-- Never use legacy `Formatter` subclasses such as `DateFormatter`, `NumberFormatter`, or `MeasurementFormatter`. Always use the modern `FormatStyle` API instead. For example, to format a date, use `myDate.formatted(date: .abbreviated, time: .shortened)`. To parse a date from a string, use `Date(inputString, strategy: .iso8601)`. For numbers, use `myNumber.formatted(.number)` or custom format styles.
-
-## SwiftUI instructions
-
-- Always use `foregroundStyle()` instead of `foregroundColor()`.
-- Always use `clipShape(.rect(cornerRadius:))` instead of `cornerRadius()`.
-- Always use the `Tab` API instead of `tabItem()`.
-- Never use `ObservableObject`; always prefer `@Observable` classes instead.
-- Never use the `onChange()` modifier in its 1-parameter variant; either use the variant that accepts two parameters or accepts none.
-- Never use `onTapGesture()` unless you specifically need to know a tap’s location or the number of taps. All other usages should use `Button`.
-- Never use `Task.sleep(nanoseconds:)`; always use `Task.sleep(for:)` instead.
-- Never use `UIScreen.main.bounds` to read the size of the available space.
-- Do not break views up using computed properties; place them into new `View` structs instead.
-- Do not force specific font sizes; prefer using Dynamic Type instead.
-- Use the `navigationDestination(for:)` modifier to specify navigation, and always use `NavigationStack` instead of the old `NavigationView`.
-- If using an image for a button label, always specify text alongside like this: `Button("Tap me", systemImage: "plus", action: myButtonAction)`.
-- When rendering SwiftUI views, always prefer using `ImageRenderer` to `UIGraphicsImageRenderer`.
-- Don’t apply the `fontWeight()` modifier unless there is good reason. If you want to make some text bold, always use `bold()` instead of `fontWeight(.bold)`.
-- Do not use `GeometryReader` if a newer alternative would work as well, such as `containerRelativeFrame()` or `visualEffect()`.
-- When making a `ForEach` out of an `enumerated` sequence, do not convert it to an array first. So, prefer `ForEach(x.enumerated(), id: \.element.id)` instead of `ForEach(Array(x.enumerated()), id: \.element.id)`.
-- When hiding scroll view indicators, use the `.scrollIndicators(.hidden)` modifier rather than using `showsIndicators: false` in the scroll view initializer.
-- Use the newest ScrollView APIs for item scrolling and positioning (e.g. `ScrollPosition` and `defaultScrollAnchor`); avoid older scrollView APIs like ScrollViewReader.
-- Place view logic into view models or similar, so it can be tested.
-- Avoid `AnyView` unless it is absolutely required.
-- Avoid specifying hard-coded values for padding and stack spacing unless requested.
-- Avoid using UIKit colors in SwiftUI code.
-
-
-## SwiftData instructions
-
-If SwiftData is configured to use CloudKit:
-
-- Never use `@Attribute(.unique)`.
-- Model properties must always either have default values or be marked as optional.
-- All relationships must be marked optional.
-
-
-## Project structure
-
-- Use a consistent project structure, with folder layout determined by app features.
-- Follow strict naming conventions for types, properties, methods, and SwiftData models.
-- Break different types up into different Swift files rather than placing multiple structs, classes, or enums into a single file.
-- Write unit tests for core application logic.
-- Only write UI tests if unit tests are not possible.
-- Add code comments and documentation comments as needed.
-- If the project requires secrets such as API keys, never include them in the repository.
-- If the project uses Localizable.xcstrings, prefer to add user-facing strings using symbol keys (e.g. helloWorld) in the string catalog with `extractionState` set to "manual", accessing them via generated symbols such as  `Text(.helloWorld)`. Offer to translate new keys into all languages supported by the project.
-
-
-## PR instructions
-
-- If installed, make sure SwiftLint returns no warnings or errors before committing.
-
-
-## Xcode MCP
-
-If the Xcode MCP is configured, prefer its tools over generic alternatives when working on this project:
-
-- `DocumentationSearch` — verify API availability and correct usage before writing code
-- `BuildProject` — build the project after making changes to confirm compilation succeeds
-- `GetBuildLog` — inspect build errors and warnings
-- `RenderPreview` — visually verify SwiftUI views using Xcode Previews
-- `XcodeListNavigatorIssues` — check for issues visible in the Xcode Issue Navigator
-- `ExecuteSnippet` — test a code snippet in the context of a source file
-- `XcodeRead`, `XcodeWrite`, `XcodeUpdate` — prefer these over generic file tools when working with Xcode project files
+- Propose broad multi-file changes as a plan or diff before applying them.
+- New packages copy an existing package's layout (`new-package` skill).
+- Justify any new dependency in the PR description.
+- Tests aren't optional: new behavior ships with tests in the same PR.
+- Wanting to bypass a layer (e.g. importing TMDBClient from a feature) is a smell — stop and surface it.

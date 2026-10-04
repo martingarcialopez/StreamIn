@@ -117,6 +117,15 @@ Pyramid, weighted toward unit tests for fast feedback.
 
 Anything network-heavy is faked at the `MovieRepository` boundary. The `TMDBClient` itself is tested separately with `URLProtocol` stubs against fixture JSON in `Tests/Fixtures/`.
 
+## How it's built: an agentic workflow with Claude Code
+
+StreamIn is developed with Claude Code as a pair programmer, using a deliberate workflow:
+
+- **Plan → branch → reviewed PR, one roadmap phase at a time.** Each phase is planned before any code, built on its own branch, and merged only after review.
+- **A shared project setup in [`.claude/`](.claude)**: path-scoped rules, skills for the repetitive work (`localize`, `new-package`, `ship-phase`), a read-only `ios-reviewer` subagent, and hooks that guard `main`, protect generated and secret files, and keep localized string symbols in sync.
+- **Xcode's MCP server** ([`.mcp.json`](.mcp.json)), so the agent builds, runs tests and renders previews itself instead of handing over unverified code.
+- **A [workflow log](docs/workflow-log.md)** recording each change to the workflow and what it measurably improved — including what didn't work.
+
 ## Non-goals (deliberately scoped out)
 
 - **No authentication or user accounts.** Watchlist is local-only.

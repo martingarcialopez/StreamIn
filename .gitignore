@@ -21,8 +21,14 @@ Package.resolved
 Secrets.xcconfig
 StreamIn/Secrets/GeneratedSecrets.swift
 
-# Claude Code working dir (session state, local config)
-.claude/
+# Claude Code: the shared setup (settings, rules, skills, agents, hooks) is
+# committed; personal settings, worktrees and session state stay local.
+.claude/*
+!.claude/settings.json
+!.claude/rules/
+!.claude/skills/
+!.claude/agents/
+!.claude/hooks/
 
 # fastlane (if you add it later)
 fastlane/report.xml
