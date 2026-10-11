@@ -50,9 +50,9 @@ say so — never imply it passed.
 
 ## 5. Commit and open the PR
 
-- Commit with the `commit` skill. It shows Martín the message for approval and
-  asks whether to push — shipping needs the push, so say so. The PR title follows
-  the commit format.
+- Commit with the `commit` skill: one prompt where Martín approves (or edits)
+  the message, and the commit is pushed. The PR title follows the commit format,
+  gitmoji included.
 - Once pushed, `gh pr create --base main` with a body that
   follows `.github/pull_request_template.md`. Tick only test-plan items that step 3
   verified; leave manual checks for Martín unticked.

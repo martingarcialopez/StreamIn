@@ -31,6 +31,12 @@ alone stays his alone.
 - No enforcement hook. A `require-coauthor` hook was tried and removed on Martín's
   request: he must be able to push his own code without Claude's signature, so
   the skill alone carries the rule for Claude's commits.
+- Martín cut the confirmation to one action: gitmoji always (no question), and a
+  single "commit and push this to `<branch>`?" prompt — editing the message in the
+  answer counts as yes. Choosing the emoji, approving the message and approving
+  the push had been three decisions per commit.
+- No "my own work" option: whatever is done together is always co-authored;
+  Martín commits work he did alone himself, outside Claude.
 - First `@claude` round trip: Martín asked for the removal in a review comment on
   #5; claude[bot] deleted the hook, updated CLAUDE.md and this log and pushed in
   44 s. It can't write to `.claude/skills/` from GitHub Actions, so the skill text
