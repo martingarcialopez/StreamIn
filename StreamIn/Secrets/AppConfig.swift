@@ -3,8 +3,9 @@
 //  StreamIn
 //
 //  Single source of truth for runtime configuration values that come from the
-//  build environment (xcconfig → Run Script Phase → GeneratedSecrets.swift).
-//  Route every such read through here so misconfiguration surfaces in one place.
+//  build environment (xcconfig → Run Script Phase → GeneratedSecrets.swift)
+//  or the launch environment (scheme environment variables). Route every such
+//  read through here so misconfiguration surfaces in one place.
 //
 
 import Foundation
@@ -31,5 +32,13 @@ enum AppConfig {
             )
         }
         return key
+    }
+
+    /// Response caching (`CachingMovieRepository`) is on unless the launch
+    /// environment sets `STREAMIN_DISABLE_CACHE=1` (Edit Scheme → Run →
+    /// Arguments → Environment Variables). Turning it off puts every request
+    /// back on the wire, for Proxyman debugging.
+    static var isResponseCachingEnabled: Bool {
+        ProcessInfo.processInfo.environment["STREAMIN_DISABLE_CACHE"] != "1"
     }
 }

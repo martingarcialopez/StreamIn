@@ -16,9 +16,14 @@ public struct DetailsView: View {
 
     @State private var model: DetailsViewModel
     @Environment(Preferences.self) private var prefs
+    private let onEditSubscriptions: () -> Void
 
-    public init(model: DetailsViewModel) {
+    /// - Parameter onEditSubscriptions: Opens the streaming-services picker.
+    ///   Offered when the user hasn't picked any services, since the
+    ///   subscription sections are empty without them.
+    public init(model: DetailsViewModel, onEditSubscriptions: @escaping () -> Void) {
         _model = State(initialValue: model)
+        self.onEditSubscriptions = onEditSubscriptions
     }
 
     public var body: some View {
@@ -53,7 +58,7 @@ public struct DetailsView: View {
 
                     Divider()
 
-                    SubscribedAvailabilitySection(model: model)
+                    SubscribedAvailabilitySection(model: model, onEditSubscriptions: onEditSubscriptions)
 
                     Divider()
 
@@ -106,10 +111,11 @@ private struct MetadataRow: View {
 /// each state (loading / empty / no-matches / has-data) easy to read.
 private struct SubscribedAvailabilitySection: View {
     let model: DetailsViewModel
+    let onEditSubscriptions: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SubscribedAvailabilityContent(model: model)
+            SubscribedAvailabilityContent(model: model, onEditSubscriptions: onEditSubscriptions)
         }
     }
 }
@@ -117,11 +123,12 @@ private struct SubscribedAvailabilitySection: View {
 /// Dispatches between the four mutually-exclusive states of the subscribed-
 /// availability area:
 ///   - loading (first fetch, no data yet)
-///   - no subscriptions configured → prompt to open Settings
+///   - no subscriptions configured → button to pick services
 ///   - has subscriptions but no matches → "not available with your subs"
 ///   - has matches → `HomeRegionSubsection` + optional `OtherRegionsSubsection`
 private struct SubscribedAvailabilityContent: View {
     let model: DetailsViewModel
+    let onEditSubscriptions: () -> Void
 
     var body: some View {
         if model.isLoading && model.globalAvailability == nil {
@@ -131,7 +138,7 @@ private struct SubscribedAvailabilityContent: View {
                 Spacer()
             }
         } else if !model.hasAnySubscriptions {
-            EmptyStateConfigure()
+            EmptyStateConfigure(onEditSubscriptions: onEditSubscriptions)
         } else if model.subscribedAvailability.isEmpty {
             Text(.detailsSubscriptionsNoMatches)
                 .font(.callout)
@@ -147,22 +154,19 @@ private struct SubscribedAvailabilityContent: View {
     }
 }
 
+/// Details has no Settings button of its own (Settings lives on each tab's
+/// first screen), so this state links straight to the services picker —
+/// the one setting the screen can't work without.
 private struct EmptyStateConfigure: View {
+    let onEditSubscriptions: () -> Void
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(.detailsSubscriptionsEmptyConfigure)
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            // We don't push to Settings here — Settings is a sheet on the
-            // search tab, not a destination on the details stack. A label
-            // pointing the user there is honest and avoids a confusing nav.
-            Label {
-                Text(.detailsSubscriptionsConfigureButton)
-            } icon: {
-                Image(systemName: Symbol.gearshape)
-            }
-            .font(.caption)
-            .foregroundStyle(.tertiary)
+            Button(.detailsSubscriptionsConfigureButton, action: onEditSubscriptions)
+                .buttonStyle(.bordered)
         }
     }
 }
@@ -489,7 +493,8 @@ private struct BackdropView: View {
                 repository: PreviewMovieRepository(),
                 imageURLBuilder: PreviewImageURLBuilder(),
                 prefs: Preferences()
-            )
+            ),
+            onEditSubscriptions: {}
         )
         .environment(Preferences())
     }

@@ -204,8 +204,8 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
         #expect(providers.first(where: { $0.id == ProviderID(2100) }) == nil)
     }
 
-    /// No caching at the adapter layer for now (see CLAUDE.md "TODO: caching
-    /// strategy"). Every call should reach the wire.
+    /// The adapter never caches — that's `CachingMovieRepository`'s job.
+    /// Every call should reach the client.
     @Test func noCacheHitsWireEachTime() async throws {
         let stub = StubTMDBClient()
         stub.providerListResult = .success(

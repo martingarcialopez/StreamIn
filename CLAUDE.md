@@ -19,6 +19,7 @@ Three layers, hard boundaries enforced by Swift Package separation. See `README.
 - **Domain** (no deps) — entities, value types, errors, `MovieRepository` protocol.
 - **TMDBClient** (depends on Domain) — HTTP, DTOs, adapter to `MovieRepository`.
 - **Persistence** (depends on Domain) — SwiftData stores for history and watchlist.
+- **ReferenceData** (depends on Domain) — app-wide reference data loaded at launch (`ProviderCatalog`).
 - **DesignSystem** (no deps) — reusable views, colors, typography.
 - ***Feature** (depends on Domain + DesignSystem) — one package per screen, e.g. `SearchFeature`, `MovieDetailFeature`. PascalCase suffix style for consistency with the other packages.
 - **App** (depends on all) — composition root that wires concrete implementations.
@@ -126,18 +127,17 @@ The picker binding is **deferred** — `prefs.language` and `AppleLanguages` onl
 - Critical UI flow: one UI test (search → detail → providers).
 - Before opening a PR, run `swift test` in each package and `⌘U` on the App scheme.
 
-## TODO: caching strategy
+## Caching and reference data
 
-Currently `TMDBMovieRepository` has **no caching layer** — every repository call hits the network. This is deliberate while the multi-region subscriptions feature is in active test/debug: caches hide requests from Proxyman, which makes it harder to verify what's actually going over the wire.
+Three separate mechanisms, each for a different kind of data:
 
-When the feature is stable, reintroduce caching:
+- **Provider reference data** — `ProviderCatalog` (`ReferenceData` package). A `@MainActor @Observable` class, not an actor, so views read it synchronously and render complete on their first frame. Loaded by `RootView` at launch (worldwide + home region) and on region change; screens call `load(region:)` too, which is a no-op for loaded scopes and shares in-flight requests. No expiry — refetched next launch.
+- **Response caching** — `CachingMovieRepository` (`TMDBClient`), a decorator the composition root wraps around `TMDBMovieRepository`. Backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language) and movie detail (id + language) live for the session; availability (id + region) expires after 30 min. `availability(for:in:)` is served from the same entry as `availabilities(for:in:)`, so a movie seen in search results opens on Details without a request. Failures are never cached.
+- **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`). `AsyncImage` always shows its placeholder first, even on a URLCache hit; `ProviderLogo` uses `RemoteImage` instead, which renders synchronously when the decoded image is in memory. `RootView` prefetches the user's subscribed providers' logos after the catalog loads.
 
-- **Provider catalog** (`allProviders(in:)`) — actor-backed, keyed by `Region?` (`nil` = worldwide), in-memory for the app session. Names and logos are stable enough that refetching on next launch is acceptable. Previous implementation existed as `ProviderCatalogCache` — git history has the actor if useful.
-- **Watch providers per movie** (`availabilities(for:in:)`) — actor-backed, keyed by `MovieID`, TTL of maybe an hour. Currently every Details screen visit re-fetches, which is fine for testing but wasteful in production.
-- **Movie detail** (`movie(id:)`) — same actor pattern, keyed by `MovieID`. Lifetime of movie detail data is essentially "forever" (title and runtime don't change), so an app-session cache with no TTL is fine.
-- **URLSession URLCache** (`LiveTMDBClient`) — `URLSession.shared` ships with a default disk cache that honours TMDB's `Cache-Control` headers. The constructor currently builds its own `URLSession` with `urlCache = nil` + `requestCachePolicy = .reloadIgnoringLocalCacheData` so Proxyman sees every request. When putting caching back, the right grain is probably an in-memory-only `URLCache` (no disk) + the app-level actor caches above; or trust the URLCache entirely and remove the actor caches.
+`LiveTMDBClient` keeps `urlCache = nil`: all caching is app-level, explicit, and testable. To put every request back on the wire for Proxyman, launch with `STREAMIN_DISABLE_CACHE=1` (Edit Scheme → Run → Arguments → Environment Variables); `AppConfig.isResponseCachingEnabled` then skips the decorator.
 
-Before adding any cache back, add a test that verifies it can be bypassed (an `init(skipCache:)` flag or similar) so Proxyman-driven debugging keeps working.
+`SearchViewModel` also remembers the request behind the results on screen. `SearchResultsView`'s `.task` re-fires every time the screen reappears (e.g. Details popped); a repeated request keeps the results and only retries rows whose availability never arrived.
 
 ## TODO: DesignSystem package
 
@@ -219,7 +219,7 @@ Optional polish for shipping: separate "Skip for now" and "Continue" buttons, wh
 
 ## Non-goals (do not add without discussing first)
 
-No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts.
+No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts. The app runs on iPhone and iPad with the same adaptive SwiftUI layouts (`TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only; "Designed for iPhone/iPad" on Mac and Vision Pro disabled).
 
 ## Setup
 

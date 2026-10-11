@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import Domain
 import Preferences
+import ReferenceData
 @testable import SettingsFeature
 
 // MARK: - Test double
@@ -53,7 +54,7 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
     @Test func toggleAddsAndRemoves() {
         let prefs = makePrefs()
-        let model = StreamingServicesViewModel(repository: FakeMovieRepository(), prefs: prefs)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: FakeMovieRepository()), prefs: prefs)
 
         model.toggle(ProviderID(8))
         #expect(prefs.subscribedProviderIDs == [ProviderID(8)])
@@ -66,7 +67,7 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
     @Test func selectedCountReflectsPrefs() {
         let prefs = makePrefs()
-        let model = StreamingServicesViewModel(repository: FakeMovieRepository(), prefs: prefs)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: FakeMovieRepository()), prefs: prefs)
         #expect(model.selectedCount == 0)
 
         prefs.subscribedProviderIDs = [ProviderID(8), ProviderID(9)]
@@ -84,8 +85,8 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
         let prefs = makePrefs(region: .spain)
         prefs.subscribedProviderIDs = [ProviderID(8)]
-        let model = StreamingServicesViewModel(repository: repo, prefs: prefs)
-        await model.load(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
 
         // Netflix is selected → only Prime Video + Disney+ in the available list.
         #expect(model.availableProviders.map(\.id) == [ProviderID(9), ProviderID(337)])
@@ -99,8 +100,8 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
             provider(11, "MUBI", priority: 50)
         ], for: nil)
         let prefs = makePrefs(region: .spain)
-        let model = StreamingServicesViewModel(repository: repo, prefs: prefs)
-        await model.load(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
 
         // Home-scope: only Spain catalog (Netflix).
         #expect(model.availableProviders.map(\.id) == [ProviderID(8)])
@@ -121,8 +122,8 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
         let prefs = makePrefs(region: .spain)
         prefs.subscribedProviderIDs = [ProviderID(11)]
-        let model = StreamingServicesViewModel(repository: repo, prefs: prefs)
-        await model.load(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
 
         // MUBI's name comes from worldwide even though regional doesn't carry it.
         #expect(model.selectedProviders.map(\.id) == [ProviderID(11)])
@@ -140,8 +141,8 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
         let prefs = makePrefs(region: .spain)
         prefs.subscribedProviderIDs = [ProviderID(8)]
-        let model = StreamingServicesViewModel(repository: repo, prefs: prefs)
-        await model.load(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
 
         model.searchText = "mubi"
         // Selected list IS NOT filtered by search — Netflix stays visible so
@@ -156,10 +157,46 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         let repo = FakeMovieRepository()
         repo.setProviders([provider(8, "Netflix")], for: .spain)
         repo.setProviders([], for: nil)
-        let model = StreamingServicesViewModel(repository: repo, prefs: makePrefs(region: .spain))
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo),
+            prefs: makePrefs(region: .spain)
+        )
 
         #expect(model.hasLoadedAnyCatalog == false)
-        await model.load(region: .spain)
+        await model.load()
         #expect(model.hasLoadedAnyCatalog == true)
+    }
+
+    /// The Settings flicker fix: with the catalog preloaded at launch, a
+    /// freshly opened Settings screen has everything on its first render —
+    /// no "N selected" placeholder that later flips to the logo strip.
+    @Test func preloadedCatalogIsCompleteWithoutLoading() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([provider(8, "Netflix")], for: nil)
+        let catalog = ProviderCatalog(repository: repo)
+        await catalog.load(region: .spain)
+
+        let prefs = makePrefs(region: .spain)
+        prefs.subscribedProviderIDs = [ProviderID(8)]
+        let model = StreamingServicesViewModel(catalog: catalog, prefs: prefs)
+
+        #expect(model.hasLoadedAnyCatalog)
+        #expect(!model.isInitialLoad)
+        #expect(model.selectedProviders.first?.name == "Netflix")
+    }
+
+    @Test func isInitialLoadUntilScopedCatalogArrives() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([], for: nil)
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo),
+            prefs: makePrefs(region: .spain)
+        )
+
+        #expect(model.isInitialLoad)
+        await model.load()
+        #expect(!model.isInitialLoad)
     }
 }

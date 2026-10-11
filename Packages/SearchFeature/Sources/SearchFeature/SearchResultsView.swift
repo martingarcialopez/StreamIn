@@ -17,59 +17,89 @@ public struct SearchResultsView: View {
 
     @State private var model: SearchViewModel
     @State private var searchText: String
+    /// The query whose results are shown. Changes only on submit, so text
+    /// edited in the field but never submitted isn't searched when the user
+    /// comes back from Details.
+    @State private var submittedQuery: String
     @Environment(Preferences.self) private var prefs
 
     public init(model: SearchViewModel, initialQuery: String) {
         _model = State(initialValue: model)
         _searchText = State(initialValue: initialQuery)
+        _submittedQuery = State(initialValue: initialQuery)
     }
 
     public var body: some View {
         SearchContent(model: model, onRetry: retry)
             .navigationTitle(Text(.searchTitle))
             .searchable(text: $searchText, prompt: Text(.searchPrompt))
-            .onSubmit(of: .search, retry)
-            // Re-run the active query whenever region or language changes,
-            // and once on first appearance to surface initial results.
-            .task(id: prefs.snapshot) {
-                guard !searchText.isEmpty else { return }
-                await model.search(query: searchText, region: prefs.region)
+            .onSubmit(of: .search) {
+                if let query = SearchView.sanitize(searchText) {
+                    submittedQuery = query
+                }
+            }
+            // Fires on first appearance, on submit, and on region or language
+            // changes, cancelling the previous run. It also fires every time
+            // this screen reappears (e.g. Details popped); the view model
+            // recognises that as the search already on screen and keeps it.
+            .task(id: SearchTrigger(query: submittedQuery, settings: prefs.snapshot)) {
+                await search()
             }
     }
 
+    private func search() async {
+        await model.search(query: submittedQuery, region: prefs.region, language: prefs.language)
+    }
+
     private func retry() {
-        Task { await model.search(query: searchText, region: prefs.region) }
+        Task { await search() }
     }
 }
 
-// MARK: - Content branching
+private struct SearchTrigger: Hashable {
+    let query: String
+    let settings: Preferences.Snapshot
+}
+
+// MARK: - Content
 //
-// Per the project's view-structure convention, the content branches live in
-// their own `View` structs rather than `@ViewBuilder` computed properties on
-// `SearchResultsView`. The struct receives the view model directly —
-// `@Observable` invalidation is automatic when its body reads observable
-// properties.
+// The List stays on screen in every state; loading, error and empty states
+// are overlaid on it (empty at that point). Swapping a List in after a
+// spinner makes the navigation bar attach to a new scroll view, which
+// collapses the search field right after it has appeared.
 
 private struct SearchContent: View {
     let model: SearchViewModel
     let onRetry: () -> Void
 
     var body: some View {
-        if model.isLoading {
-            ProgressView { Text(.searchInProgress) }
-        } else if let error = model.error {
+        List(model.results) { movie in
+            NavigationLink(value: movie) {
+                SearchResultRow(movie: movie, model: model)
+            }
+        }
+        .overlay {
+            SearchStatus(model: model, onRetry: onRetry)
+        }
+    }
+}
+
+private struct SearchStatus: View {
+    let model: SearchViewModel
+    let onRetry: () -> Void
+
+    var body: some View {
+        if let error = model.error {
             ErrorState(error: error, onRetry: onRetry)
+        } else if model.isLoading || !model.hasLoadedResults {
+            // `!hasLoadedResults` covers the first frame, before `.task` has
+            // started the search — otherwise "No results" flashes on push.
+            ProgressView { Text(.searchInProgress) }
         } else if model.results.isEmpty {
             ContentUnavailableView {
                 Label { Text(.searchEmptyTitle) } icon: { Image(systemName: Symbol.movieclapper) }
             } description: {
                 Text(.searchEmptyState)
-            }
-        } else {
-            List(model.results) { movie in
-                NavigationLink(value: movie) {
-                    SearchResultRow(movie: movie, model: model)
-                }
             }
         }
     }

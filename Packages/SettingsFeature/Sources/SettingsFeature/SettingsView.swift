@@ -11,6 +11,7 @@
 import SwiftUI
 import Domain
 import Preferences
+import ReferenceData
 import DesignSystem
 
 public struct SettingsView: View {
@@ -22,21 +23,19 @@ public struct SettingsView: View {
 
     @State private var streamingServicesModel: StreamingServicesViewModel
 
-    private let repository: MovieRepository
     private let imageURLBuilder: ImageURLBuilder
 
     @Environment(\.dismiss) private var dismiss
 
     public init(
         prefs: Preferences,
-        repository: MovieRepository,
+        catalog: ProviderCatalog,
         imageURLBuilder: ImageURLBuilder
     ) {
         self.prefs = prefs
-        self.repository = repository
         self.imageURLBuilder = imageURLBuilder
         _streamingServicesModel = State(
-            initialValue: StreamingServicesViewModel(repository: repository, prefs: prefs)
+            initialValue: StreamingServicesViewModel(catalog: catalog, prefs: prefs)
         )
     }
 
@@ -57,12 +56,11 @@ public struct SettingsView: View {
                 Button(.settingsDone) { dismiss() }
             }
         }
-        // Load the streaming-services catalog as soon as Settings appears so
-        // the row summary can render provider logos (and the pushed picker
-        // doesn't have to wait for a network round-trip). Re-fires when the
-        // user changes their region.
+        // The catalog is preloaded at launch, so this is normally a no-op.
+        // It recovers from a failed preload and covers a region change made
+        // while Settings is open.
         .task(id: prefs.region) {
-            await streamingServicesModel.load(region: prefs.region)
+            await streamingServicesModel.load()
         }
     }
 }
@@ -289,7 +287,7 @@ private struct ProviderIcon: View {
     NavigationStack {
         SettingsView(
             prefs: Preferences(),
-            repository: PreviewMovieRepository(),
+            catalog: ProviderCatalog(repository: PreviewMovieRepository()),
             imageURLBuilder: PreviewImageURLBuilder()
         )
     }

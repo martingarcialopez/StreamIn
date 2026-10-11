@@ -23,6 +23,21 @@ public final class SearchViewModel {
     private(set) var error: MovieError?
     private(set) var isLoading = false
 
+    /// The inputs behind the results on screen. A `search` with the same inputs
+    /// keeps them instead of reloading — that's what the results screen's
+    /// `.task` does every time it reappears after Details is popped.
+    private var loadedRequest: Request?
+
+    /// True once a search has finished and `results` belong to it — so an
+    /// empty `results` means "nothing found" rather than "not searched yet".
+    var hasLoadedResults: Bool { loadedRequest != nil }
+
+    private struct Request: Equatable {
+        let query: String
+        let region: Region
+        let language: Language
+    }
+
     public init(
         repository: MovieRepository,
         imageURLBuilder: ImageURLBuilder
@@ -31,32 +46,51 @@ public final class SearchViewModel {
         self.imageURLBuilder = imageURLBuilder
     }
 
-    /// Region is passed per-call rather than stored, so a runtime region change
-    /// flows through to the next search without rebuilding the view model.
-    public func search(query: String, region: Region) async {
+    /// Searches `query` and fetches every result's streaming availability in
+    /// `region`.
+    ///
+    /// `language` isn't sent from here (the client carries it), but it's part
+    /// of what identifies the results: after a language change the titles on
+    /// screen are stale and must be reloaded.
+    public func search(query: String, region: Region, language: Language) async {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
-            results = []
-            availability = [:]
-            error = nil
+            reset()
             return
         }
+        let request = Request(query: trimmed, region: region, language: language)
+
+        if request == loadedRequest {
+            // Already on screen. Only retry rows whose availability never
+            // arrived (failed, or the fan-out was interrupted).
+            let missing = results.filter { availability[$0.id] == nil }
+            await fetchAvailability(for: missing, request: request)
+            return
+        }
+
         isLoading = true
-        defer { isLoading = false }
+        error = nil
+        results = []
+        availability = [:]
+        loadedRequest = nil
         do {
             let page = try await repository.searchMovies(query: trimmed, page: 1)
+            // Superseded while in flight (new query, region or language):
+            // the run that replaced this one owns the state now.
+            guard !Task.isCancelled else { return }
             results = page.results
-            availability = [:]      // clear stale entries before fanning out
-            error = nil
-            await fetchAvailability(for: page.results, region: region)
-        } catch let movieError as MovieError {
-            error = movieError
-            results = []
-            availability = [:]
+            loadedRequest = request
+            // Show the list right away; each row's providers fill in as the
+            // fan-out below completes.
+            isLoading = false
+            await fetchAvailability(for: page.results, request: request)
         } catch {
-            self.error = .unknown
+            guard !Task.isCancelled else { return }
+            self.error = (error as? MovieError) ?? .unknown
             results = []
             availability = [:]
+            loadedRequest = nil
+            isLoading = false
         }
     }
 
@@ -68,26 +102,33 @@ public final class SearchViewModel {
         provider.logoPath.flatMap { imageURLBuilder.url(for: $0, size: .providerLogo) }
     }
 
+    private func reset() {
+        results = []
+        availability = [:]
+        error = nil
+        isLoading = false
+        loadedRequest = nil
+    }
+
     /// Fan out one availability call per movie in parallel.
     ///
     /// Each child task runs nonisolated (it's `@Sendable`), so the network calls
     /// proceed concurrently on the cooperative thread pool. Results are funneled
     /// back to the main actor through the `for await` loop, which serializes the
-    /// dictionary writes safely. Per-movie failures are silently dropped — that
-    /// row will keep its "loading" placeholder until the next search.
-    private func fetchAvailability(for movies: [Movie], region: Region) async {
+    /// dictionary writes safely. A failed row keeps its "loading" placeholder and
+    /// is retried by the next `search` call for the same request.
+    private func fetchAvailability(for movies: [Movie], request: Request) async {
+        let region = request.region
         await withTaskGroup(of: (MovieID, WatchAvailability?).self) { group in
             for movie in movies {
                 group.addTask { [repository] in
-                    do {
-                        let value = try await repository.availability(for: movie.id, in: region)
-                        return (movie.id, value)
-                    } catch {
-                        return (movie.id, nil)
-                    }
+                    (movie.id, try? await repository.availability(for: movie.id, in: region))
                 }
             }
             for await (id, value) in group {
+                // A newer search replaced these results; its fan-out owns
+                // `availability` now.
+                guard loadedRequest == request else { break }
                 if let value {
                     availability[id] = value
                 }

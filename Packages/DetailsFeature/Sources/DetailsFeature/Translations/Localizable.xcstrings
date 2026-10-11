@@ -170,13 +170,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set up your subscriptions in Settings to see where you can watch this."
+            "value" : "Add the streaming services you pay for to see where you can watch this."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configura tus suscripciones en Ajustes para ver dónde puedes ver esta película."
+            "value" : "Añade los servicios de streaming que pagas para ver dónde puedes ver esta película."
           }
         }
       }
@@ -200,19 +200,19 @@
       }
     },
     "detailsSubscriptionsConfigureButton" : {
-      "comment" : "Button label that takes the user to Settings to configure subscriptions",
+      "comment" : "Button in the no-subscriptions state that opens the streaming-services picker",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Settings"
+            "value" : "Choose your services"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir Ajustes"
+            "value" : "Elegir tus servicios"
           }
         }
       }
