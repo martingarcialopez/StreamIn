@@ -397,54 +397,17 @@ public struct TMDBMovieRepository: MovieRepository {
         let response = try await mapErrors {
             try await client.providerList(watchRegion: region?.code)
         }
-        // Map to Domain types, then dedupe by canonical id so aliased variants
-        // (e.g. Prime Video ids 9 / 119 / 2100) collapse into a single row.
-        //
-        // When two DTOs reduce to the same canonical id, we prefer the one
-        // whose original id IS the canonical — that's almost always the entry
-        // with the "main" name (e.g. "Amazon Prime Video" rather than "Amazon
-        // Prime Video with Ads"). Priority is taken as the lower of the two.
-        var byCanonical: [ProviderID: WatchProvider] = [:]
-        for dto in response.results {
-            let originalID = ProviderID(dto.providerId)
-            let canonicalID = ProviderAliases.canonical(originalID)
-            let candidate = WatchProvider(
-                id: canonicalID,
+        // Aliased variants (e.g. Prime Video ids 9 / 119 / 2100) collapse into
+        // a single row under the canonical id and name.
+        let providers = response.results.map { dto in
+            WatchProvider(
+                id: ProviderID(dto.providerId),
                 name: dto.providerName,
                 logoPath: dto.logoPath.map(ImagePath.init),
                 priority: dto.displayPriority
             )
-            if let existing = byCanonical[canonicalID] {
-                // Tie-breaker: prefer the candidate whose original id was
-                // canonical. Detect that by comparing original id and
-                // canonical — but `existing` no longer remembers its original
-                // id. The heuristic that works in practice: if `candidate`'s
-                // original was canonical AND `existing` wasn't generated from
-                // the canonical original (we can't fully tell), bias toward
-                // it. The simpler rule below is "lower priority wins; ties
-                // broken by canonical-originality of this candidate."
-                let candidateIsCanonicalOriginal = (originalID == canonicalID)
-                if candidate.priority < existing.priority ||
-                    (candidate.priority == existing.priority && candidateIsCanonicalOriginal) {
-                    byCanonical[canonicalID] = WatchProvider(
-                        id: canonicalID,
-                        name: candidate.name,
-                        logoPath: candidate.logoPath,
-                        priority: min(existing.priority, candidate.priority)
-                    )
-                } else {
-                    byCanonical[canonicalID] = WatchProvider(
-                        id: canonicalID,
-                        name: existing.name,
-                        logoPath: existing.logoPath,
-                        priority: min(existing.priority, candidate.priority)
-                    )
-                }
-            } else {
-                byCanonical[canonicalID] = candidate
-            }
         }
-        return byCanonical.values.sorted { lhs, rhs in
+        return ProviderAliases.merging(providers).sorted { lhs, rhs in
             if lhs.priority != rhs.priority {
                 return lhs.priority < rhs.priority
             }
@@ -492,12 +455,19 @@ public struct TMDBMovieRepository: MovieRepository {
         return WatchAvailability(
             movieID: id,
             region: region,
-            subscription: regional?.flatrate?.map(map(dto:)) ?? [],
-            rent: regional?.rent?.map(map(dto:)) ?? [],
-            buy: regional?.buy?.map(map(dto:)) ?? [],
-            free: regional?.free?.map(map(dto:)) ?? [],
+            subscription: providers(regional?.flatrate),
+            rent: providers(regional?.rent),
+            buy: providers(regional?.buy),
+            free: providers(regional?.free),
             externalLink: regional?.link.flatMap(URL.init(string:))
         )
+    }
+
+    /// One entry per brand: TMDB often lists aliased ids side by side in one
+    /// region (Netflix 8 and "Netflix Standard with Ads" 1796), which would
+    /// otherwise show the same logo twice.
+    private func providers(_ dtos: [TMDBProviderDTO]?) -> [WatchProvider] {
+        ProviderAliases.merging((dtos ?? []).map(map(dto:)))
     }
 
     /// Walk every region's flatrate list; accumulate per-provider region sets.

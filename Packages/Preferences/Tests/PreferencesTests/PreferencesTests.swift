@@ -43,3 +43,33 @@ import Domain
         #expect(prefs.subscribedProviderIDs.isEmpty)
     }
 }
+
+@MainActor
+@Suite struct LanguagePersistenceTests {
+
+    private func makeDefaults() -> UserDefaults {
+        let suite = "PreferencesTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
+    }
+
+    @Test func roundTripPersistsAcrossInstances() {
+        let defaults = makeDefaults()
+        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+        prefs.language = .spanishES
+
+        #expect(Preferences(defaultLanguage: .englishUS, defaults: defaults).language == .spanishES)
+    }
+
+    /// French was offered before the picker was limited to translated
+    /// languages; a stored French choice must not survive.
+    @Test func languageThePickerNoLongerOffersFallsBackToTheDefault() {
+        let defaults = makeDefaults()
+        defaults.set("fr-FR", forKey: "settings.language.code")
+
+        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+
+        #expect(prefs.language == .englishUS)
+    }
+}

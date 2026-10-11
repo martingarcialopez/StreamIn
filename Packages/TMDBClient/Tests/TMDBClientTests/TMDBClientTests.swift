@@ -64,8 +64,9 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
         let repo = TMDBMovieRepository(client: stub)
         let bundle = try await repo.availabilities(for: MovieID(27205), in: .unitedStates)
 
-        // Regional view reflects only the US slice.
-        #expect(Set(bundle.regional.subscription.map(\.id)) == Set([ProviderID(8), ProviderID(337)]))
+        // Regional view reflects only the US slice, under canonical ids like
+        // the global view ("Disney Plus" 337 is Disney+ 122).
+        #expect(Set(bundle.regional.subscription.map(\.id)) == Set([ProviderID(8), ProviderID(122)]))
 
         // Global view aggregates: three distinct providers across the two regions.
         #expect(bundle.global.subscription.count == 3)
@@ -157,6 +158,40 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
         #expect(bundle.global.subscription.isEmpty)
         // Regional rent is still surfaced.
         #expect(bundle.regional.rent.map(\.id) == [ProviderID(99)])
+    }
+
+    /// TMDB lists Netflix and its ad tier side by side in one region; the
+    /// regional view must show one Netflix, under the canonical id and name,
+    /// in every category.
+    @Test func regionalMergesAliasedProviders() async throws {
+        let stub = StubTMDBClient()
+        stub.watchProvidersResult = .success(
+            TMDBWatchProvidersResponse(
+                id: 27205,
+                results: [
+                    "US": TMDBWatchProvidersRegionDTO(
+                        link: nil,
+                        flatrate: [
+                            TMDBProviderDTO(providerId: 8, providerName: "Netflix", logoPath: "/n.png", displayPriority: 1),
+                            TMDBProviderDTO(providerId: 1796, providerName: "Netflix Standard with Ads", logoPath: "/n-ads.png", displayPriority: 2),
+                            TMDBProviderDTO(providerId: 337, providerName: "Disney Plus", logoPath: nil, displayPriority: 5)
+                        ],
+                        rent: nil,
+                        buy: nil,
+                        free: [
+                            TMDBProviderDTO(providerId: 613, providerName: "Amazon Prime Video Free with Ads", logoPath: nil, displayPriority: 3),
+                            TMDBProviderDTO(providerId: 2100, providerName: "Amazon Prime Video with Ads", logoPath: nil, displayPriority: 4)
+                        ]
+                    )
+                ]
+            )
+        )
+        let repo = TMDBMovieRepository(client: stub)
+        let regional = try await repo.availability(for: MovieID(27205), in: .unitedStates)
+
+        #expect(regional.subscription.map(\.id) == [ProviderID(8), ProviderID(122)])
+        #expect(regional.subscription.first?.name == "Netflix")
+        #expect(regional.free.map(\.id) == [ProviderID(9)])
     }
 }
 

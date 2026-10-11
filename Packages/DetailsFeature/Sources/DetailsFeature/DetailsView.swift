@@ -15,6 +15,8 @@ import DesignSystem
 public struct DetailsView: View {
 
     @State private var model: DetailsViewModel
+    /// Bumped by Retry so the load re-runs through `.task(id:)`.
+    @State private var loadAttempt = 0
     @Environment(Preferences.self) private var prefs
     private let onEditSubscriptions: () -> Void
 
@@ -58,16 +60,29 @@ public struct DetailsView: View {
 
                     Divider()
 
-                    SubscribedAvailabilitySection(model: model, onEditSubscriptions: onEditSubscriptions)
+                    SubscribedAvailabilitySection(
+                        model: model,
+                        onEditSubscriptions: onEditSubscriptions,
+                        onRetry: retry
+                    )
 
-                    Divider()
-
-                    ProvidersSection(model: model)
-
-                    if let error = model.error {
+                    if let failure = model.availabilityFailure {
+                        // With services picked, the section above shows the
+                        // error; without, it offers the picker and the error
+                        // goes here.
+                        if model.subscriptionsState == .needsSubscriptions {
+                            Divider()
+                            ErrorRetry(error: failure, onRetry: retry)
+                        }
+                    } else {
                         Divider()
-                        ErrorRetry(error: error) {
-                            Task { await model.load(region: prefs.region) }
+
+                        ProvidersSection(model: model)
+
+                        // A reload failed; the earlier results stay above.
+                        if let error = model.error {
+                            Divider()
+                            ErrorRetry(error: error, onRetry: retry)
                         }
                     }
                 }
@@ -76,12 +91,22 @@ public struct DetailsView: View {
             .padding(.bottom, 24)
         }
         .toolbarTitleDisplayMode(.inline)
-        // Reload whenever language or region changes; the initial render also
-        // hits this once so the view doesn't need a separate `.task { ... }`.
-        .task(id: prefs.snapshot) {
+        // Loads on first render, and again when the language or region
+        // changes or Retry is tapped. SwiftUI cancels the previous run, so
+        // only the latest one writes to the model.
+        .task(id: LoadTrigger(settings: prefs.snapshot, attempt: loadAttempt)) {
             await model.load(region: prefs.region)
         }
     }
+
+    private func retry() {
+        loadAttempt += 1
+    }
+}
+
+private struct LoadTrigger: Hashable {
+    let settings: Preferences.Snapshot
+    let attempt: Int
 }
 
 // MARK: - Metadata strip
@@ -112,38 +137,47 @@ private struct MetadataRow: View {
 private struct SubscribedAvailabilitySection: View {
     let model: DetailsViewModel
     let onEditSubscriptions: () -> Void
+    let onRetry: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SubscribedAvailabilityContent(model: model, onEditSubscriptions: onEditSubscriptions)
+            SubscribedAvailabilityContent(
+                model: model,
+                onEditSubscriptions: onEditSubscriptions,
+                onRetry: onRetry
+            )
         }
     }
 }
 
-/// Dispatches between the four mutually-exclusive states of the subscribed-
-/// availability area:
-///   - loading (first fetch, no data yet)
+/// Renders `DetailsViewModel.subscriptionsState`:
 ///   - no subscriptions configured → button to pick services
+///   - loading (no availability yet) → spinner
+///   - load failed → the error and Retry
 ///   - has subscriptions but no matches → "not available with your subs"
 ///   - has matches → `HomeRegionSubsection` + optional `OtherRegionsSubsection`
 private struct SubscribedAvailabilityContent: View {
     let model: DetailsViewModel
     let onEditSubscriptions: () -> Void
+    let onRetry: () -> Void
 
     var body: some View {
-        if model.isLoading && model.globalAvailability == nil {
+        switch model.subscriptionsState {
+        case .needsSubscriptions:
+            EmptyStateConfigure(onEditSubscriptions: onEditSubscriptions)
+        case .loading:
             HStack {
                 Spacer()
                 ProgressView()
                 Spacer()
             }
-        } else if !model.hasAnySubscriptions {
-            EmptyStateConfigure(onEditSubscriptions: onEditSubscriptions)
-        } else if model.subscribedAvailability.isEmpty {
+        case .failed(let error):
+            ErrorRetry(error: error, onRetry: onRetry)
+        case .noMatches:
             Text(.detailsSubscriptionsNoMatches)
                 .font(.callout)
                 .foregroundStyle(.secondary)
-        } else {
+        case .available:
             HomeRegionSubsection(model: model)
             // Render the "other regions" subsection only if there's anything
             // to show — otherwise an empty header is noise.
@@ -368,7 +402,7 @@ private struct ProvidersSection: View {
     let model: DetailsViewModel
 
     var body: some View {
-        if let availability = model.availability {
+        if let availability = model.homeAvailability {
             VStack(alignment: .leading, spacing: 14) {
                 Text(.detailsWhereToWatch)
                     .font(.headline)
@@ -390,7 +424,9 @@ private struct ProvidersSection: View {
                         .foregroundStyle(.tertiary)
                 }
             }
-        } else if model.isLoading {
+        } else if model.error == nil {
+            // Not loaded yet for this region. A failed load shows its error
+            // instead (in place of this section, or below it after a reload).
             HStack {
                 Spacer()
                 ProgressView { Text(.detailsCheckingAvailability) }
@@ -475,56 +511,87 @@ private struct BackdropView: View {
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Available") {
+    let prefs = previewPrefs(name: "available")
     NavigationStack {
         DetailsView(
             model: DetailsViewModel(
-                movie: Movie(
-                    id: MovieID(27205),
-                    title: "Inception",
-                    originalTitle: "Inception",
-                    overview: "A thief who steals corporate secrets through dream-sharing technology…",
-                    releaseDate: nil,
-                    posterPath: nil,
-                    backdropPath: nil,
-                    voteAverage: 8.4,
-                    runtime: nil
-                ),
+                movie: PreviewMovieRepository.inception,
                 repository: PreviewMovieRepository(),
                 imageURLBuilder: PreviewImageURLBuilder(),
-                prefs: Preferences()
+                prefs: prefs
             ),
             onEditSubscriptions: {}
         )
-        .environment(Preferences())
+        .environment(prefs)
     }
 }
 
+#Preview("Offline") {
+    let prefs = previewPrefs(name: "offline")
+    NavigationStack {
+        DetailsView(
+            model: DetailsViewModel(
+                movie: PreviewMovieRepository.inception,
+                repository: PreviewMovieRepository(availabilityError: .offline),
+                imageURLBuilder: PreviewImageURLBuilder(),
+                prefs: prefs
+            ),
+            onEditSubscriptions: {}
+        )
+        .environment(prefs)
+    }
+}
+
+/// Subscribed to Netflix, in its own defaults suite so previews don't share state.
+@MainActor
+private func previewPrefs(name: String) -> Preferences {
+    let prefs = Preferences(defaultRegion: .spain, defaults: UserDefaults(suiteName: "DetailsView.preview.\(name)")!)
+    prefs.subscribedProviderIDs = [ProviderID(8)]
+    return prefs
+}
+
+/// `load()` runs in the preview too (`.task` fires), so `movie(id:)` and
+/// `availabilities(for:in:)` must return data.
 private struct PreviewMovieRepository: MovieRepository {
+    /// Makes `availabilities` fail, to preview the error state.
+    var availabilityError: MovieError?
+
+    static let inception = Movie(
+        id: MovieID(27205),
+        title: "Inception",
+        originalTitle: "Inception",
+        overview: "A thief who steals corporate secrets through dream-sharing technology…",
+        releaseDate: nil,
+        posterPath: nil,
+        backdropPath: nil,
+        voteAverage: 8.4,
+        runtime: .seconds(148 * 60),
+        directors: [Person(id: PersonID(525), name: "Christopher Nolan", profilePath: nil)]
+    )
+
+    private static let netflix = WatchProvider(id: ProviderID(8), name: "Netflix", logoPath: nil, priority: 1)
+
     func searchMovies(query: String, page: Int) async throws -> SearchPage {
         fatalError("not used in preview")
     }
     func movie(id: MovieID) async throws -> Movie {
-        fatalError("not used in preview")
+        Self.inception
     }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
-        WatchAvailability(
-            movieID: id,
-            region: region,
-            subscription: [],
-            rent: [],
-            buy: [],
-            free: [],
-            externalLink: nil
-        )
+        fatalError("not used in preview")
     }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
-        AvailabilityBundle(
+        if let availabilityError { throw availabilityError }
+        return AvailabilityBundle(
             regional: WatchAvailability(
                 movieID: id, region: region,
-                subscription: [], rent: [], buy: [], free: [], externalLink: nil
+                subscription: [Self.netflix], rent: [], buy: [], free: [], externalLink: nil
             ),
-            global: GlobalWatchAvailability(movieID: id, subscription: [])
+            global: GlobalWatchAvailability(
+                movieID: id,
+                subscription: [ProviderRegionalAvailability(provider: Self.netflix, regions: [region, .france, .germany])]
+            )
         )
     }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }

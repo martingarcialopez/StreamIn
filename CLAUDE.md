@@ -74,7 +74,7 @@ Settled — surface it explicitly before challenging one.
 - **Composition root in `StreamInApp.init()`** is the only place concrete types are built (`LiveTMDBClient`, `TMDBMovieRepository`, `CachingMovieRepository`, `ProviderCatalog`). No DI container.
 - **Typed `MovieError`** (offline, timeout, rateLimited, unauthorized, notFound, server, decoding, cancelled, unknown): views switch exhaustively; transport errors never leave the adapter.
 - **Build-time secrets** via a Run Script that generates `GeneratedSecrets.swift` from `Secrets.xcconfig` — details in `.claude/rules/secrets.md`.
-- **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file (`fatalError` for unused methods is fine there). Test fakes must be complete.
+- **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file. `fatalError` is fine only in methods the preview never reaches: a view's `.task` runs in previews too, so render the preview once to check. Test fakes must be complete.
 - **SwiftData over Core Data, Swift Testing over XCTest, no Combine.** One SwiftData store (watchlist); search history was dropped from scope.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.

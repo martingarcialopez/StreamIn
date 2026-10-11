@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import Domain
 
 // MARK: - ProviderAliases
@@ -115,6 +116,90 @@ import Testing
 
         // Unaliased id returns a singleton.
         #expect(ProviderAliases.aliasGroup(of: ProviderID(283)) == Set([ProviderID(283)]))
+    }
+}
+
+// MARK: - ProviderAliases.merging
+
+@Suite struct ProviderMergingTests {
+
+    private func provider(_ id: Int, _ name: String, priority: Int) -> WatchProvider {
+        WatchProvider(id: ProviderID(id), name: name, logoPath: ImagePath("/\(id).png"), priority: priority)
+    }
+
+    /// TMDB lists Netflix and its ad tier side by side in one region; the
+    /// app must show one Netflix.
+    @Test func collapsesAliasesIntoOneEntryPerBrand() {
+        let merged = ProviderAliases.merging([
+            provider(8, "Netflix", priority: 3),
+            provider(1796, "Netflix Standard with Ads", priority: 1),
+            provider(337, "Disney Plus", priority: 5)
+        ])
+
+        #expect(merged.map(\.id) == [ProviderID(8), ProviderID(122)])
+        let netflix = merged[0]
+        #expect(netflix.name == "Netflix")
+        #expect(netflix.logoPath == ImagePath("/8.png"))
+        #expect(netflix.priority == 1)
+    }
+
+    @Test func canonicalMetadataWinsEvenWhenSeenLast() {
+        let merged = ProviderAliases.merging([
+            provider(2100, "Amazon Prime Video with Ads", priority: 4),
+            provider(119, "Amazon Prime Video (LatAm)", priority: 2),
+            provider(9, "Amazon Prime Video", priority: 6)
+        ])
+
+        #expect(merged == [
+            WatchProvider(id: ProviderID(9), name: "Amazon Prime Video", logoPath: ImagePath("/9.png"), priority: 2)
+        ])
+    }
+
+    @Test func firstSeenMetadataWithoutACanonicalEntry() {
+        let merged = ProviderAliases.merging([
+            provider(1796, "Netflix Standard with Ads", priority: 2),
+            provider(175, "Netflix Kids", priority: 1)
+        ])
+
+        #expect(merged.map(\.id) == [ProviderID(8)])
+        #expect(merged.first?.name == "Netflix Standard with Ads")
+        #expect(merged.first?.priority == 1)
+    }
+
+    @Test func unaliasedProvidersKeepTheirOrder() {
+        let input = [
+            provider(283, "Crunchyroll", priority: 9),
+            provider(8, "Netflix", priority: 1),
+            provider(350, "Apple TV+", priority: 4)
+        ]
+        #expect(ProviderAliases.merging(input) == input)
+    }
+}
+
+// MARK: - Language
+
+@Suite struct LanguageTests {
+
+    /// The picker switches the interface too, so it may only offer languages
+    /// every String Catalog translates.
+    @Test func pickerOffersOnlyTranslatedLanguages() {
+        #expect(Language.allKnown.map(\.code) == ["en-US", "es-ES"])
+    }
+
+    @Test func exactMatchWins() {
+        #expect(Language.currentLocale(for: Locale(identifier: "es_ES")) == .spanishES)
+    }
+
+    @Test func languageCodeMatchesAcrossRegions() {
+        #expect(Language.currentLocale(for: Locale(identifier: "es_MX")) == .spanishES)
+        #expect(Language.currentLocale(for: Locale(identifier: "en_GB")) == .englishUS)
+    }
+
+    /// An untranslated device language falls back to English, the language
+    /// iOS shows the interface in, so content and interface agree.
+    @Test func untranslatedLanguageFallsBackToEnglish() {
+        #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUS)
     }
 }
 
