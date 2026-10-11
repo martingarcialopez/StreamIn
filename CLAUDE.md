@@ -219,7 +219,7 @@ Optional polish for shipping: separate "Skip for now" and "Continue" buttons, wh
 
 ## Non-goals (do not add without discussing first)
 
-No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts. The app target is iPhone-only (`TARGETED_DEVICE_FAMILY = 1`, iOS platforms only, "Designed for iPhone" on Mac / Vision Pro disabled).
+No auth, no social features, no video playback, no analytics, no iCloud sync, no iPad-specific layouts. The app runs on iPhone and iPad with the same adaptive SwiftUI layouts (`TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only; "Designed for iPhone/iPad" on Mac and Vision Pro disabled).
 
 ## Setup
 
