@@ -12,11 +12,15 @@ on:
 
 jobs:
   claude:
+    # Only the repository owner can summon Claude, so a stray @claude can't
+    # spend the subscription's usage.
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      github.actor == github.repository_owner && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,11 +44,9 @@ jobs:
           additional_permissions: |
             actions: read
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
-
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr *)'
+          # Claude follows the instructions in the comment that tagged it, plus
+          # CLAUDE.md. These lines cover what's specific to running here.
+          # Options: https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          claude_args: |
+            --append-system-prompt "You are running in GitHub Actions on Linux: Xcode isn't available, so you cannot build or test this iOS app. When you change code, say so in your reply and list what Martín should verify locally. Follow CLAUDE.md and the rules in .claude/rules/. Commit messages: Conventional Commits, a short title plus at most two short lines. Never push to main; work on the pull request's branch."
 
