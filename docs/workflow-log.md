@@ -11,6 +11,39 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — Claude gets its own GitHub identity
+
+**Why:** review conversations on #1 showed one account talking to itself
+(Martín's comments and replies signed "— Claude Code"); resolved threads are
+also collapsed, so the collaboration was invisible to anyone browsing the repo.
+
+**What changed**
+
+- Claude GitHub app installed with `/install-github-app`; it authenticates with
+  Martín's Claude subscription (`CLAUDE_CODE_OAUTH_TOKEN` secret), so there's no
+  separate API billing. From now on it acts on GitHub as **claude[bot]**.
+- `claude.yml`: `@claude` in a PR comment, review or issue makes claude[bot] answer
+  or push a fix. Only the repository owner can trigger it; extra instructions tell
+  it that it can't build iOS on Linux, to follow CLAUDE.md, keep commits short and
+  never push to `main`.
+- `claude-code-review.yml`: Anthropic's official `code-review` plugin (multi-agent,
+  checks CLAUDE.md compliance, reports only high-confidence issues) reviews each PR
+  once — when opened, reopened or marked ready, not on every push. Drafts skipped.
+- The `after-edit` hook skips cleanly where Apple tools don't exist, since project
+  hooks also load when Claude runs in GitHub Actions.
+
+**Decisions**
+
+- **Two reviewers, not one copied twice.** `ios-reviewer` runs locally before a PR
+  with the project checklist; the official plugin reviews independently on GitHub.
+  Duplicating `ios-reviewer` in CI would have added nothing.
+- **Review on open only.** Re-reviewing on every push would burn usage and bury the
+  conversation; `@claude review` asks for another pass when it's worth it.
+- **Known limit:** GitHub's Linux runners can't build the app, so verification stays
+  on the Mac until a macOS CI job exists.
+
+---
+
 ## 2026-10-11 — First review round on a PR
 
 **What happened:** Martín's review of #1 had two comments with one request:

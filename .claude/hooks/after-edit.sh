@@ -4,6 +4,10 @@
 
 file=$(jq -r '.tool_input.file_path // empty')
 
+# Both checks need Apple tooling. On Linux (Claude in GitHub Actions) skip them
+# rather than failing every edit.
+command -v xcrun >/dev/null 2>&1 || exit 0
+
 case "$file" in
     */Packages/*/Translations/Localizable.xcstrings)
         # Xcode regenerates symbols only for app-target catalogs; package

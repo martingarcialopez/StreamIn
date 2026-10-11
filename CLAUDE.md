@@ -61,6 +61,7 @@ TMDBClient or SwiftData directly.**
 | Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
+| GitHub (`.github/workflows/`) | **claude[bot]**: answers or pushes fixes when Martín writes `@claude` in a PR or issue (`claude.yml`); reviews each PR once when it opens with Anthropic's `code-review` plugin (`claude-code-review.yml`). Runs on Linux, so it can't build or test the app |
 
 ## Decisions
 
