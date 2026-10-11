@@ -46,7 +46,7 @@ TMDBClient or SwiftData directly.**
 
 ## How we work
 
-- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. Roadmap and phase plans: `~/.claude/plans/`.
+- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. The roadmap — status, remaining phases, what's next — is [`docs/roadmap.md`](docs/roadmap.md): read it at the start of a session and update it when a phase ships.
 - **One branch and one PR per phase** (`feat/…`, `chore/…`) into `main`. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`.
 - **Verify at the end of each task, not per edit**: app build + tests of the packages touched. Prefer the Xcode MCP; fall back to the simulator build tool or `xcodebuild` (commands in the `ship-phase` skill). If verification can't run, say so.
 - **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → verify → log → commit → PR.
@@ -74,7 +74,7 @@ Settled — surface it explicitly before challenging one.
 - **Composition root in `StreamInApp.init()`** is the only place concrete types are built (`LiveTMDBClient`, `TMDBMovieRepository`, `CachingMovieRepository`, `ProviderCatalog`). No DI container.
 - **Typed `MovieError`** (offline, timeout, rateLimited, unauthorized, notFound, server, decoding, cancelled, unknown): views switch exhaustively; transport errors never leave the adapter.
 - **Build-time secrets** via a Run Script that generates `GeneratedSecrets.swift` from `Secrets.xcconfig` — details in `.claude/rules/secrets.md`.
-- **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file (`fatalError` for unused methods is fine there). Test fakes must be complete.
+- **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file. `fatalError` is fine only in methods the preview never reaches: a view's `.task` runs in previews too, so render the preview once to check. Test fakes must be complete.
 - **SwiftData over Core Data, Swift Testing over XCTest, no Combine.** One SwiftData store (watchlist); search history was dropped from scope.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.

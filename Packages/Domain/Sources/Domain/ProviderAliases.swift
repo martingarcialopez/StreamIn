@@ -137,4 +137,41 @@ public enum ProviderAliases {
     public static func aliasGroup(of id: ProviderID) -> Set<ProviderID> {
         groups.first(where: { $0.contains(id) }) ?? [id]
     }
+
+    /// Collapses aliased providers into one entry per brand, under the
+    /// canonical id. The entry that already carries the canonical id supplies
+    /// the name and logo ("Netflix", not "Netflix Standard with Ads"),
+    /// otherwise the first one seen does. Each brand keeps its best (lowest)
+    /// priority and the position where it first appeared.
+    public static func merging(_ providers: [WatchProvider]) -> [WatchProvider] {
+        var order: [ProviderID] = []
+        var merged: [ProviderID: (provider: WatchProvider, hasCanonicalMetadata: Bool)] = [:]
+
+        for provider in providers {
+            let canonicalID = canonical(provider.id)
+            let isCanonical = provider.id == canonicalID
+
+            guard let existing = merged[canonicalID] else {
+                order.append(canonicalID)
+                merged[canonicalID] = (
+                    WatchProvider(id: canonicalID, name: provider.name, logoPath: provider.logoPath, priority: provider.priority),
+                    isCanonical
+                )
+                continue
+            }
+
+            let metadata = isCanonical && !existing.hasCanonicalMetadata ? provider : existing.provider
+            merged[canonicalID] = (
+                WatchProvider(
+                    id: canonicalID,
+                    name: metadata.name,
+                    logoPath: metadata.logoPath,
+                    priority: min(existing.provider.priority, provider.priority)
+                ),
+                existing.hasCanonicalMetadata || isCanonical
+            )
+        }
+
+        return order.compactMap { merged[$0]?.provider }
+    }
 }

@@ -27,7 +27,20 @@ public final class DetailsViewModel {
     private(set) var availability: WatchAvailability?
     private(set) var globalAvailability: GlobalWatchAvailability?
     private(set) var error: MovieError?
-    private(set) var isLoading = false
+
+    /// What the "Watch with your subscriptions" section shows.
+    public enum SubscriptionsState: Equatable, Sendable {
+        /// No services picked yet: the section offers the picker.
+        case needsSubscriptions
+        /// Availability hasn't arrived yet.
+        case loading
+        /// The load failed and there's no earlier result to show.
+        case failed(MovieError)
+        /// None of the user's services carries this film anywhere.
+        case noMatches
+        /// At least one of the user's services carries it somewhere.
+        case available
+    }
 
     public init(
         movie: Movie,
@@ -53,23 +66,48 @@ public final class DetailsViewModel {
     /// surfaces for the user to retry.
     ///
     /// Region is passed per-call so a runtime change in Settings flows through
-    /// to the next reload without rebuilding the view model.
+    /// to the next reload without rebuilding the view model. A cancelled run
+    /// (superseded by that reload, or the screen went away) writes nothing:
+    /// the run that replaced it owns the state.
     public func load(region: Region) async {
-        isLoading = true
-        defer { isLoading = false }
+        error = nil
         do {
             async let detailTask = repository.movie(id: movie.id)
             async let bundleTask = repository.availabilities(for: movie.id, in: region)
             let (detail, bundle) = try await (detailTask, bundleTask)
-            self.movie = detail
-            self.availability = bundle.regional
-            self.globalAvailability = bundle.global
-            self.error = nil
-        } catch let movieError as MovieError {
-            self.error = movieError
+            guard !Task.isCancelled else { return }
+            movie = detail
+            availability = bundle.regional
+            globalAvailability = bundle.global
         } catch {
-            self.error = .unknown
+            guard !Task.isCancelled else { return }
+            self.error = (error as? MovieError) ?? .unknown
         }
+    }
+
+    /// The load failed and there's no earlier result to keep on screen. The
+    /// availability sections show this error instead of their content, so a
+    /// failure never reads as "not available with your subscriptions".
+    public var availabilityFailure: MovieError? {
+        globalAvailability == nil ? error : nil
+    }
+
+    /// No services picked wins over a failure: the picker works offline,
+    /// since the provider catalog is loaded at launch.
+    public var subscriptionsState: SubscriptionsState {
+        guard hasAnySubscriptions else { return .needsSubscriptions }
+        guard globalAvailability != nil else {
+            return error.map(SubscriptionsState.failed) ?? .loading
+        }
+        return subscribedAvailability.isEmpty ? .noMatches : .available
+    }
+
+    /// Regional providers for the current home region, or `nil` until they
+    /// load. After a region change (made from the other tab while Details
+    /// stays open), the previous region's list would otherwise sit unlabeled
+    /// under "Where to watch" until the reload lands.
+    public var homeAvailability: WatchAvailability? {
+        availability?.region == homeRegion ? availability : nil
     }
 
     /// Cross-region availability filtered to the user's subscribed providers.

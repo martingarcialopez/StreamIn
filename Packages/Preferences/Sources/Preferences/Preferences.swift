@@ -70,8 +70,12 @@ public final class Preferences {
             self.region = defaultRegion
         }
 
-        if let stored = defaults.string(forKey: Self.languageKey), !stored.isEmpty {
-            self.language = Language(code: stored)
+        // Only languages the picker still offers: one stored by an older build
+        // (e.g. French, before the list was cut to translated languages) would
+        // pair localized content with an untranslated interface.
+        if let stored = defaults.string(forKey: Self.languageKey),
+           let known = Language.allKnown.first(where: { $0.code == stored }) {
+            self.language = known
         } else {
             self.language = defaultLanguage
         }

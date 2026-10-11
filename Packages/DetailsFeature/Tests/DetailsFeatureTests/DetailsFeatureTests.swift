@@ -13,6 +13,9 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
     var bundleResult: Result<AvailabilityBundle, Error> = .failure(MovieError.unknown)
     var availabilityResult: Result<WatchAvailability, Error> = .failure(MovieError.unknown)
     var movieResult: Result<Movie, Error> = .failure(MovieError.unknown)
+    /// Makes `availabilities` wait until its task is cancelled, then throw
+    /// the way the live repository does.
+    var availabilitiesWaitForCancellation = false
 
     func searchMovies(query: String, page: Int) async throws -> SearchPage {
         throw MovieError.unknown
@@ -24,7 +27,14 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
         try availabilityResult.get()
     }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
-        try bundleResult.get()
+        if availabilitiesWaitForCancellation {
+            do {
+                try await Task.sleep(for: .seconds(60))
+            } catch {
+                throw MovieError.cancelled
+            }
+        }
+        return try bundleResult.get()
     }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
 }
@@ -234,5 +244,143 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         // sorted in increasing order.
         let names = elsewhere.regions.map(\.displayName)
         #expect(names == names.sorted { $0.localizedStandardCompare($1) == .orderedAscending })
+    }
+}
+
+// MARK: - Load states
+
+@MainActor
+@Suite struct LoadStateTests {
+
+    private let netflixInSpain = AvailabilityBundle(
+        regional: WatchAvailability(
+            movieID: sampleMovie.id, region: .spain,
+            subscription: [provider(8, "Netflix")], rent: [], buy: [], free: [], externalLink: nil
+        ),
+        global: GlobalWatchAvailability(
+            movieID: sampleMovie.id,
+            subscription: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.spain])]
+        )
+    )
+
+    private func makeModel(_ repo: FakeMovieRepository, subscribedTo ids: [Int] = [8]) -> DetailsViewModel {
+        let prefs = makePrefs(subscribedTo: ids)
+        prefs.region = .spain
+        return DetailsViewModel(
+            movie: sampleMovie, repository: repo,
+            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
+        )
+    }
+
+    /// Before the first load finishes the section must spin, not claim the
+    /// film isn't on the user's services.
+    @Test func isLoadingBeforeTheFirstLoad() {
+        let model = makeModel(FakeMovieRepository())
+
+        #expect(model.subscriptionsState == .loading)
+        #expect(model.availabilityFailure == nil)
+    }
+
+    @Test func offersThePickerWithoutSubscriptions() {
+        let model = makeModel(FakeMovieRepository(), subscribedTo: [])
+
+        #expect(model.subscriptionsState == .needsSubscriptions)
+    }
+
+    /// Offline must read as an error, never as "not available with your
+    /// subscriptions".
+    @Test func failedLoadIsAFailureNotANoMatch() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .failure(MovieError.offline)
+        let model = makeModel(repo)
+
+        await model.load(region: .spain)
+
+        #expect(model.availabilityFailure == .offline)
+        #expect(model.subscriptionsState == .failed(.offline))
+    }
+
+    /// The picker works offline (the provider catalog loads at launch), so a
+    /// failed load must not hide it.
+    @Test func failedLoadWithoutServicesStillOffersThePicker() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .failure(MovieError.offline)
+        let model = makeModel(repo, subscribedTo: [])
+
+        await model.load(region: .spain)
+
+        #expect(model.subscriptionsState == .needsSubscriptions)
+        #expect(model.availabilityFailure == .offline)
+    }
+
+    /// After a region change, the previous region's providers must not stay
+    /// under "Where to watch" while the reload runs.
+    @Test func providersFromThePreviousRegionAreHidden() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(netflixInSpain)
+        let prefs = makePrefs(subscribedTo: [8])
+        prefs.region = .spain
+        let model = DetailsViewModel(
+            movie: sampleMovie, repository: repo,
+            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
+        )
+        await model.load(region: .spain)
+        #expect(model.homeAvailability?.region == .spain)
+
+        prefs.region = .unitedStates
+
+        #expect(model.homeAvailability == nil)
+    }
+
+    @Test func retryAfterAFailureShowsTheResults() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .failure(MovieError.offline)
+        let model = makeModel(repo)
+        await model.load(region: .spain)
+
+        repo.bundleResult = .success(netflixInSpain)
+        await model.load(region: .spain)
+
+        #expect(model.availabilityFailure == nil)
+        #expect(model.error == nil)
+        #expect(model.subscriptionsState == .available)
+    }
+
+    /// A failed reload keeps the earlier results on screen: the error shows
+    /// below them instead of replacing them.
+    @Test func failedReloadKeepsEarlierResults() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(netflixInSpain)
+        let model = makeModel(repo)
+        await model.load(region: .spain)
+
+        repo.bundleResult = .failure(MovieError.timeout)
+        await model.load(region: .spain)
+
+        #expect(model.error == .timeout)
+        #expect(model.availabilityFailure == nil)
+        #expect(model.subscriptionsState == .available)
+    }
+
+    /// A load cancelled by a newer one (region or language change) or by the
+    /// screen going away must not surface "cancelled" as an error.
+    @Test func cancelledLoadWritesNothing() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.availabilitiesWaitForCancellation = true
+        let model = makeModel(repo)
+
+        let load = Task { await model.load(region: .spain) }
+        load.cancel()
+        await load.value
+
+        #expect(model.error == nil)
+        #expect(model.availabilityFailure == nil)
+        #expect(model.globalAvailability == nil)
     }
 }

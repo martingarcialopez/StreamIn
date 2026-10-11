@@ -381,17 +381,14 @@ public struct Language: Identifiable, Hashable, Sendable {
 
     public init(code: String) { self.code = code }
 
-    public static let englishUS    = Language(code: "en-US")
-    public static let spanishES    = Language(code: "es-ES")
-    public static let frenchFR     = Language(code: "fr-FR")
-    public static let germanDE     = Language(code: "de-DE")
-    public static let italianIT    = Language(code: "it-IT")
-    public static let portugueseBR = Language(code: "pt-BR")
+    public static let englishUS = Language(code: "en-US")
+    public static let spanishES = Language(code: "es-ES")
 
-    /// Catalog of languages exposed in the settings picker.
-    public static let allKnown: [Language] = [
-        .englishUS, .spanishES, .frenchFR, .germanDE, .italianIT, .portugueseBR
-    ]
+    /// Languages the settings picker offers. The picker switches the
+    /// interface as well as TMDB's content, so it only lists languages every
+    /// String Catalog translates; anything else would show English text over
+    /// localized movie data. Adding one: `.claude/rules/localization.md`.
+    public static let allKnown: [Language] = [.englishUS, .spanishES]
 
     /// Self-localized name — each language's name *in itself*: "English",
     /// "Español", "Français". This is the iOS / App Store convention for
@@ -403,14 +400,19 @@ public struct Language: Identifiable, Hashable, Sendable {
 
     /// Best-effort language from the device locale, constrained to the catalog.
     /// Tries an exact BCP-47 match, then a language-code prefix match, then
-    /// falls back to Spanish (Spain) — matching the project's defaults.
+    /// falls back to English — the catalogs' source language, which is also
+    /// what iOS shows for an untranslated locale, so content and interface agree.
     public static var currentLocale: Language {
-        let lang = Locale.current.language.languageCode?.identifier ?? "es"
-        let region = Locale.current.region?.identifier ?? "ES"
+        currentLocale(for: .current)
+    }
+
+    static func currentLocale(for locale: Locale) -> Language {
+        let lang = locale.language.languageCode?.identifier ?? "en"
+        let region = locale.region?.identifier ?? "US"
         let bcp47 = "\(lang)-\(region)"
         return allKnown.first(where: { $0.code == bcp47 })
             ?? allKnown.first(where: { $0.code.hasPrefix(lang + "-") })
-            ?? .spanishES
+            ?? .englishUS
     }
 }
 

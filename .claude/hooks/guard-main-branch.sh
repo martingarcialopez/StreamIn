@@ -7,7 +7,9 @@ command=$(jq -r '.tool_input.command // empty')
 
 # Patterns stay inside one command: [^;&|]* stops at &&, ; and |, so
 # `git push && gh pr edit --base main` isn't mistaken for a push to main.
-writes_git='git[[:space:]][^;&|]*(commit|push)'
+# `commit`/`push` must be whole words, so `git branch -D chore/commit-skill`
+# doesn't count, but `git push;` and `(cd repo && git push)` still do.
+writes_git='git[[:space:]]([^;&|]*[[:space:]])?(commit|push)([[:space:];&|)]|$)'
 [[ "$command" =~ $writes_git ]] || exit 0
 
 # Creating the branch in the same command (git switch -c … && git commit) is fine.
