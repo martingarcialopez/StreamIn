@@ -22,8 +22,9 @@ commit on `main` should list Martín *and* Claude.
 - `commit` skill: Conventional Commits title (72 characters at most), at most two
   short body lines, and always `Co-Authored-By: Claude <model> <noreply@anthropic.com>`.
   The trailer names the model that paired on the commit.
-- `require-coauthor` hook: blocks any `git commit` whose command doesn't carry
-  the trailer — the skill says how, the hook guarantees it. 10 test cases pass.
+- No enforcement hook. A `require-coauthor` hook was tried and removed on Martín's
+  request: he must be able to push his own code without Claude's signature, so
+  the skill alone carries the rule for Claude's commits.
 - `ship-phase` now commits through the skill.
 
 **Decisions**
