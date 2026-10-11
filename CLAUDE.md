@@ -46,7 +46,7 @@ TMDBClient or SwiftData directly.**
 
 ## How we work
 
-- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. Roadmap and phase plans: `~/.claude/plans/`.
+- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. The roadmap — status, remaining phases, what's next — is [`docs/roadmap.md`](docs/roadmap.md): read it at the start of a session and update it when a phase ships.
 - **One branch and one PR per phase** (`feat/…`, `chore/…`) into `main`. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`.
 - **Verify at the end of each task, not per edit**: app build + tests of the packages touched. Prefer the Xcode MCP; fall back to the simulator build tool or `xcodebuild` (commands in the `ship-phase` skill). If verification can't run, say so.
 - **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → verify → log → commit → PR.

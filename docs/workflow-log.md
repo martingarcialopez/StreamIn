@@ -11,6 +11,19 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — The roadmap moves into the repo
+
+- **`docs/roadmap.md`** replaces a plan file that lived in `~/.claude/plans/` on
+  Martín's Mac: invisible to the terminal Claude, to claude[bot] and to anyone
+  reading the repo, and already stale (old dates, finished phases still open, a
+  Phase 3 design that broke the "no SwiftData in features" rule). CLAUDE.md now
+  points every session to it.
+- **Second guard-hook false positive:** deleting the merged branch
+  `chore/commit-skill` while on `main` was blocked because the branch name
+  contains "commit". `commit`/`push` now have to be whole words; 17 cases pass.
+
+---
+
 ## 2026-10-11 — Commits made pairing are co-authored
 
 **Why:** the history should show the pairing at a glance. May's commits list
