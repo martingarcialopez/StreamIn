@@ -11,6 +11,55 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — Commits made pairing are co-authored
+
+**Why:** the history should show the pairing at a glance. May's commits list
+Martín alone even though Claude was already helping; from October on, every
+commit made pairing with Claude lists Martín *and* Claude. Work Martín does
+alone stays his alone.
+
+**What changed**
+
+- `commit` skill: Conventional Commits title (72 characters at most), at most two
+  short body lines, and always `Co-Authored-By: Claude <model> <noreply@anthropic.com>`.
+  The trailer names the model that paired on the commit.
+- Mashed up with a third-party skill (Carlo van Wyk's `commit-message`, MIT) after
+  reading it instead of installing it: kept its empty-tree check, specific branch
+  names, approval and push prompts (merged into one prompt) and opt-in gitmoji;
+  dropped its "never add a co-author" rule, stage-everything offer, 50-character
+  titles and bullet-list bodies, which contradict this project's rules.
+- No enforcement hook. A `require-coauthor` hook was tried and removed on Martín's
+  request: he must be able to push his own code without Claude's signature, so
+  the skill alone carries the rule for Claude's commits.
+- Martín cut the confirmation to one action: gitmoji always (no question), and a
+  single "commit and push this to `<branch>`?" prompt — editing the message in the
+  answer counts as yes. Choosing the emoji, approving the message and approving
+  the push had been three decisions per commit.
+- No "my own work" option: whatever is done together is always co-authored;
+  Martín commits work he did alone himself, outside Claude.
+- First `@claude` round trip: Martín asked for the removal in a review comment on
+  #5; claude[bot] deleted the hook, updated CLAUDE.md and this log and pushed in
+  44 s. It can't write to `.claude/skills/` from GitHub Actions, so the skill text
+  was aligned locally.
+- `ship-phase` now commits through the skill.
+
+**Decisions**
+
+- **The email stays.** GitHub only shows a co-author when the trailer's email
+  belongs to a GitHub account; `noreply@anthropic.com` is Anthropic's `claude`
+  account. #2's squash had it removed, so GitHub shows no co-author there.
+- **`claude` for pairing, `claude[bot]` for GitHub automation.** Commits made
+  pairing locally point at the `claude` account; reviews and `@claude` fixes on
+  GitHub come from the `claude[bot]` app.
+- **No history rewrite.** #2 and #3 predate the rule and show Martín alone.
+  Fixing them would mean force-pushing `main`, losing GitHub's Verified badges
+  and breaking the merged-commit links on PRs #2–#4.
+- **Squash merges keep the co-author.** With the repo's squash default (PR title
+  + empty description), GitHub still copies the PR commits' co-authors into the
+  squash commit — verified on #4.
+
+---
+
 ## 2026-10-11 — Claude gets its own GitHub identity
 
 **Why:** review conversations on #1 showed one account talking to itself
