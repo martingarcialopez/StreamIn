@@ -46,23 +46,26 @@ TMDBClient or SwiftData directly.**
 
 ## How we work
 
-- **One roadmap phase at a time**, planned first (plan mode) when non-trivial. The roadmap — status, remaining phases, what's next — is [`docs/roadmap.md`](docs/roadmap.md): read it at the start of a session and update it when a phase ships.
-- **One branch and one PR per phase** (`feat/…`, `chore/…`) into `main`. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`.
-- **Verify at the end of each task, not per edit**: app build + tests of the packages touched. Prefer the Xcode MCP; fall back to the simulator build tool or `xcodebuild` (commands in the `ship-phase` skill). If verification can't run, say so.
-- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → verify → log → commit → PR.
+- **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label.
+- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI.
+- **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
+- **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
 | Tool | What it's for |
 |---|---|
 | `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
-| `ship-phase` skill | Finish a phase and open its PR (only when Martín asks) |
+| `start-issue` skill | Start work on a GitHub issue: read it, plan, branch |
+| `ship-phase` skill | Finish a phase and open its PR, then wait for CI (only when Martín asks) |
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules before every PR |
 | Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
-| GitHub (`.github/workflows/`) | **claude[bot]**: answers or pushes fixes when Martín writes `@claude` in a PR or issue (`claude.yml`); reviews each PR once when it opens with Anthropic's `code-review` plugin (`claude-code-review.yml`). Runs on Linux, so it can't build or test the app |
+| GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package results in the job summary. Required to merge |
+| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue; implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens with Anthropic's `code-review` plugin. Runs on Linux, so it can't build — CI does, and it reads CI's results |
 
 ## Decisions
 
@@ -96,7 +99,8 @@ Three mechanisms, one per kind of data:
 ## Testing
 
 - Unit tests with Swift Testing: Domain logic, view models against fake repositories, the TMDB adapter against a stubbed client, caches with an injected clock.
-- The packages are iOS-only, so `swift test` doesn't run them on macOS. Run each package from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
+- `StreamIn.xctestplan` (the shared `StreamIn` scheme's test plan) runs every package's tests in one build — ⌘U in Xcode, and what CI runs: `xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'`. A new package's test target must be added to the test plan.
+- The packages are iOS-only, so `swift test` doesn't run them on macOS. One package alone, from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
 - Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`, and one UI test for search → details → providers. The app-level test targets still hold Xcode's templates.
 
 ## TODO: onboarding trigger (Phase 6)

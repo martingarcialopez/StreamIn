@@ -1,8 +1,8 @@
 ---
 name: ship-phase
-description: Finish a roadmap phase — review the branch, verify build and tests, log the workflow, commit, and open the PR into main for Martín's review.
+description: Finish a roadmap phase or issue — review the branch, check it locally, log the workflow, commit, open the PR into main, and wait for CI before handing it to Martín.
 disable-model-invocation: true
-argument-hint: [phase title]
+argument-hint: [phase title or issue number]
 ---
 
 # Ship a phase
@@ -11,40 +11,38 @@ Only when Martín asks. Stop and report at the first step that fails.
 
 ## 1. Check the branch
 
-Must be a feature branch (`feat/…`, `chore/…`), never `main`. Show `git status`
-and `git log --oneline main..HEAD`. Uncommitted work belongs to this phase only
-if it's part of the plan — ask otherwise.
+Must be a feature branch (`feat/…`, `fix/…`, `chore/…`), never `main`. Show
+`git status` and `git log --oneline main..HEAD`. Uncommitted work belongs to this
+phase only if it's part of the plan — ask otherwise. Note the issue(s) the branch
+closes (`gh issue view <n>`) so the PR can link them.
 
 ## 2. Review
 
 Delegate to the `ios-reviewer` subagent with the branch diff. Fix CRITICAL and
 HIGH findings, or explain why not. Keep MEDIUM/LOW for the PR's reviewer notes.
 
-## 3. Verify
+## 3. Check locally
 
-- **App build** — Xcode MCP build tool if connected; otherwise the desktop app's
-  simulator build tool; otherwise:
+Fast feedback before pushing; CI (step 6) is the record.
 
-  ```bash
-  xcodebuild -project StreamIn.xcodeproj -scheme StreamIn \
-    -destination 'platform=iOS Simulator,name=<iPhone from xcrun simctl list devices available>' \
-    -derivedDataPath .build/xcode build
-  ```
-
-- **Tests** for every package the diff touches, from the package directory
-  (`swift test` can't run these iOS-only packages on macOS):
+- **Build and tests** — Xcode MCP build tool if connected; otherwise the test plan
+  that CI runs, which builds the app and every package's tests in one go:
 
   ```bash
-  xcodebuild test -scheme <Package> \
-    -destination 'platform=iOS Simulator,name=<iPhone>' -derivedDataPath ../../.build/xcode-<Package>
+  xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn \
+    -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+    -derivedDataPath .build/xcode
   ```
 
-Record the result per package (tests passed / failed). If something can't run,
-say so — never imply it passed.
+- **Previews** of every view the branch changed, with the Xcode MCP's
+  `RenderPreview`. Look at each snapshot.
+
+If something can't run, say so — never imply it passed.
 
 ## 4. Document
 
 - CLAUDE.md: update architecture or decisions the phase changed.
+- `docs/roadmap.md`: tick what shipped.
 - `docs/workflow-log.md`: add the phase's entry — workflow pieces used, what they
   caught or saved, what Martín still had to find by hand.
 
@@ -53,10 +51,22 @@ say so — never imply it passed.
 - Commit with the `commit` skill: one prompt where Martín approves (or edits)
   the message, and the commit is pushed. The PR title follows the commit format,
   gitmoji included.
-- Once pushed, `gh pr create --base main` with a body that
-  follows `.github/pull_request_template.md`. Tick only test-plan items that step 3
-  verified; leave manual checks for Martín unticked.
+- Once pushed, `gh pr create --base main` with a body that follows
+  `.github/pull_request_template.md`, including `Closes #<n>` for each issue.
+  Leave the CI box for step 6 and manual checks for Martín unticked.
 
-## 6. Hand over
+## 6. Wait for CI
 
-Reply with the PR URL and a suggested reading order for the review.
+The `CI` workflow ("Build and test") runs on the PR. Read its result once it
+finishes — from the desktop app's PR status when you're in the app, otherwise
+with one blocking `gh pr checks <n> --watch` (no polling loops).
+
+- **Red:** read the failure (`gh run view <run-id> --log-failed`, or the job
+  summary), fix it, commit with the `commit` skill, and wait again.
+- **Green:** tick the CI box and paste the run link into the PR body
+  (`gh pr edit <n> --body-file …`).
+
+## 7. Hand over
+
+Reply with the PR URL, the CI run link and result, and a suggested reading order
+for the review.

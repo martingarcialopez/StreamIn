@@ -81,8 +81,13 @@ and add strings with the `localize` skill.
   script adds the same entries Xcode would, validates with `plutil -lint`,
   restores the file on failure, and does nothing if the package is already
   registered. Tell Martín to reopen the project if Xcode has it open.
+- Add the package's test target to `StreamIn.xctestplan` (same shape as the
+  other entries: `"containerPath" : "container:Packages\/<Name>"`, identifier and
+  name `<Name>Tests`). CI runs only what the test plan lists. Check it with
+  `xcodebuild -showTestPlans -project StreamIn.xcodeproj -scheme StreamIn`.
 - Add one line for the package to the Architecture table in CLAUDE.md.
 
 ## 4. Verify
 
-Build the app and run the new package's tests (commands in the `ship-phase` skill).
+Run the test plan locally (command in the `ship-phase` skill) and check the new
+package's tests appear in the results; CI confirms it on the PR.
