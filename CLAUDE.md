@@ -8,7 +8,7 @@ concurrency, and to be built with a state-of-the-art agentic workflow
 
 ## Stack
 
-- Swift 6.2+, strict concurrency; iOS 26+, **iPhone only**
+- Swift 6.2+, strict concurrency; iOS 26+, **iPhone and iPad**
 - SwiftUI + `@Observable` + `NavigationStack`
 - async/await throughout (no Combine in feature code)
 - SwiftData for local persistence (watchlist, Phase 3)
@@ -77,7 +77,7 @@ Settled — surface it explicitly before challenging one.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.
 - **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
-- **iPhone only**: `TARGETED_DEVICE_FAMILY = 1`, iOS platforms only, "Designed for iPhone" on Mac / Vision Pro disabled.
+- **iPhone and iPad, nothing else**: `TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only, "Designed for iPhone/iPad" on Mac and Vision Pro disabled. iPad keeps all four orientations (required for multitasking) and uses the same adaptive layouts — App Store submission needs iPad screenshots too.
 
 ## Caching and reference data
 
@@ -109,7 +109,7 @@ To see onboarding today, launch with `-settings.subscribedProviders.ids none`.
 
 ## Non-goals
 
-No auth, social features, video playback, analytics, iCloud sync or iPad layouts. AI features inside the app only if they add real user value (candidate after 1.0: on-device Foundation Models for natural-language search).
+No auth, social features, video playback, analytics, iCloud sync or iPad-specific layouts. AI features inside the app only if they add real user value (candidate after 1.0: on-device Foundation Models for natural-language search).
 
 ## Setup
 

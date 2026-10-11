@@ -5,9 +5,37 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ## Per-phase scorecard
 
-| Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off |
-|---|---|---|---|---|---|
-| 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 |
+| Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off | Review rounds |
+|---|---|---|---|---|---|---|
+| 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 | 1 (iPad support) |
+
+---
+
+## 2026-10-11 — First review round on a PR
+
+**What happened:** Martín's review of #1 had two comments with one request:
+ship on iPad as well as iPhone. It reversed the iPhone-only change made
+during Phase 2 — a product decision, caught before it reached `main`, which
+is exactly what the review gate is for. Fixed in one commit (device family
+`1,2`, all four iPad orientations restored), built for an iPad simulator,
+then merged into the stacked #2 branch (a merge, not a rebase, so nothing
+was force-pushed).
+
+**Lessons**
+
+- **Stacked PRs hide the tooling.** The `.claude/` setup lives on #2's branch,
+  so switching to #1's branch to fix the review removed the hooks, skills and
+  settings from disk: the fix was made without guard rails and validated by
+  hand. Land workflow changes first, before stacking feature work on them.
+- **Xcode MCP needs Xcode itself.** The `xcode` server registered but exposed no
+  tools because Xcode wasn't open and allowing agents; the simulator build tool
+  covered it.
+- **Simulator runtimes matter.** The first iPad simulator booted ran iOS 17.4,
+  below the app's iOS 26.2 minimum, so the build failed before compiling.
+  Check the runtime (`xcrun simctl list devices available`) before booting.
+- **Skills load live.** Once `.claude/skills/` was back on disk, `localize` and
+  `new-package` appeared mid-session; `ship-phase` stays hidden until invoked
+  because it's user-only (`disable-model-invocation`).
 
 ---
 
