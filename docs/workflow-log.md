@@ -11,20 +11,30 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
-## 2026-10-11 — Every commit is co-authored
+## 2026-10-11 — Commits made pairing are co-authored
 
 **Why:** the history should show the pairing at a glance. May's commits list
 Martín alone even though Claude was already helping; from October on, every
-commit on `main` should list Martín *and* Claude.
+commit made pairing with Claude lists Martín *and* Claude. Work Martín does
+alone stays his alone.
 
 **What changed**
 
 - `commit` skill: Conventional Commits title (72 characters at most), at most two
   short body lines, and always `Co-Authored-By: Claude <model> <noreply@anthropic.com>`.
   The trailer names the model that paired on the commit.
+- Mashed up with a third-party skill (Carlo van Wyk's `commit-message`, MIT) after
+  reading it instead of installing it: kept its empty-tree check, specific branch
+  names, approval and push prompts (merged into one prompt) and opt-in gitmoji;
+  dropped its "never add a co-author" rule, stage-everything offer, 50-character
+  titles and bullet-list bodies, which contradict this project's rules.
 - No enforcement hook. A `require-coauthor` hook was tried and removed on Martín's
   request: he must be able to push his own code without Claude's signature, so
   the skill alone carries the rule for Claude's commits.
+- First `@claude` round trip: Martín asked for the removal in a review comment on
+  #5; claude[bot] deleted the hook, updated CLAUDE.md and this log and pushed in
+  44 s. It can't write to `.claude/skills/` from GitHub Actions, so the skill text
+  was aligned locally.
 - `ship-phase` now commits through the skill.
 
 **Decisions**

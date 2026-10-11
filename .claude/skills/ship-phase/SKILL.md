@@ -50,9 +50,10 @@ say so — never imply it passed.
 
 ## 5. Commit and open the PR
 
-- Commit with the `commit` skill: Conventional Commits title, at most two short
-  body lines, the Claude co-author trailer. The PR title follows the same format.
-- `git push -u origin <branch>`, then `gh pr create --base main` with a body that
+- Commit with the `commit` skill. It shows Martín the message for approval and
+  asks whether to push — shipping needs the push, so say so. The PR title follows
+  the commit format.
+- Once pushed, `gh pr create --base main` with a body that
   follows `.github/pull_request_template.md`. Tick only test-plan items that step 3
   verified; leave manual checks for Martín unticked.
 

@@ -57,7 +57,7 @@ TMDBClient or SwiftData directly.**
 | `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
 | `ship-phase` skill | Finish a phase and open its PR (only when Martín asks) |
-| `commit` skill | Claude's commits: Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. Not enforced — Martín's own commits need no trailer |
+| `commit` skill | Commits made pairing with Claude: Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. Shows Martín the message for approval and asks whether to push (one prompt); gitmoji on request; specific branch names. Not enforced — Martín's own work can be committed without the trailer |
 | `ios-reviewer` subagent | Read-only review against these rules before every PR |
 | Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
