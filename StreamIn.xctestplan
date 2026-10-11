@@ -1,0 +1,84 @@
+{
+  "configurations" : [
+    {
+      "id" : "6E1F4A3C-2B7D-4C59-9E0A-5F3D8C1B7A42",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StreamIn.xcodeproj",
+      "identifier" : "5BBF59882FA119DC008CC68E",
+      "name" : "StreamIn"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Domain",
+        "identifier" : "DomainTests",
+        "name" : "DomainTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/TMDBClient",
+        "identifier" : "TMDBClientTests",
+        "name" : "TMDBClientTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Preferences",
+        "identifier" : "PreferencesTests",
+        "name" : "PreferencesTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/ReferenceData",
+        "identifier" : "ReferenceDataTests",
+        "name" : "ReferenceDataTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/DesignSystem",
+        "identifier" : "DesignSystemTests",
+        "name" : "DesignSystemTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SearchFeature",
+        "identifier" : "SearchFeatureTests",
+        "name" : "SearchFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/DetailsFeature",
+        "identifier" : "DetailsFeatureTests",
+        "name" : "DetailsFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/SettingsFeature",
+        "identifier" : "SettingsFeatureTests",
+        "name" : "SettingsFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/WatchlistFeature",
+        "identifier" : "WatchlistFeatureTests",
+        "name" : "WatchlistFeatureTests"
+      }
+    }
+  ],
+  "version" : 1
+}

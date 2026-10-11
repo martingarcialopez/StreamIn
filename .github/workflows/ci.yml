@@ -1,0 +1,74 @@
+name: CI
+
+# The source of truth for "does it build and do the tests pass": a clean macOS
+# runner builds the app and runs every package's tests (StreamIn.xctestplan) on
+# each PR and each push to main. Agents and PR test plans quote this run instead
+# of their own local runs.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to the same PR or branch cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DESTINATION: platform=iOS Simulator,name=iPhone 17,OS=latest
+      RESULTS: TestResults.xcresult
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Secrets.xcconfig is gitignored. The placeholder key is enough to compile;
+      # no test needs the real TMDB key or the network.
+      - name: Placeholder secrets
+        run: cp Secrets.example.xcconfig Secrets.xcconfig
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes ios
+
+      - name: Build the app and run every package's tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project StreamIn.xcodeproj \
+            -scheme StreamIn \
+            -testPlan StreamIn \
+            -destination "$DESTINATION" \
+            -resultBundlePath "$RESULTS" \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee xcodebuild.log | xcbeautify --renderer github-actions
+
+      - name: Test summary
+        if: ${{ !cancelled() }}
+        run: |
+          if [[ -d "$RESULTS" ]]; then
+            .github/scripts/test-summary.sh "$RESULTS" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ❌ No test results: the build failed before tests ran. See the log." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ${{ env.RESULTS }}
+            xcodebuild.log
+          retention-days: 14
