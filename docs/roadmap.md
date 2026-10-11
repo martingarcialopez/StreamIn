@@ -16,14 +16,33 @@ This file doesn't repeat them.
 | — | Workflow foundation: rules, skills, `ios-reviewer`, hooks, Xcode MCP | ✅ [#2](https://github.com/martingarcialopez/StreamIn/pull/2) |
 | — | Claude GitHub app: `@claude`, automatic PR review | ✅ [#3](https://github.com/martingarcialopez/StreamIn/pull/3), [#4](https://github.com/martingarcialopez/StreamIn/pull/4) |
 | — | `commit` skill: gitmoji, co-author trailer, one-prompt commit + push | ✅ [#5](https://github.com/martingarcialopez/StreamIn/pull/5) |
-| 3 | Watchlist (Persistence + SwiftData) | ⏭ next |
+| — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | 🔄 `fix/review-bugs-readme` |
+| — | Workflow upgrades (next section) | ⏭ next |
+| 3 | Watchlist (Persistence + SwiftData) | planned |
 | 4 | Details page redesign | planned |
 | 5 | Landing page animation | planned |
 | 6 | App Store readiness + submission | planned |
 
-**Estimate:** about 14 working days for phases 3–6 (3: 4 days, 4: 3, 5: 2,
-6: 5), so submission around the end of October 2026. Dates are Martín's call;
-keep quality over speed.
+**No ship date.** StreamIn ships when it ships: learning state-of-the-art AI
+workflows comes first. Rough sizing for phases 3–6: 3: 4 days, 4: 3, 5: 2, 6: 5.
+
+## Workflow upgrades (agreed Oct 11, before Phase 3)
+
+From the outside review of Oct 11. CI comes first because the others lean on it.
+
+1. **macOS CI as the source of truth:** a GitHub Actions job on a macOS runner
+   builds the app and runs every package's tests on each PR; agents and the PR
+   template quote the run instead of local runs.
+2. **Issue-driven work:** phases become issues and milestones; `@claude` on an
+   issue (or a local session) opens a branch and a PR; automated review and CI
+   run; Martín reviews last.
+3. **A visual check before every PR:** render the previews of changed views with
+   the Xcode MCP (`RenderPreview`), attach the screenshots to the PR, and add one
+   UI test for search → details → providers.
+4. **Parallel agents in worktrees:** Phases 3 and 4 are mostly independent; run
+   them in separate worktrees and sessions, each with its own PR.
+5. **Evals for the skills and `ios-reviewer`:** skill-creator's eval loop on
+   `localize` first, then a `claude plugin eval` suite once CI exists.
 
 ## Working on a phase
 
@@ -137,14 +156,9 @@ movie shows no other-regions header; iPhone and iPad layouts both hold.
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
 - **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (steps in
   CLAUDE.md, "TODO: onboarding trigger").
-- **Languages:** the picker lists `Language.allKnown` (en, es, fr, de, it, pt) but
-  only en + es are translated. Limit it to translated languages, or add French
-  everywhere (checklist in `.claude/rules/localization.md`).
 - **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
   contrast in light and dark.
-- **README rewrite:** it still claims CI and fixture tests that don't exist, a
-  History feature and an old folder layout. Rewrite it for recruiters: what the
-  app does, architecture, how it's built (link the workflow log and the PRs).
+- **README:** refresh the status section and add screenshots or a demo GIF.
 - **Store assets:** screenshots for iPhone **and iPad** (the app supports both),
   description in en + es, keywords, Entertainment category, age rating, a privacy
   policy URL (one page on GitHub Pages).
@@ -158,7 +172,6 @@ movie shows no other-regions header; iPhone and iPad layouts both hold.
 
 - On-device Foundation Models for natural-language search ("a feel-good 90s
   comedy") — only if it earns its place; no backend or API key needed.
-- A macOS CI job that builds and tests every PR (GitHub's Linux runners can't).
 - Make claude[bot]'s own commits attribute to the real claude[bot] account; the
   action currently commits as `41898282+claude[bot]`, which GitHub maps to
   github-actions[bot].

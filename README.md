@@ -1,181 +1,221 @@
 # StreamIn
 
-> Search any movie, see where you can stream, rent, or buy it in your country.
+Search a movie and see where you can stream it: in your country, and on the
+services you already pay for in other countries — the VPN use case.
 
-<!-- Replace with a 5–10s gif of the search → detail → providers flow. -->
-![demo](docs/demo.gif)
-
----
-
-## What it does
-
-Type a film, pick the right one from the search results, see at a glance which streaming services have it in your country (subscription / rent / buy / free with ads). Search history and a personal watchlist are stored locally.
+StreamIn is for people who watch on free and subscription services. It runs on
+iPhone and iPad (iOS 26), in English and Spanish.
 
 ## Status
 
-Portfolio project. Single developer, ~2 weeks of work. Not in the App Store.
+In development, with an App Store release as the goal. Work ships in roadmap
+phases, one reviewed pull request each.
+
+**Works today**
+
+- Search, with each result's streaming services in your region filling in as they arrive.
+- Details: where to watch in your region, and on which of *your* services in other countries.
+- Onboarding and Settings to pick your services (home region or worldwide), region and language.
+- English and Spanish, switchable in the app.
+- Session caching, so going back and forth between screens doesn't refetch.
+
+**Next:** the Watchlist (SwiftData), a Details redesign that puts availability
+first, landing-page polish, and App Store readiness (icon, privacy manifest,
+attribution screens).
 
 ## Quick start
 
+Requires Xcode 26 (built with 26.6) and an iOS 26.2 or later simulator.
+
 1. Clone the repo.
 2. Get a free TMDB API key at <https://developer.themoviedb.org/>.
-3. Copy `Secrets.example.xcconfig` to `Secrets.xcconfig` and fill in `TMDB_API_KEY = your-key`. (`Secrets.xcconfig` is gitignored.)
-4. Open `StreamIn.xcworkspace`, select the `App` scheme, run.
-5. Tests: `⌘U` on the `StreamInTests` scheme, or `make test`.
+3. Create your local secrets file and put the key in it (it's gitignored):
 
-Requires Xcode 16+, iOS 17+ deployment target.
+   ```bash
+   cp Secrets.example.xcconfig Secrets.xcconfig
+   ```
+
+4. Open `StreamIn.xcodeproj`, pick the `StreamIn` scheme and run it on an iPhone or iPad simulator.
+
+A build step turns `Secrets.xcconfig` into `StreamIn/Secrets/GeneratedSecrets.swift`.
+After changing the key, clean the build folder (⇧⌘K).
+
+**Tests.** Each package has its own scheme: pick it in Xcode and press ⌘U. The
+packages are iOS-only, so `swift test` can't run them on macOS; from the command
+line, run them from the package's folder:
+
+```bash
+cd Packages/SearchFeature && xcodebuild test -scheme SearchFeature -destination 'platform=iOS Simulator,name=iPhone 17'
+```
+
+**Debugging network traffic.** Launch with `STREAMIN_DISABLE_CACHE=1` (scheme →
+Run → Environment Variables) to send every request over the network, for a proxy
+such as Proxyman.
 
 ## Architecture
 
-Three layers, hard boundaries enforced by Swift Package separation.
+One Swift package per layer, so the boundaries are checked by the compiler.
 
-```
-┌──────────────────────────────────────────┐
-│  App target                              │
-│  - Composition root, DI wiring           │
-│  - Routing                               │
-└──────────────────────────────────────────┘
-            │ depends on
-            ▼
-┌──────────────────────────────────────────┐  ┌────────────────┐
-│  Feature_Search / Feature_Detail / ...   │  │  DesignSystem  │
-│  - SwiftUI views + view models           │  │  - Reusable UI │
-└──────────────────────────────────────────┘  └────────────────┘
-            │ depends only on
-            ▼
-┌──────────────────────────────────────────┐
-│  Domain                                  │
-│  - Entities, value types, errors         │
-│  - Repository protocols (the boundaries) │
-│  - NO Foundation networking, NO UI       │
-└──────────────────────────────────────────┘
-            ▲ implemented by
-            │
-┌──────────────────────────────────────────┐  ┌────────────────┐
-│  TMDBClient                              │  │  Persistence   │
-│  - HTTP, JSON, DTOs                      │  │  - SwiftData   │
-│  - Adapter to Domain.MovieRepository     │  │  - History,    │
-└──────────────────────────────────────────┘  │    watchlist   │
-                                              └────────────────┘
+```mermaid
+flowchart TD
+    App["App target<br/>composition root, tabs"] --> Features
+    App --> TMDBClient
+    subgraph Features["Feature packages, one screen each"]
+        Search[SearchFeature]
+        Details[DetailsFeature]
+        Settings[SettingsFeature]
+        Watchlist[WatchlistFeature]
+    end
+    Features --> Domain
+    Features --> DesignSystem
+    Features --> Preferences
+    Features --> ReferenceData
+    Preferences --> Domain
+    ReferenceData --> Domain
+    TMDBClient -- "implements MovieRepository" --> Domain
 ```
 
-The single most important rule: **Features depend on Domain protocols, never on TMDB or SwiftData directly.** That's what makes the app testable without a network and swappable if TMDB ever disappears or gets paywalled.
+| Package | Depends on | Holds |
+|---|---|---|
+| `Domain` | — | Entities, value types (`Region`, `Language`, typed IDs), the `MovieRepository` protocol, `MovieError` |
+| `TMDBClient` | Domain | HTTP client, DTOs, the TMDB adapter and the caching decorator |
+| `Preferences` | Domain | User settings (region, language, subscriptions), stored in UserDefaults |
+| `ReferenceData` | Domain | `ProviderCatalog`: every provider's name and logo, loaded at launch |
+| `DesignSystem` | — | Spacing, radius and logo-size tokens, SF Symbol names, colors, `ProviderLogo`, `RemoteImage` |
+| `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData) | One screen each, with its view model |
+| App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
-### Module layout
+**The rule that matters most: features depend on Domain protocols, never on
+TMDBClient or SwiftData.** A feature's `Package.swift` doesn't list TMDBClient, so
+importing it doesn't compile. That keeps the app testable without a network and
+the data source swappable.
 
-| Package        | Depends on                | Purpose                                                |
-| -------------- | ------------------------- | ------------------------------------------------------ |
-| `Domain`       | (nothing)                 | Pure types, repository protocols, errors               |
-| `TMDBClient`   | `Domain`                  | HTTP client + DTOs + adapter to `MovieRepository`      |
-| `Persistence`  | `Domain`                  | SwiftData stores for history and watchlist             |
-| `DesignSystem` | (nothing)                 | Reusable views, colors, typography                     |
-| `Feature_*`    | `Domain`, `DesignSystem`  | A single screen + its view model                       |
-| `App`          | all of the above          | Composition root, app entry point                      |
+Planned: a `Persistence` package for the SwiftData watchlist store.
 
-## Key decisions and tradeoffs
+## Key decisions
 
-### TMDB instead of "calling Netflix / HBO / Disney+ in parallel"
+**TMDB as the only data source.** Streaming services have no public availability
+APIs. The realistic options are aggregators; TMDB is free, well documented, and its
+watch-provider data comes from JustWatch, the same source the paid APIs use.
 
-The streaming services don't expose public availability APIs. The realistic options are aggregator APIs: TMDB (free, JustWatch-backed), Watchmode (paid), or RapidAPI's Streaming Availability (paid trial). I picked **TMDB** because it's free, well-documented, and the data is sourced from JustWatch — the same source the paid options use. The "fan-out concurrency" exercise survived the pivot: it now lives in the detail screen, where movie details, providers, and similar movies are fetched in parallel with `async let`.
+**Swift concurrency end to end.** async/await throughout, no Combine.
+- Details loads the movie and its availability in parallel with `async let`.
+- Search fans out one availability request per result in a task group, so each
+  row fills in as its answer arrives.
+- Screens re-run their work with `.task(id:)` when the query, region or language
+  changes; SwiftUI cancels the previous run, and view models ignore results from a
+  run that was superseded.
 
-### SwiftUI primary, Swift Concurrency end-to-end
+**Caching, one mechanism per kind of data.**
+- Provider names and logos are reference data, loaded at launch into
+  `ProviderCatalog` and read synchronously, so screens render complete on their
+  first frame.
+- Responses go through `CachingMovieRepository`, backed by a `MemoryCache` actor
+  that stores in-flight *tasks*: concurrent callers share one request, and
+  failures are never cached. Search and movie details last the session;
+  availability expires after 30 minutes. A cancelled caller's result is thrown
+  away, but the shared request still finishes and lands in the cache for the
+  next caller.
+- Provider logos go through `RemoteImageStore`, an in-memory image cache, because
+  `AsyncImage` always starts on its placeholder.
 
-`async/await` everywhere, including networking, persistence, and view models. No Combine in feature code — a personal taste call: it adds a parallel mental model to what `AsyncSequence` and `Observable` already cover, and the scope here doesn't justify both. UIKit nowhere; the multi-paradigm flex isn't worth the readability cost on a project this size.
+**Typed errors at the boundary.** `MovieError` lists the states a user can see
+(offline, timeout, rate limited, not found…). Network and decoding errors are
+mapped into it inside TMDBClient, so views switch over it exhaustively.
 
-### SwiftData over Core Data
+**One provider per brand.** TMDB uses several IDs for one service (Netflix and
+its ad tier, Prime Video's regional IDs). `ProviderAliases` groups them, so the
+app shows one Netflix and matches your subscription in every country.
 
-Two stores (history, watchlist), zero migrations needed during the project's lifetime — SwiftData's ergonomics win. If this grew to need iCloud sync at scale or richer querying, I'd revisit Core Data. The `Persistence` package wraps SwiftData behind protocols so the app code doesn't import SwiftData; that swap stays cheap.
+**Hand-rolled dependency injection.** `StreamInApp.init()` is the only place
+concrete types are built. View models receive their dependencies through `init`.
+No DI framework.
 
-### Hand-rolled DI
+**Localization per package.** Each package owns a String Catalog in English and
+Spanish, with generated symbols (`Text(.searchPrompt)`) so a missing key fails
+the build. The in-app language picker changes both the interface and TMDB's
+content, and asks for a restart because iOS loads the interface language at
+launch.
 
-A composition root in the App target wires everything up. No DI framework. With this much surface area, a container would be vanity.
-
-### Typed errors at the domain boundary
-
-`MovieError` enumerates user-visible failure states (offline, rate limited, not found, etc.). Network and decoding errors are mapped into this enum at the data-layer adapter — feature code never sees a `URLError`. The benefit is that every view's error state can switch exhaustively on the enum, so we can't forget a case at compile time.
-
-### Region as a first-class value type
-
-Watch availability is region-specific. `Region` is a value type passed through every relevant call. A user-visible setting controls it; the default is the device locale.
-
-### Search: debounce + task cancellation, not buttons
-
-Search-as-you-type with 300 ms debounce. Each keystroke creates a new `Task` and cancels the prior one via `.task(id: query)`. This is where the concurrency exercise really pays for itself — and it's tested with a virtual clock.
+**Out of scope for v1.** Rent and buy prices aren't shown: the audience watches
+on free and subscription services. The data stays in the domain model.
 
 ## Testing
 
-Pyramid, weighted toward unit tests for fast feedback.
+Unit tests use Swift Testing, in every package:
 
-| Layer                            | Test type    | What's verified                                         |
-| -------------------------------- | ------------ | ------------------------------------------------------- |
-| `Domain`                         | Unit         | Pure logic, value semantics                             |
-| TMDB adapter                     | Unit         | DTO → domain mapping, error mapping, with stubs         |
-| `LiveTMDBClient`                 | Integration  | Real HTTP against recorded fixtures via `URLProtocol`   |
-| View models                      | Unit         | State transitions, given a fake `MovieRepository`       |
-| Search debounce / cancellation   | Unit         | Behavior over time using a virtual clock                |
-| Critical UI flow                 | UI test      | Search → detail → see providers                         |
+- **Domain:** provider alias groups and merging, region flags, language matching.
+- **TMDBClient:** DTO-to-domain mapping and alias merging against a stubbed
+  client; the response cache's request sharing, expiry (with an injected clock)
+  and failure handling.
+- **View models** against fake repositories: search (repeated requests, partial
+  retries, region and language changes), details (load states, failures,
+  cancellation), the streaming-services picker.
+- **ReferenceData, Preferences, DesignSystem:** catalog loading, persistence,
+  the image store.
 
-Anything network-heavy is faked at the `MovieRepository` boundary. The `TMDBClient` itself is tested separately with `URLProtocol` stubs against fixture JSON in `Tests/Fixtures/`.
+Not written yet: network fixture tests for `LiveTMDBClient` (`URLProtocol`), a UI
+test for search → details → providers, and CI. GitHub's Linux runners can't build
+the app, so tests run locally for now; a macOS CI job is next on the list.
 
-## How it's built: an agentic workflow with Claude Code
+## How it's built: Claude Code
 
-StreamIn is developed with Claude Code as a pair programmer, using a deliberate workflow:
+StreamIn is also where I learn to build with AI agents, so the workflow is part
+of the project and lives in the repo:
 
-- **Plan → branch → reviewed PR, one roadmap phase at a time.** Each phase is planned before any code, built on its own branch, and merged only after review.
-- **A shared project setup in [`.claude/`](.claude)**: path-scoped rules, skills for the repetitive work (`localize`, `new-package`, `ship-phase`), a read-only `ios-reviewer` subagent, and hooks that guard `main`, protect generated and secret files, and keep localized string symbols in sync.
-- **Xcode's MCP server** ([`.mcp.json`](.mcp.json)), so the agent builds, runs tests and renders previews itself instead of handing over unverified code.
-- **A [workflow log](docs/workflow-log.md)** recording each change to the workflow and what it measurably improved — including what didn't work.
+- **[CLAUDE.md](CLAUDE.md)** — architecture, conventions and settled decisions,
+  loaded into every session.
+- **Path-scoped rules** ([`.claude/rules/`](.claude/rules)) — the Swift/SwiftUI
+  guide, localization and secrets, loaded only when matching files are touched.
+- **Skills** ([`.claude/skills/`](.claude/skills)) — `localize` (add a string in
+  en + es and regenerate symbols), `new-package` (scaffold a package and register
+  it in the Xcode project), `commit`, and `ship-phase` (review → verify → log →
+  PR). The first two wrap tested scripts rather than prose instructions.
+- **Hooks** — block commits to `main`, protect generated and secret files,
+  regenerate string symbols after catalog edits, lint `project.pbxproj` after edits.
+- **A reviewer subagent** ([`ios-reviewer`](.claude/agents/ios-reviewer.md)) —
+  read-only review against the project rules before every pull request.
+- **Xcode's MCP server** ([`.mcp.json`](.mcp.json)) — the agent builds, runs tests
+  and renders previews itself.
+- **On GitHub** — `@claude` in a pull request or issue gets an answer or a fix,
+  and each new pull request gets an automated review.
 
-## Non-goals (deliberately scoped out)
+The [workflow log](docs/workflow-log.md) records each change to the workflow and
+what it actually improved, including what didn't work. Next: macOS CI as the
+source of truth, issue-driven work, a visual check before every pull request,
+parallel agents in worktrees, and evals for the skills and the reviewer.
 
-- **No authentication or user accounts.** Watchlist is local-only.
-- **No social features** (sharing, comments, ratings).
-- **No video playback** — we link out to providers' apps when possible, otherwise the JustWatch web link.
-- **No iPad or macOS adaptations** beyond what SwiftUI gives for free.
-- **English and Spanish only.** Region picker covers US, ES, UK, FR, DE.
-- **No iCloud sync.** Watchlist stays on device.
-- **No analytics or crash reporting.** I'd add Sentry or Firebase Crashlytics if this were going to ship.
+## Non-goals
 
-## What I'd do with more time
-
-- **Result caching.** Today every search hits TMDB. A simple in-memory + SwiftData cache keyed by `(query, page)` with TTL would cut latency on the second search.
-- **Watchlist availability change notifications.** A weekly background fetch checks the watchlist and notifies "*Inception* is now on Netflix US."
-- **Provider deep links.** Today the link goes to JustWatch; ideally we open the provider's app directly when installed.
-- **Snapshot tests** for the major view states (loading, empty, populated, error).
-- **A small CI matrix** running tests on iOS 17 and 18 simulators.
-- **Modularize Persistence per feature** if the data model grows.
-
-## Tech stack
-
-- Swift 6, Swift Concurrency strict mode
-- SwiftUI, `Observable`, `NavigationStack`
-- SwiftData
-- Swift Testing (`@Test`) for unit tests, XCTest for UI tests
-- GitHub Actions for CI (build + test on PR)
+No accounts, social features, video playback, analytics, iCloud sync or
+iPad-specific layouts. AI features inside the app only if they add real value
+for users.
 
 ## Project structure
 
 ```
 StreamIn/
-├── App/                        # App target (composition root)
+├── StreamIn/              App target: App/ (composition root, tabs), Resources/, Secrets/
 ├── Packages/
 │   ├── Domain/
 │   ├── TMDBClient/
-│   ├── Persistence/
+│   ├── Preferences/
+│   ├── ReferenceData/
 │   ├── DesignSystem/
-│   └── Features/
-│       ├── Search/
-│       ├── MovieDetail/
-│       ├── History/
-│       └── Settings/
-├── Tests/
-│   └── Fixtures/               # Recorded TMDB JSON
-├── docs/
-│   └── demo.gif
-├── Secrets.example.xcconfig
-└── README.md
+│   ├── SearchFeature/
+│   ├── DetailsFeature/
+│   ├── SettingsFeature/
+│   └── WatchlistFeature/  Placeholder until the Watchlist phase
+├── StreamInTests/         App-level test targets (templates for now)
+├── StreamInUITests/
+├── .claude/               Shared Claude Code setup
+├── .github/               Pull request template, Claude workflows
+└── docs/workflow-log.md
 ```
 
 ## Acknowledgements
 
-Movie data and watch provider data courtesy of [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
+Movie data and watch-provider data courtesy of
+[The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the
+TMDB API but is not endorsed or certified by TMDB. Streaming availability data is
+provided by [JustWatch](https://www.justwatch.com/).

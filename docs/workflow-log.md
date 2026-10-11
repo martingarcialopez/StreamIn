@@ -11,6 +11,52 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — An outside review, and its first fixes
+
+**Why:** before Phase 3, a fresh Claude session read the whole codebase and the
+workflow and gave an honest review, to find what the tooling misses.
+
+**What it found:** five bugs that neither tests nor `ios-reviewer` had caught
+(the reviewer only reads diffs), a README describing another app, and workflow
+gaps: a brittle guard hook, rules split between the repo and local memory, a
+roadmap outside the repo, no automatic verification, and nothing that looks at
+the UI.
+
+**What changed**
+
+- Fixed, with tests: a failed Details load read as "not available with your
+  subscriptions"; the language picker offered four untranslated languages;
+  per-region provider lists showed aliased brands twice (`ProviderAliases.merging`
+  now serves the regional lists and the provider catalog); Details showed
+  "cancelled" as an error; the Details preview crashed.
+- `ios-reviewer` then found five LOW issues, all fixed: Retry ran outside
+  `.task(id:)` so nothing cancelled it, a failed load hid the services picker,
+  the previous region's providers stayed visible after a region change, the
+  new hook pattern missed `git push;`, and two sentences in these docs were wrong.
+- README rewritten from the code. CLAUDE.md's preview rule fixed: it allowed
+  `fatalError` in "unused" methods, but a view's `.task` runs in previews too.
+- Verified: app build, 102 tests across 7 packages, three previews rendered.
+
+**What the tooling caught, and what it missed**
+
+- **First real use of `RenderPreview`.** One call confirmed the preview crash;
+  after the fix it rendered the "Available" and "Offline" previews as evidence.
+  No workflow step rendered previews before.
+- **Guard-hook false positives, live:** three read-only git commands were blocked
+  because a branch name or path contained "commit" (fixed in the entry below).
+- **A destination string cost a test run:** `OS=26.3` matches no simulator when
+  the runtime is `26.3.1`. Name the newest runtime, or leave `OS` out.
+- **Two sessions, one checkout.** A second session moved the roadmap into the
+  repo while this one fixed bugs, in the same working tree, so its staged
+  changes landed on this branch. It worked out, but parallel sessions need their
+  own worktrees (workflow upgrade 4 in the roadmap).
+
+**Decided:** learning beats the ship date, so the roadmap has none. Next, before
+Phase 3: macOS CI, issue-driven work, a visual check before every PR, parallel
+agents in worktrees, and evals — listed in `docs/roadmap.md`.
+
+---
+
 ## 2026-10-11 — The roadmap moves into the repo
 
 - **`docs/roadmap.md`** replaces a plan file that lived in `~/.claude/plans/` on
