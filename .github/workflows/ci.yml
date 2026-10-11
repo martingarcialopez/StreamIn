@@ -32,10 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Secrets.xcconfig is gitignored. The placeholder key is enough to compile;
-      # no test needs the real TMDB key or the network.
+      # The secrets files are gitignored; setup.sh creates them with the
+      # placeholder key, which is enough to compile. No test needs the real TMDB
+      # key or the network.
       - name: Placeholder secrets
-        run: cp Secrets.example.xcconfig Secrets.xcconfig
+        run: scripts/setup.sh
 
       - name: Toolchain
         run: |
