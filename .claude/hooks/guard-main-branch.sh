@@ -5,7 +5,9 @@
 
 command=$(jq -r '.tool_input.command // empty')
 
-writes_git='git[[:space:]].*(commit|push)'
+# Patterns stay inside one command: [^;&|]* stops at &&, ; and |, so
+# `git push && gh pr edit --base main` isn't mistaken for a push to main.
+writes_git='git[[:space:]][^;&|]*(commit|push)'
 [[ "$command" =~ $writes_git ]] || exit 0
 
 # Creating the branch in the same command (git switch -c … && git commit) is fine.
@@ -13,7 +15,7 @@ creates_branch='(switch|checkout)[[:space:]]+(-c|-b|--create)'
 [[ "$command" =~ $creates_branch ]] && exit 0
 
 branch=$(git -C "$CLAUDE_PROJECT_DIR" branch --show-current 2>/dev/null)
-pushes_main='push[[:space:]].*[[:space:]]main([[:space:]]|$)'
+pushes_main='git[[:space:]]+push[^;&|]*[[:space:]:]main([[:space:]]|$)'
 
 if [[ "$branch" == "main" || "$command" =~ $pushes_main ]]; then
     echo "Blocked: changes reach main only through a PR (one per roadmap phase). Start a branch first: git switch -c feat/<phase-name>" >&2

@@ -33,6 +33,10 @@ was force-pushed).
 - **Simulator runtimes matter.** The first iPad simulator booted ran iOS 17.4,
   below the app's iOS 26.2 minimum, so the build failed before compiling.
   Check the runtime (`xcrun simctl list devices available`) before booting.
+- **First hook false positive.** The main-branch guard blocked
+  `git push && gh pr edit 2 --base main`: its pattern saw `push` and, later on the
+  line, `main`. Patterns now stop at `&&`, `;` and `|`, and also catch
+  `git push origin HEAD:main`, which slipped through before. 12 regression cases pass.
 - **Skills load live.** Once `.claude/skills/` was back on disk, `localize` and
   `new-package` appeared mid-session; `ship-phase` stays hidden until invoked
   because it's user-only (`disable-model-invocation`).
