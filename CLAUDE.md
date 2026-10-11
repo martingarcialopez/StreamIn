@@ -57,8 +57,9 @@ TMDBClient or SwiftData directly.**
 | `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
 | `ship-phase` skill | Finish a phase and open its PR (only when Martín asks) |
+| `commit` skill | Every commit: Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing |
 | `ios-reviewer` subagent | Read-only review against these rules before every PR |
-| Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
+| Hooks (`.claude/settings.json`) | Block commits to `main`; block commits without the Claude co-author trailer; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub (`.github/workflows/`) | **claude[bot]**: answers or pushes fixes when Martín writes `@claude` in a PR or issue (`claude.yml`); reviews each PR once when it opens with Anthropic's `code-review` plugin (`claude-code-review.yml`). Runs on Linux, so it can't build or test the app |

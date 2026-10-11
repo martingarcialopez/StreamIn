@@ -50,8 +50,8 @@ say so — never imply it passed.
 
 ## 5. Commit and open the PR
 
-- Commit message: Conventional Commits, a short title plus at most two short lines,
-  ending with the co-author trailer.
+- Commit with the `commit` skill: Conventional Commits title, at most two short
+  body lines, the Claude co-author trailer. The PR title follows the same format.
 - `git push -u origin <branch>`, then `gh pr create --base main` with a body that
   follows `.github/pull_request_template.md`. Tick only test-plan items that step 3
   verified; leave manual checks for Martín unticked.

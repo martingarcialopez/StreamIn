@@ -11,6 +11,38 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — Every commit is co-authored
+
+**Why:** the history should show the pairing at a glance. May's commits list
+Martín alone even though Claude was already helping; from October on, every
+commit on `main` should list Martín *and* Claude.
+
+**What changed**
+
+- `commit` skill: Conventional Commits title (72 characters at most), at most two
+  short body lines, and always `Co-Authored-By: Claude <model> <noreply@anthropic.com>`.
+  The trailer names the model that paired on the commit.
+- `require-coauthor` hook: blocks any `git commit` whose command doesn't carry
+  the trailer — the skill says how, the hook guarantees it. 10 test cases pass.
+- `ship-phase` now commits through the skill.
+
+**Decisions**
+
+- **The email stays.** GitHub only shows a co-author when the trailer's email
+  belongs to a GitHub account; `noreply@anthropic.com` is Anthropic's `claude`
+  account. #2's squash had it removed, so GitHub shows no co-author there.
+- **`claude` for pairing, `claude[bot]` for GitHub automation.** Commits made
+  pairing locally point at the `claude` account; reviews and `@claude` fixes on
+  GitHub come from the `claude[bot]` app.
+- **No history rewrite.** #2 and #3 predate the rule and show Martín alone.
+  Fixing them would mean force-pushing `main`, losing GitHub's Verified badges
+  and breaking the merged-commit links on PRs #2–#4.
+- **Squash merges keep the co-author.** With the repo's squash default (PR title
+  + empty description), GitHub still copies the PR commits' co-authors into the
+  squash commit — verified on #4.
+
+---
+
 ## 2026-10-11 — Claude gets its own GitHub identity
 
 **Why:** review conversations on #1 showed one account talking to itself
