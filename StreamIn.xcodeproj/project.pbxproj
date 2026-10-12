@@ -17,6 +17,8 @@
 		5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
 		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
+		44ED7FFDCBCB992D1C74ADF7 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = DC93CACC0BDC108B3942B3B5 /* Persistence */; };
+		992E035565562A3AB93FD783 /* Watchlist in Frameworks */ = {isa = PBXBuildFile; productRef = D64C978B073996C8B3302DD4 /* Watchlist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,7 +39,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		5BF6C52F16A8BFB26CAF1FC8 /* settings.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = settings.json; sourceTree = "<group>"; };
 		5B20C7E92FA4C408006066E7 /* DetailsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DetailsFeature; path = Packages/DetailsFeature; sourceTree = "<group>"; };
 		5B2B3D632FC0789300C8C204 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DesignSystem; path = Packages/DesignSystem; sourceTree = "<group>"; };
 		5B63F2B12FA1269F002AB748 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -51,8 +52,11 @@
 		5BBF59B62FA11B88008CC68E /* TMDBClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = TMDBClient; path = Packages/TMDBClient; sourceTree = "<group>"; };
 		5BF57B552FAB9BC800BF5F39 /* WatchlistFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WatchlistFeature; path = Packages/WatchlistFeature; sourceTree = "<group>"; };
 		5BF57B562FAB9CD100BF5F39 /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SettingsFeature; path = Packages/SettingsFeature; sourceTree = "<group>"; };
+		5BF6C52F16A8BFB26CAF1FC8 /* settings.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = settings.json; sourceTree = "<group>"; };
 		5BF89A012FA123DB005E8AF1 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
 		A99EFD0F0E8E44AF8ECC29A1 /* Preferences */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Preferences; path = Packages/Preferences; sourceTree = "<group>"; };
+		D2C66CD8381CCDA70C64DD90 /* Persistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Persistence; path = Packages/Persistence; sourceTree = "<group>"; };
+		68806381A0271AF19D9FEA45 /* Watchlist */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Watchlist; path = Packages/Watchlist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -75,26 +79,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5BF6C5349DE1D0BFE9503147 /* agents */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = agents;
-			sourceTree = "<group>";
-		};
-		5BF6C5BC978DA2D5B73EB6BD /* hooks */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = hooks;
-			sourceTree = "<group>";
-		};
-		5BF6C57C5CFE461DF8014068 /* rules */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = rules;
-			sourceTree = "<group>";
-		};
-		5BF6C539C6C92E857D795EDE /* skills */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = skills;
-			sourceTree = "<group>";
-		};
 		5B3C2C882FADF9C700481221 /* StreamInUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -129,6 +113,26 @@
 			path = .github;
 			sourceTree = "<group>";
 		};
+		5BF6C5349DE1D0BFE9503147 /* agents */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = agents;
+			sourceTree = "<group>";
+		};
+		5BF6C539C6C92E857D795EDE /* skills */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = skills;
+			sourceTree = "<group>";
+		};
+		5BF6C57C5CFE461DF8014068 /* rules */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = rules;
+			sourceTree = "<group>";
+		};
+		5BF6C5BC978DA2D5B73EB6BD /* hooks */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = hooks;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +149,8 @@
 				5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */,
 				5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */,
 				5B8B87022FA38F9C0038B8ED /* SearchFeature in Frameworks */,
+				44ED7FFDCBCB992D1C74ADF7 /* Persistence in Frameworks */,
+				992E035565562A3AB93FD783 /* Watchlist in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,18 +171,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5BF6C4E7307D0F4F00EE3F22 /* .claude */ = {
-			isa = PBXGroup;
-			children = (
-				5BF6C5349DE1D0BFE9503147 /* agents */,
-				5BF6C5BC978DA2D5B73EB6BD /* hooks */,
-				5BF6C57C5CFE461DF8014068 /* rules */,
-				5BF6C539C6C92E857D795EDE /* skills */,
-				5BF6C52F16A8BFB26CAF1FC8 /* settings.json */,
-			);
-			path = .claude;
-			sourceTree = "<group>";
-		};
 		5BBF59802FA119DC008CC68E = {
 			isa = PBXGroup;
 			children = (
@@ -201,6 +195,8 @@
 				5B63F2B12FA1269F002AB748 /* README.md */,
 				5B63F2B22FA126C8002AB748 /* CLAUDE.md */,
 				5BBF598A2FA119DC008CC68E /* Products */,
+				D2C66CD8381CCDA70C64DD90 /* Persistence */,
+				68806381A0271AF19D9FEA45 /* Watchlist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -219,6 +215,18 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5BF6C4E7307D0F4F00EE3F22 /* .claude */ = {
+			isa = PBXGroup;
+			children = (
+				5BF6C5349DE1D0BFE9503147 /* agents */,
+				5BF6C5BC978DA2D5B73EB6BD /* hooks */,
+				5BF6C57C5CFE461DF8014068 /* rules */,
+				5BF6C539C6C92E857D795EDE /* skills */,
+				5BF6C52F16A8BFB26CAF1FC8 /* settings.json */,
+			);
+			path = .claude;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -251,6 +259,8 @@
 				B8CECB5AA23445E981B96C90 /* Preferences */,
 				5B2B3D652FC079D100C8C204 /* DesignSystem */,
 				5BA0D0032FD1000100C8C204 /* ReferenceData */,
+				DC93CACC0BDC108B3942B3B5 /* Persistence */,
+				D64C978B073996C8B3302DD4 /* Watchlist */,
 			);
 			productName = StreamIn;
 			productReference = 5BBF59892FA119DC008CC68E /* StreamIn.app */;
@@ -343,6 +353,8 @@
 				026A346B7A434B56B6B8EDE8 /* XCLocalSwiftPackageReference "Packages/Preferences" */,
 				5B2B3D642FC079D100C8C204 /* XCLocalSwiftPackageReference "Packages/DesignSystem" */,
 				5BA0D0022FD1000100C8C204 /* XCLocalSwiftPackageReference "Packages/ReferenceData" */,
+				9D3ACDBE2E903E5044A294F4 /* XCLocalSwiftPackageReference "Packages/Persistence" */,
+				EB248BC3390FC516868E5945 /* XCLocalSwiftPackageReference "Packages/Watchlist" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF598A2FA119DC008CC68E /* Products */;
@@ -808,6 +820,14 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/TMDBClient;
 		};
+		9D3ACDBE2E903E5044A294F4 /* XCLocalSwiftPackageReference "Packages/Persistence" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Persistence;
+		};
+		EB248BC3390FC516868E5945 /* XCLocalSwiftPackageReference "Packages/Watchlist" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Watchlist;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -846,6 +866,14 @@
 		B8CECB5AA23445E981B96C90 /* Preferences */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Preferences;
+		};
+		DC93CACC0BDC108B3942B3B5 /* Persistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Persistence;
+		};
+		D64C978B073996C8B3302DD4 /* Watchlist */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Watchlist;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -24,11 +24,11 @@ One Swift Package per layer; boundaries are enforced at build time.
 | `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
 | `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
 | `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
+| `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
+| `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
 | `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `AppLogoMark`, `RemoteImage` |
 | `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
-
-Planned (Phase 3, #30): `Persistence` — the SwiftData watchlist repository; `Watchlist` — the `@Observable` `WatchlistStore` that Details and the Watchlist tab share.
 
 **The most important rule: features depend on Domain protocols, never on
 TMDBClient or SwiftData directly.**
