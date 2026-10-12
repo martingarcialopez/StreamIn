@@ -105,18 +105,6 @@ import Foundation
         // Random id that's not in any group — should return itself.
         #expect(ProviderAliases.canonical(ProviderID(999_999)) == ProviderID(999_999))
     }
-
-    @Test func aliasGroupExpandsForCanonicalAndVariants() {
-        let primeGroup = ProviderAliases.aliasGroup(of: ProviderID(9))
-        #expect(primeGroup == Set([ProviderID(9), ProviderID(119), ProviderID(613), ProviderID(2100)]))
-
-        // Asking from any variant returns the same group.
-        let fromVariant = ProviderAliases.aliasGroup(of: ProviderID(119))
-        #expect(fromVariant == primeGroup)
-
-        // Unaliased id returns a singleton.
-        #expect(ProviderAliases.aliasGroup(of: ProviderID(283)) == Set([ProviderID(283)]))
-    }
 }
 
 // MARK: - ProviderAliases.merging

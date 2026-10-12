@@ -61,10 +61,6 @@ actor MemoryCache<Key: Hashable & Sendable, Value: Sendable> {
         }
     }
 
-    func removeAll() {
-        entries.removeAll()
-    }
-
     private func isExpired(_ entry: Entry) -> Bool {
         guard let timeToLive else { return false }
         return now() - entry.storedAt >= timeToLive

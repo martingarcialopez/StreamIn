@@ -114,15 +114,4 @@ struct MemoryCacheTests {
 
         #expect(counter.value == 1)
     }
-
-    @Test func removeAllForcesRefetch() async throws {
-        let cache = MemoryCache<String, String>()
-        let counter = FetchCounter()
-
-        _ = try await cache.value(for: "key", orFetch: counter.fetch(returning: "a"))
-        await cache.removeAll()
-        _ = try await cache.value(for: "key", orFetch: counter.fetch(returning: "b"))
-
-        #expect(counter.value == 2)
-    }
 }
