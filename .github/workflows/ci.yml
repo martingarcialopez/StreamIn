@@ -43,6 +43,8 @@ jobs:
           xcodebuild -version
           xcrun simctl list runtimes ios
 
+      # COMPILER_INDEX_STORE_ENABLE=NO: xcodebuild builds Xcode's code index
+      # alongside the compile by default; CI never uses it.
       - name: Build the app and run every package's tests
         run: |
           set -o pipefail
@@ -54,6 +56,7 @@ jobs:
             -resultBundlePath "$RESULTS" \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             2>&1 | tee xcodebuild.log | xcbeautify --renderer github-actions
 
       - name: Test summary
