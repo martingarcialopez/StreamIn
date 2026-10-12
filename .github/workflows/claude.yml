@@ -10,13 +10,14 @@ on:
   pull_request_review:
     types: [submitted]
 
-# One run at a time per issue or PR; a second trigger waits instead of racing.
-concurrency:
-  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
-  cancel-in-progress: false
-
 jobs:
   claude:
+    # One run at a time per issue or PR; a second trigger waits instead of
+    # racing. On the job, not the workflow, so events that fail the `if` below
+    # (like claude[bot]'s own progress comment) end at once instead of queueing.
+    concurrency:
+      group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: false
     # Only the repository owner can summon Claude, so a stray @claude can't
     # spend the subscription's usage. The `claude` label hands an issue to
     # claude[bot] to implement; @claude anywhere asks it for help.
