@@ -37,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5BF6C52F16A8BFB26CAF1FC8 /* settings.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = settings.json; sourceTree = "<group>"; };
 		5B20C7E92FA4C408006066E7 /* DetailsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DetailsFeature; path = Packages/DetailsFeature; sourceTree = "<group>"; };
 		5B2B3D632FC0789300C8C204 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DesignSystem; path = Packages/DesignSystem; sourceTree = "<group>"; };
 		5B63F2B12FA1269F002AB748 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -74,6 +75,26 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		5BF6C5349DE1D0BFE9503147 /* agents */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = agents;
+			sourceTree = "<group>";
+		};
+		5BF6C5BC978DA2D5B73EB6BD /* hooks */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = hooks;
+			sourceTree = "<group>";
+		};
+		5BF6C57C5CFE461DF8014068 /* rules */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = rules;
+			sourceTree = "<group>";
+		};
+		5BF6C539C6C92E857D795EDE /* skills */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = skills;
+			sourceTree = "<group>";
+		};
 		5B3C2C882FADF9C700481221 /* StreamInUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -91,6 +112,21 @@
 		5BBF59992FA119DD008CC68E /* StreamInTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = StreamInTests;
+			sourceTree = "<group>";
+		};
+		5BF6C494307D0E7600EE3F22 /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = docs;
+			sourceTree = "<group>";
+		};
+		5BF6C496307D0E7600EE3F22 /* scripts */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = scripts;
+			sourceTree = "<group>";
+		};
+		5BF6C4F3307D0F4F00EE3F22 /* .github */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = .github;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -129,9 +165,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5BF6C4E7307D0F4F00EE3F22 /* .claude */ = {
+			isa = PBXGroup;
+			children = (
+				5BF6C5349DE1D0BFE9503147 /* agents */,
+				5BF6C5BC978DA2D5B73EB6BD /* hooks */,
+				5BF6C57C5CFE461DF8014068 /* rules */,
+				5BF6C539C6C92E857D795EDE /* skills */,
+				5BF6C52F16A8BFB26CAF1FC8 /* settings.json */,
+			);
+			path = .claude;
+			sourceTree = "<group>";
+		};
 		5BBF59802FA119DC008CC68E = {
 			isa = PBXGroup;
 			children = (
+				5BF6C4E7307D0F4F00EE3F22 /* .claude */,
+				5BF6C4F3307D0F4F00EE3F22 /* .github */,
+				5BF6C494307D0E7600EE3F22 /* docs */,
+				5BF6C496307D0E7600EE3F22 /* scripts */,
 				5B2B3D632FC0789300C8C204 /* DesignSystem */,
 				A99EFD0F0E8E44AF8ECC29A1 /* Preferences */,
 				5BA0D0012FD1000100C8C204 /* ReferenceData */,
