@@ -130,14 +130,6 @@ public enum ProviderAliases {
         return canonical
     }
 
-    /// Every id that belongs to the same brand as `id`. Singleton for non-
-    /// aliased ids. Used by the Details filter to expand the user's
-    /// subscription set ({9}) into every TMDB variant ({9, 119, 613, 2100})
-    /// so region listings under any variant are matched.
-    public static func aliasGroup(of id: ProviderID) -> Set<ProviderID> {
-        groups.first(where: { $0.contains(id) }) ?? [id]
-    }
-
     /// Collapses aliased providers into one entry per brand, under the
     /// canonical id. The entry that already carries the canonical id supplies
     /// the name and logo ("Netflix", not "Netflix Standard with Ads"),
