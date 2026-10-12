@@ -11,12 +11,13 @@ import SwiftUI
 import Domain
 import Preferences
 import SearchFeature
-import DetailsFeature
+import Watchlist
 
 struct SearchTab: View {
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
     let prefs: Preferences
+    let watchlist: WatchlistStore
     @Binding var showingSettings: Bool
     @Binding var showingStreamingServices: Bool
 
@@ -37,13 +38,12 @@ struct SearchTab: View {
                 )
             }
             .navigationDestination(for: Movie.self) { movie in
-                DetailsView(
-                    model: DetailsViewModel(
-                        movie: movie,
-                        repository: repository,
-                        imageURLBuilder: imageURLBuilder,
-                        prefs: prefs
-                    ),
+                MovieDetailsDestination(
+                    movie: movie,
+                    repository: repository,
+                    imageURLBuilder: imageURLBuilder,
+                    prefs: prefs,
+                    watchlist: watchlist,
                     onEditSubscriptions: { showingStreamingServices = true }
                 )
             }

@@ -42,6 +42,13 @@ the small pieces while local sessions take the rest (#9's trial).
   - a test passed whether or not writes waited for the initial load
 
   Each fix was checked by breaking it on purpose and watching its test fail.
+- **`ios-reviewer` on #34:** two LOW findings, both fixed before the PR:
+  - a log line OSLog would have redacted
+  - the architecture table not listing `Watchlist` as a feature dependency
+- **The cost of one PR per issue:** after #34, hearting a movie works but the
+  Watchlist tab still shows its placeholder until #35. Martín hit it on the
+  simulator and read it as a bug. When a phase ships over several PRs, each PR
+  should say what's still missing on screen.
 
 **What broke**
 

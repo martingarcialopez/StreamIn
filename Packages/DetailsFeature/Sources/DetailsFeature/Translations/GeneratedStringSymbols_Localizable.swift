@@ -172,6 +172,24 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Label of the heart button in the Details toolbar when the movie isn't saved; VoiceOver reads it, the button shows only the heart.
+     
+     Localized string for key “detailsWatchlistAdd” in table “Localizable.xcstrings”.
+     */
+    static var detailsWatchlistAdd: LocalizedStringResource {
+        LocalizedStringResource("detailsWatchlistAdd", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Label of the filled heart button in the Details toolbar when the movie is saved; VoiceOver reads it, the button shows only the heart.
+     
+     Localized string for key “detailsWatchlistRemove” in table “Localizable.xcstrings”.
+     */
+    static var detailsWatchlistRemove: LocalizedStringResource {
+        LocalizedStringResource("detailsWatchlistRemove", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Section header on the Details screen above the streaming providers
      
      Localized string for key “detailsWhereToWatch” in table “Localizable.xcstrings”.

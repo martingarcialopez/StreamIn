@@ -91,6 +91,11 @@ public struct DetailsView: View {
             .padding(.bottom, 24)
         }
         .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                WatchlistToggleButton(model: model)
+            }
+        }
         // Loads on first render, and again when the language or region
         // changes or Retry is tapped. SwiftUI cancels the previous run, so
         // only the latest one writes to the model.
@@ -515,7 +520,8 @@ private struct BackdropView: View {
                 movie: PreviewMovieRepository.inception,
                 repository: PreviewMovieRepository(),
                 imageURLBuilder: PreviewImageURLBuilder(),
-                prefs: prefs
+                prefs: prefs,
+                watchlist: .preview(saving: [PreviewMovieRepository.inception])
             ),
             onEditSubscriptions: {}
         )
@@ -531,7 +537,8 @@ private struct BackdropView: View {
                 movie: PreviewMovieRepository.inception,
                 repository: PreviewMovieRepository(availabilityError: .offline),
                 imageURLBuilder: PreviewImageURLBuilder(),
-                prefs: prefs
+                prefs: prefs,
+                watchlist: .preview()
             ),
             onEditSubscriptions: {}
         )
