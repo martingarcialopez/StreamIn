@@ -6,7 +6,7 @@
 import Foundation
 
 #if SWIFT_PACKAGE
-private let resourceBundle = Foundation.Bundle.module
+private nonisolated let resourceBundle = Foundation.Bundle.module
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 private nonisolated let resourceBundleDescription = LocalizedStringResource.BundleDescription.atURL(resourceBundle.bundleURL)
 #else
@@ -18,6 +18,15 @@ private nonisolated let resourceBundleDescription = LocalizedStringResource.Bund
 
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 nonisolated extension LocalizedStringResource {
+    /**
+     Directors line under a movie title in a Watchlist row when the movie has three or more directors: the first two names, then how many more. %1$@ and %2$@ are director names, %3$lld is the number of remaining directors.
+     
+     Localized string for key “watchlistDirectorsOverflow” in table “Localizable.xcstrings”.
+     */
+    static func watchlistDirectorsOverflow(_ arg1: String, _ arg2: String, _ arg3: Int) -> LocalizedStringResource {
+        LocalizedStringResource("watchlistDirectorsOverflow", defaultValue: "\(arg1)\(arg2)\(arg3, specifier: "%lld")", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
     /**
      Description on the empty watchlist screen explaining how to add movies
      
