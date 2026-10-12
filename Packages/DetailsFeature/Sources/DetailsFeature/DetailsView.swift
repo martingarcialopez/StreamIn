@@ -210,18 +210,14 @@ private struct EmptyStateConfigure: View {
 private struct HomeRegionSubsection: View {
     let model: DetailsViewModel
 
-    private var homeRegionLabel: String {
-        "\(model.homeRegion.flag) \(model.homeRegion.displayName)"
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if model.providersAvailableAtHome.isEmpty {
-                Text(.detailsSubscriptionsHomeNotAvailable(homeRegionLabel))
+                Text(.detailsSubscriptionsHomeNotAvailable(model.homeRegionLabel))
                     .font(.headline)
                     .foregroundStyle(.secondary)
             } else {
-                Text(.detailsSubscriptionsHomeRegion(homeRegionLabel))
+                Text(.detailsSubscriptionsHomeRegion(model.homeRegionLabel))
                     .font(.headline)
                 ForEach(model.providersAvailableAtHome) { provider in
                     HomeProviderRow(provider: provider, model: model)

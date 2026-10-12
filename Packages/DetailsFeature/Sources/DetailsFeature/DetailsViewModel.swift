@@ -42,6 +42,28 @@ public final class DetailsViewModel {
         case available
     }
 
+    /// What the "Where to watch" section shows for the home region.
+    public enum WhereToWatchState: Equatable, Sendable {
+        /// Home availability hasn't arrived yet.
+        case loading
+        /// The load failed and there's no home availability to show.
+        case failed(MovieError)
+        /// Nothing free or on a subscription at home (rent/buy isn't shown in v1).
+        case unavailable
+        /// Something free or on a subscription at home.
+        case available
+    }
+
+    /// What the "Other regions" section shows.
+    public enum OtherRegionsState: Equatable, Sendable {
+        /// No services, still loading, failed, or available at home only.
+        case hidden
+        /// The user's services carry the film nowhere.
+        case noMatches
+        /// The user's services carry it in other regions.
+        case available
+    }
+
     public init(
         movie: Movie,
         repository: MovieRepository,
@@ -120,6 +142,39 @@ public final class DetailsViewModel {
     }
 
     public var homeRegion: Region { prefs.region }
+
+    /// "🇪🇸 Spain"
+    public var homeRegionLabel: String {
+        "\(homeRegion.flag) \(homeRegion.displayName)"
+    }
+
+    /// Free providers in the home region; empty until home availability loads.
+    public var homeFreeProviders: [WatchProvider] {
+        homeAvailability?.free ?? []
+    }
+
+    /// Home-region subscription providers the user hasn't subscribed to and
+    /// that aren't free, in TMDB's order; empty until home availability loads.
+    public var homeSubscriptionsOthers: [WatchProvider] {
+        guard let home = homeAvailability else { return [] }
+        let excluded = Set((providersAvailableAtHome + homeFreeProviders).map(\.id))
+        return home.subscription.filter { !excluded.contains($0.id) }
+    }
+
+    public var whereToWatchState: WhereToWatchState {
+        guard homeAvailability != nil else {
+            return error.map(WhereToWatchState.failed) ?? .loading
+        }
+        let nothingToShow = homeFreeProviders.isEmpty
+            && providersAvailableAtHome.isEmpty
+            && homeSubscriptionsOthers.isEmpty
+        return nothingToShow ? .unavailable : .available
+    }
+
+    public var otherRegionsState: OtherRegionsState {
+        if !providersAvailableElsewhere.isEmpty { return .available }
+        return subscriptionsState == .noMatches ? .noMatches : .hidden
+    }
 
     public var hasAnySubscriptions: Bool {
         !prefs.subscribedProviderIDs.isEmpty
