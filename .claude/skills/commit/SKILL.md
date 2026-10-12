@@ -93,6 +93,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 | `refactor` | ♻️ | | `docs` | 📝 |
 | `chore` | 🔧 | | | |
 
+One exception: a commit that only removes code or files (dead code, template
+tests) takes 🔥 whatever its type, as gitmoji intends.
+
 Emoji go in commit and PR titles, never in branch names.
 
 ## Branch names

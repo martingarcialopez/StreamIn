@@ -11,6 +11,42 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-12 — First issue done by claude[bot], with no local session
+
+**The trial:** #15 (remove dead code and a template test), triggered by Martín
+commenting `@claude implement this issue`. No Claude Code session ran on the Mac.
+
+**What happened**
+
+- About 1 min from the comment to [#17](https://github.com/martingarcialopez/StreamIn/pull/17);
+  Claude itself worked 38 s on a Linux runner. It made a branch, edited exactly
+  the five files the issue named, committed in the project format, opened the PR
+  with the template and `Closes #15` (CI box left unticked), and summarized it
+  on the issue. GitHub linked the PR to the issue on its own.
+- The bot's push triggered CI, which proves the app token works: green in
+  3 min 55 s, 106 tests, exactly the three fewer it predicted (Domain 22,
+  TMDBClient 24, DesignSystem 3). The bot never built anything; CI was its proof.
+
+**What broke, fixed in the follow-up PR**
+
+- **The automated review refused the PR:** "Workflow initiated by non-human
+  actor: claude (type: Bot)". The action rejects bot-started runs unless
+  they're listed; `claude-code-review.yml` now has `allowed_bots: 'claude[bot]'`
+  (the action strips `[bot]` before matching, per its source).
+- **The bot's own progress comment queued a second `claude.yml` run,** which was
+  then skipped. The concurrency group moved from the workflow to the job, so
+  runs that fail the owner-only `if` end at once.
+- **It used 🔥 for a removal,** gitmoji's actual convention, where the `commit`
+  skill said 🔧 for `chore`. The skill now allows 🔥 for commits that only remove
+  code.
+
+**Still open:** the commit's author is `github-actions[bot]` (co-authored by
+"Claude Sonnet 5.5", the action's default model), not claude[bot] — already on
+the roadmap. The bot's summary also shows the action's default "Create PR" link
+next to the real PR; cosmetic.
+
+---
+
 ## 2026-10-11 — macOS CI is the record; work starts from issues
 
 **Why:** until now "it builds and the tests pass" meant Claude saying so after
