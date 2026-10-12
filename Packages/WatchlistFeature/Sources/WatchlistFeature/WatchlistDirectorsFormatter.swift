@@ -13,18 +13,7 @@ enum WatchlistDirectorsFormatter {
         case 1, 2:
             return names.joined(separator: separator)
         default:
-            return String(localized: overflow(names[0], names[1], names.count - 2))
+            return String(localized: .watchlistDirectorsOverflow(names[0], names[1], names.count - 2))
         }
-    }
-
-    // Stand-in for the generated `.watchlistDirectorsOverflow(_:_:_:)` symbol, which
-    // can't be regenerated outside Xcode tooling; same key, table and bundle.
-    private static func overflow(_ first: String, _ second: String, _ others: Int) -> LocalizedStringResource {
-        LocalizedStringResource(
-            "watchlistDirectorsOverflow",
-            defaultValue: "\(first)\(second)\(others, specifier: "%lld")",
-            table: "Localizable",
-            bundle: .atURL(Bundle.module.bundleURL)
-        )
     }
 }
