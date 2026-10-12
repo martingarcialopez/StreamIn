@@ -11,6 +11,50 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-11 — macOS CI is the record; work starts from issues
+
+**Why:** until now "it builds and the tests pass" meant Claude saying so after
+running them on Martín's Mac, and claude[bot] couldn't build at all. Work started
+from a roadmap file, not from anything GitHub could link a PR to.
+
+**What changed**
+
+- **CI** (`ci.yml`, job "Build and test"): a `macos-26` runner with Xcode 26.6
+  builds the app and runs `StreamIn.xctestplan` — every package's tests, one
+  build — on each PR and push to `main`. The job summary lists results per
+  package; the `.xcresult` and log are kept 14 days.
+- **A shared `StreamIn` scheme and a test plan**, committed for the first time
+  (before, CI would have relied on auto-created schemes). ⌘U now runs everything.
+- **CI is the source of truth:** CLAUDE.md, `ship-phase` (new step: wait for CI,
+  fix red runs, quote the green one), the PR template (a CI-run box replaces the
+  self-reported build and test boxes) and claude[bot]'s instructions.
+- **The repo went public**, so macOS runners are free and `main` can require CI.
+  A history scan found no committed secrets first.
+- **Issues:** milestones per roadmap phase, issue forms (task, bug), labels
+  (`claude`, `good-for-claude`, `workflow`, `tech-debt`), and nine first issues
+  (#8–#16) from the review and the roadmap. `/start-issue` starts local work;
+  the `claude` label hands an issue to claude[bot], which now opens the PR itself
+  (`gh pr create`) with `Closes #N`.
+
+**What CI caught on its first run:** a fresh clone didn't build. The app target's
+synchronized folder is scanned before the "Generate Secrets" script runs, so
+`GeneratedSecrets.swift` didn't exist yet: "cannot find 'GeneratedSecrets'".
+Reproduced locally on a fresh clone (first build fails, second passes) — anyone
+following the README hit it. `scripts/setup.sh` now creates the placeholder;
+README and CI run it.
+
+**Numbers:** first run red in 1 min 22 s (the fresh-clone bug); first green run
+2 min 39 s for the job — app build plus 109 tests across 9 packages on an iPhone 17
+simulator (iOS 26.5). The same test plan takes about 30 s locally with a warm
+machine.
+
+**Decided against (for now):** `paths-ignore` for docs-only changes (a required
+check that never runs blocks the merge, and public-repo minutes are free), and a
+`workflow_run` auto-fix for red CI (#11: it runs PR code with write access;
+revisit with data).
+
+---
+
 ## 2026-10-11 — An outside review, and its first fixes
 
 **Why:** before Phase 3, a fresh Claude session read the whole codebase and the

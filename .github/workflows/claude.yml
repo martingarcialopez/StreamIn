@@ -6,26 +6,33 @@ on:
   pull_request_review_comment:
     types: [created]
   issues:
-    types: [opened, assigned]
+    types: [opened, assigned, labeled]
   pull_request_review:
     types: [submitted]
+
+# One run at a time per issue or PR; a second trigger waits instead of racing.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
   claude:
     # Only the repository owner can summon Claude, so a stray @claude can't
-    # spend the subscription's usage.
+    # spend the subscription's usage. The `claude` label hands an issue to
+    # claude[bot] to implement; @claude anywhere asks it for help.
     if: |
       github.actor == github.repository_owner && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+        (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude') ||
+        (github.event_name == 'issues' && github.event.action != 'labeled' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
       )
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
@@ -39,14 +46,17 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: claude
 
-          # This is an optional setting that allows Claude to read CI results on PRs
+          # Lets Claude read CI results (the "Build and test" job) on PRs.
           additional_permissions: |
             actions: read
 
-          # Claude follows the instructions in the comment that tagged it, plus
-          # CLAUDE.md. These lines cover what's specific to running here.
+          # Claude follows the instructions in the comment or issue that
+          # triggered it, plus CLAUDE.md. These lines cover what's specific to
+          # running here. `gh pr create` lets it open the PR for an issue itself
+          # instead of posting a link.
           # Options: https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           claude_args: |
-            --append-system-prompt "You are running in GitHub Actions on Linux: Xcode isn't available, so you cannot build or test this iOS app. When you change code, say so in your reply and list what Martín should verify locally. Follow CLAUDE.md and the rules in .claude/rules/. Commit messages: Conventional Commits, a short title plus at most two short lines. Never push to main; work on the pull request's branch."
-
+            --allowedTools "Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh pr checks:*),Bash(gh run view:*),Bash(gh issue view:*)"
+            --append-system-prompt "You are claude[bot], running in GitHub Actions on Linux. Xcode isn't available, so you can't build or test this iOS app; the CI workflow (job 'Build and test', a macOS runner) builds the app and runs every package's tests on each push to a pull request. Don't ask Martín to verify builds or tests locally: say CI will verify the push, and when CI has run, quote its result and link. If asked about a failing run, read its logs with the CI tools, fix the cause and push. Follow CLAUDE.md and the rules in .claude/rules/. Commit messages follow .claude/skills/commit/SKILL.md (gitmoji Conventional Commits title, at most two short body lines, the co-author trailer), without asking for confirmation. Never push to main. When implementing an issue: work on the branch you're given, commit, push, then open a pull request with gh pr create --base main whose title follows the commit format and whose body follows .github/pull_request_template.md with 'Closes #<issue number>' and the CI box left unticked; then reply on the issue with the PR link."

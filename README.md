@@ -1,5 +1,7 @@
 # StreamIn
 
+[![CI](https://github.com/martingarcialopez/StreamIn/actions/workflows/ci.yml/badge.svg)](https://github.com/martingarcialopez/StreamIn/actions/workflows/ci.yml)
+
 Search a movie and see where you can stream it: in your country, and on the
 services you already pay for in other countries — the VPN use case.
 
@@ -29,10 +31,10 @@ Requires Xcode 26 (built with 26.6) and an iOS 26.2 or later simulator.
 
 1. Clone the repo.
 2. Get a free TMDB API key at <https://developer.themoviedb.org/>.
-3. Create your local secrets file and put the key in it (it's gitignored):
+3. Create the local secrets files, then put your key in `Secrets.xcconfig` (both are gitignored):
 
    ```bash
-   cp Secrets.example.xcconfig Secrets.xcconfig
+   scripts/setup.sh
    ```
 
 4. Open `StreamIn.xcodeproj`, pick the `StreamIn` scheme and run it on an iPhone or iPad simulator.
@@ -40,13 +42,15 @@ Requires Xcode 26 (built with 26.6) and an iOS 26.2 or later simulator.
 A build step turns `Secrets.xcconfig` into `StreamIn/Secrets/GeneratedSecrets.swift`.
 After changing the key, clean the build folder (⇧⌘K).
 
-**Tests.** Each package has its own scheme: pick it in Xcode and press ⌘U. The
-packages are iOS-only, so `swift test` can't run them on macOS; from the command
-line, run them from the package's folder:
+**Tests.** Press ⌘U on the `StreamIn` scheme: its test plan
+(`StreamIn.xctestplan`) runs every package's tests in one build. From the command
+line, the same run CI makes:
 
 ```bash
-cd Packages/SearchFeature && xcodebuild test -scheme SearchFeature -destination 'platform=iOS Simulator,name=iPhone 17'
+xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'
 ```
+
+The packages are iOS-only, so `swift test` can't run them on macOS.
 
 **Debugging network traffic.** Launch with `STREAMIN_DISABLE_CACHE=1` (scheme →
 Run → Environment Variables) to send every request over the network, for a proxy
@@ -154,9 +158,13 @@ Unit tests use Swift Testing, in every package:
 - **ReferenceData, Preferences, DesignSystem:** catalog loading, persistence,
   the image store.
 
-Not written yet: network fixture tests for `LiveTMDBClient` (`URLProtocol`), a UI
-test for search → details → providers, and CI. GitHub's Linux runners can't build
-the app, so tests run locally for now; a macOS CI job is next on the list.
+**CI** ([`ci.yml`](.github/workflows/ci.yml)) builds the app and runs the whole
+test plan on a clean macOS runner for every pull request and every push to
+`main`, with per-package results in the job summary. A pull request can't merge
+until it's green.
+
+Not written yet: network fixture tests for `LiveTMDBClient` (`URLProtocol`) and a
+UI test for search → details → providers.
 
 ## How it's built: Claude Code
 
@@ -167,23 +175,29 @@ of the project and lives in the repo:
   loaded into every session.
 - **Path-scoped rules** ([`.claude/rules/`](.claude/rules)) — the Swift/SwiftUI
   guide, localization and secrets, loaded only when matching files are touched.
-- **Skills** ([`.claude/skills/`](.claude/skills)) — `localize` (add a string in
-  en + es and regenerate symbols), `new-package` (scaffold a package and register
-  it in the Xcode project), `commit`, and `ship-phase` (review → verify → log →
-  PR). The first two wrap tested scripts rather than prose instructions.
+- **Issues first** — each roadmap phase is a milestone and its tasks are issues
+  with acceptance criteria. A pull request closes its issue; small issues can go
+  straight to claude[bot] with the `claude` label.
+- **Skills** ([`.claude/skills/`](.claude/skills)) — `start-issue` (read an issue,
+  plan, branch), `localize` (add a string in en + es and regenerate symbols),
+  `new-package` (scaffold a package and register it in the Xcode project),
+  `commit`, and `ship-phase` (review → local check → log → PR → CI). `localize`
+  and `new-package` wrap tested scripts rather than prose instructions.
 - **Hooks** — block commits to `main`, protect generated and secret files,
   regenerate string symbols after catalog edits, lint `project.pbxproj` after edits.
 - **A reviewer subagent** ([`ios-reviewer`](.claude/agents/ios-reviewer.md)) —
   read-only review against the project rules before every pull request.
 - **Xcode's MCP server** ([`.mcp.json`](.mcp.json)) — the agent builds, runs tests
   and renders previews itself.
-- **On GitHub** — `@claude` in a pull request or issue gets an answer or a fix,
-  and each new pull request gets an automated review.
+- **On GitHub** — macOS CI is the source of truth for build and tests: agents
+  quote its run instead of their own. `@claude` in a pull request or issue gets
+  an answer or a fix, an issue labeled `claude` gets implemented in a pull
+  request, and each new pull request gets an automated review.
 
 The [workflow log](docs/workflow-log.md) records each change to the workflow and
-what it actually improved, including what didn't work. Next: macOS CI as the
-source of truth, issue-driven work, a visual check before every pull request,
-parallel agents in worktrees, and evals for the skills and the reviewer.
+what it actually improved, including what didn't work. Next: a visual check
+before every pull request, parallel agents in worktrees, and evals for the skills
+and the reviewer.
 
 ## Non-goals
 

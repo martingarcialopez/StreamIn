@@ -1,6 +1,8 @@
 ## Summary
 
-<!-- Which roadmap phase, and what it delivers, in one or two sentences. -->
+<!-- What this delivers, in one or two sentences. Link the issue: "Closes #<n>". -->
+
+Closes #
 
 ## What changed
 
@@ -12,8 +14,8 @@
 
 ## Test plan
 
-<!-- Tick only what was actually verified. -->
+<!-- CI is the record for build and unit tests: link the green run. Tick manual checks only if they were actually done. -->
 
-- [ ] App builds (Debug, iPhone simulator)
-- [ ] Unit tests for every touched package: <!-- Package (count) -->
+- [ ] CI green (app build + every package's tests): <!-- run link -->
+- [ ] Previews of changed views rendered:
 - [ ] Manual checks on the simulator:

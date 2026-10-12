@@ -1,0 +1,41 @@
+name: Task
+description: A piece of roadmap work — a feature, a refactor or a workflow change.
+labels: []
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What changes for the user or the codebase, and why.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkable statements. The PR is done when all of them hold.
+      placeholder: |
+        - [ ] Tapping the heart on Details saves the movie to the Watchlist
+        - [ ] The Watchlist survives a relaunch
+    validations:
+      required: true
+  - type: textarea
+    id: verify
+    attributes:
+      label: How to verify
+      description: Tests to add, previews to render, manual checks on the simulator. CI covers build and unit tests.
+    validations:
+      required: true
+  - type: input
+    id: packages
+    attributes:
+      label: Packages touched
+      placeholder: DetailsFeature, Domain
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+  - type: markdown
+    attributes:
+      value: |
+        Add the **milestone** for its roadmap phase. Small, well-specified tasks that don't need Xcode can get `good-for-claude`; adding the `claude` label hands it to claude[bot].

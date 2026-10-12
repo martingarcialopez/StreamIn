@@ -27,3 +27,10 @@ The Run Script declares `$(SRCROOT)/StreamIn/Secrets/GeneratedSecrets.swift` as
 an output file, so the build sandbox allows the write. It has no input files, so
 after changing the key do a clean build (⇧⌘K); adding `$(SRCROOT)/Secrets.xcconfig`
 as an input would make Xcode re-run it automatically.
+
+**Fresh clones:** the app target uses a file-system-synchronized group, and Xcode
+decides which files to compile before the Run Script runs. Without an existing
+`GeneratedSecrets.swift`, the first build fails with "cannot find
+'GeneratedSecrets'" (the second would pass). `scripts/setup.sh` creates
+`Secrets.xcconfig` from the template and a placeholder `GeneratedSecrets.swift`;
+README and CI both run it.

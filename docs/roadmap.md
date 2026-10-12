@@ -1,7 +1,8 @@
 # StreamIn — roadmap to the App Store
 
 Where the project stands and what's left, phase by phase. Start every session
-by reading this file; update it when a phase ships or a plan changes.
+by reading this file; update it when a phase ships or a plan changes. The tasks
+themselves live in GitHub: each phase is a milestone, each task an issue.
 
 **How we work** is in [CLAUDE.md](../CLAUDE.md) (tools, rules, decisions) and
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
@@ -16,12 +17,15 @@ This file doesn't repeat them.
 | — | Workflow foundation: rules, skills, `ios-reviewer`, hooks, Xcode MCP | ✅ [#2](https://github.com/martingarcialopez/StreamIn/pull/2) |
 | — | Claude GitHub app: `@claude`, automatic PR review | ✅ [#3](https://github.com/martingarcialopez/StreamIn/pull/3), [#4](https://github.com/martingarcialopez/StreamIn/pull/4) |
 | — | `commit` skill: gitmoji, co-author trailer, one-prompt commit + push | ✅ [#5](https://github.com/martingarcialopez/StreamIn/pull/5) |
-| — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | 🔄 `fix/review-bugs-readme` |
-| — | Workflow upgrades (next section) | ⏭ next |
-| 3 | Watchlist (Persistence + SwiftData) | planned |
-| 4 | Details page redesign | planned |
-| 5 | Landing page animation | planned |
-| 6 | App Store readiness + submission | planned |
+| — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
+| — | macOS CI + issue-driven work (workflow upgrades 1–2) | 🔄 [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
+| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | ⏭ next |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | planned — split into issues in its planning session |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | planned |
+| 5 | [Landing page animation](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned |
+| 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
+
+Cleanup outside the phases is tracked as [`tech-debt` issues](https://github.com/martingarcialopez/StreamIn/issues?q=is%3Aopen+label%3Atech-debt).
 
 **No ship date.** StreamIn ships when it ships: learning state-of-the-art AI
 workflows comes first. Rough sizing for phases 3–6: 3: 4 days, 4: 3, 5: 2, 6: 5.
@@ -30,31 +34,34 @@ workflows comes first. Rough sizing for phases 3–6: 3: 4 days, 4: 3, 5: 2, 6: 
 
 From the outside review of Oct 11. CI comes first because the others lean on it.
 
-1. **macOS CI as the source of truth:** a GitHub Actions job on a macOS runner
+1. ✅ **macOS CI as the source of truth:** a GitHub Actions job on a macOS runner
    builds the app and runs every package's tests on each PR; agents and the PR
-   template quote the run instead of local runs.
-2. **Issue-driven work:** phases become issues and milestones; `@claude` on an
-   issue (or a local session) opens a branch and a PR; automated review and CI
-   run; Martín reviews last.
-3. **A visual check before every PR:** render the previews of changed views with
+   template quote the run instead of local runs (#7).
+2. ✅ **Issue-driven work:** phases are milestones, tasks are issues; `/start-issue`
+   locally, or the `claude` label for claude[bot]; automated review and CI run;
+   Martín reviews last (#7).
+3. **A visual check before every PR** ([#8](https://github.com/martingarcialopez/StreamIn/issues/8)): render the previews of changed views with
    the Xcode MCP (`RenderPreview`), attach the screenshots to the PR, and add one
    UI test for search → details → providers.
-4. **Parallel agents in worktrees:** Phases 3 and 4 are mostly independent; run
+4. **Parallel agents in worktrees** ([#9](https://github.com/martingarcialopez/StreamIn/issues/9)): Phases 3 and 4 are mostly independent; run
    them in separate worktrees and sessions, each with its own PR.
-5. **Evals for the skills and `ios-reviewer`:** skill-creator's eval loop on
+5. **Evals for the skills and `ios-reviewer`** ([#10](https://github.com/martingarcialopez/StreamIn/issues/10)): skill-creator's eval loop on
    `localize` first, then a `claude plugin eval` suite once CI exists.
 
 ## Working on a phase
 
 1. **Open the project in Xcode** and allow external agents, so the `xcode` MCP
    server connects (build, tests, previews, Apple docs).
-2. **Plan in plan mode** before code; get Martín's approval.
-3. **One branch per phase**, named by the `commit` skill's rules
-   (e.g. `feat/watchlist-with-swiftdata`).
-4. **Verify at the end of each task:** app build + tests of the packages touched.
-5. **Ship with `/ship-phase`:** `ios-reviewer` → verification → docs → commit →
-   PR. Martín reviews on GitHub (claude[bot] also reviews automatically) and
-   squash-merges.
+2. **Plan in plan mode** before code; get Martín's approval. The plan splits the
+   phase into issues in its milestone (issue form: goal, acceptance criteria, how
+   to verify). Small, Xcode-free ones get `good-for-claude`.
+3. **Start each issue with `/start-issue <n>`**: one branch per issue or per
+   phase, named by the `commit` skill's rules (e.g. `feat/watchlist-with-swiftdata`).
+4. **Check locally at the end of each task:** build, tests of the packages
+   touched, previews of changed views.
+5. **Ship with `/ship-phase`:** `ios-reviewer` → local check → docs → commit →
+   PR with `Closes #<n>` → CI green. Martín reviews on GitHub (claude[bot] also
+   reviews automatically) and squash-merges once CI passes.
 6. **After the merge:** tick the phase here and add its row to the scorecard in
    the workflow log.
 
