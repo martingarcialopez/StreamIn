@@ -52,6 +52,7 @@ jobs:
             -testPlan StreamIn \
             -destination "$DESTINATION" \
             -resultBundlePath "$RESULTS" \
+            -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee xcodebuild.log | xcbeautify --renderer github-actions
 

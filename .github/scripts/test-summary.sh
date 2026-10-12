@@ -1,6 +1,7 @@
 #!/bin/bash
 # Prints a Markdown summary of an .xcresult bundle: one row per package test
-# bundle, then every failing test with its message. CI appends it to the job
+# bundle, every failing test with its message, then line coverage per package
+# when the run collected it (-enableCodeCoverage YES). CI appends it to the job
 # summary; run it locally on any result bundle the same way.
 #
 #   .github/scripts/test-summary.sh path/to/TestResults.xcresult
@@ -36,4 +37,35 @@ failures=$(jq -r '
 
 if [[ -n "$failures" ]]; then
     printf '\n#### Failures\n\n%s\n' "$failures"
+fi
+
+# Coverage of the app's own sources, per package. A source file can be compiled
+# into several test bundles, so each file counts once, with its best coverage.
+# Test files and generated string symbols are left out.
+if coverage=$(xcrun xccov view --report --json "$results" 2>/dev/null); then
+    root=$(git rev-parse --show-toplevel)
+    jq -r --arg root "$root/" '
+      [.targets[]?.files[]?]
+      | map(select(.path | startswith($root)) | .rel = (.path | ltrimstr($root)))
+      | map(select((.rel | test("^Packages/[^/]+/Sources/|^StreamIn/"))
+                   and (.rel | test("GeneratedStringSymbols") | not)))
+      | group_by(.path) | map(max_by(.coveredLines))
+      | map({pkg: ((.rel | capture("^Packages/(?<p>[^/]+)/").p) // "App"),
+             c: .coveredLines, e: .executableLines})
+      | select(length > 0)
+      | def pct(c; e): if e == 0 then "–" else "\((c * 1000 / e | round) / 10)%" end;
+        "",
+        "#### Line coverage",
+        "",
+        "| Package | Coverage | Lines |",
+        "|---|---:|---:|",
+        (group_by(.pkg)
+         | map({pkg: .[0].pkg, c: (map(.c) | add), e: (map(.e) | add)})
+         | sort_by(.pkg) | .[]
+         | "| \(.pkg) | \(pct(.c; .e)) | \(.c)/\(.e) |"),
+        ((map(.c) | add) as $c | (map(.e) | add) as $e
+         | "| **Total** | **\(pct($c; $e))** | \($c)/\($e) |"),
+        "",
+        "SwiftUI views and the app target are mostly uncovered by design: unit tests cover logic; views are checked with previews."
+    ' <<<"$coverage"
 fi
