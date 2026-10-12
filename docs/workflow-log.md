@@ -11,6 +11,25 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-12 — Coverage in CI
+
+**Why:** "are the tests any good?" had no number behind it.
+
+**What changed:** CI runs the test plan with `-enableCodeCoverage YES`, and the
+job summary adds line coverage per package. Each source file counts once, with
+its best coverage across test bundles, since some packages compile into several.
+
+**First measurement:** 21% of lines overall, which undersells it. The logic is
+well covered: `ProviderAliases`, `MemoryCache` and `CachingMovieRepository` at
+100%, `RemoteImageStore` 98%, `ProviderCatalog` 93%, `SearchViewModel` 91%,
+`Preferences` 85%, `DetailsViewModel` 73%. SwiftUI views and the app target are
+at 0% by design (previews check views; the UI test is #8). The real gap is
+`TMDBClient.swift` at 44%: the live HTTP client, search and detail mapping, date
+parsing, directors and image URLs have no tests. #14 now covers all of it, with
+an 85% target.
+
+---
+
 ## 2026-10-12 — First issue done by claude[bot], with no local session
 
 **The trial:** #15 (remove dead code and a template test), triggered by Martín

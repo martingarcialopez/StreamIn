@@ -160,8 +160,13 @@ Unit tests use Swift Testing, in every package:
 
 **CI** ([`ci.yml`](.github/workflows/ci.yml)) builds the app and runs the whole
 test plan on a clean macOS runner for every pull request and every push to
-`main`, with per-package results in the job summary. A pull request can't merge
-until it's green.
+`main`, with per-package test results and line coverage in the job summary. A
+pull request can't merge until it's green.
+
+Coverage (Oct 2026) is high where the logic lives — the caches, provider aliases,
+the search and details view models, preferences and the provider catalog sit
+between 73% and 100% — and low in SwiftUI views, which previews check instead.
+The TMDB adapter is the gap ([#14](https://github.com/martingarcialopez/StreamIn/issues/14)).
 
 Not written yet: network fixture tests for `LiveTMDBClient` (`URLProtocol`) and a
 UI test for search → details → providers.
