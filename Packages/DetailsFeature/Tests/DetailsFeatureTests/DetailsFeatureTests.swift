@@ -65,6 +65,18 @@ private let sampleMovie = Movie(
     runtime: nil
 )
 
+@MainActor
+func makeModel(
+    repository: FakeMovieRepository,
+    prefs: Preferences,
+    movie: Movie = sampleMovie
+) -> DetailsViewModel {
+    DetailsViewModel(
+        movie: movie, repository: repository,
+        imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
+    )
+}
+
 private func provider(_ id: Int, _ name: String) -> WatchProvider {
     WatchProvider(id: ProviderID(id), name: name, logoPath: nil, priority: 1)
 }
@@ -101,10 +113,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
             )
         )
         let prefs = makePrefs(subscribedTo: [8])  // Netflix only
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .unitedStates)
         #expect(model.subscribedAvailability.count == 1)
@@ -123,10 +132,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
             )
         )
         let prefs = makePrefs(subscribedTo: [337])  // Disney+ only — no overlap
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .unitedStates)
         #expect(model.subscribedAvailability.isEmpty)
@@ -137,14 +143,8 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let populated = makePrefs(subscribedTo: [8])
         let repo = FakeMovieRepository()
 
-        let modelEmpty = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: empty
-        )
-        let modelPopulated = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: populated
-        )
+        let modelEmpty = makeModel(repository: repo, prefs: empty)
+        let modelPopulated = makeModel(repository: repo, prefs: populated)
 
         #expect(modelEmpty.hasAnySubscriptions == false)
         #expect(modelPopulated.hasAnySubscriptions == true)
@@ -170,10 +170,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         )
         let prefs = makePrefs(subscribedTo: [8, 9])
         prefs.region = .spain
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .spain)
 
@@ -199,10 +196,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         )
         let prefs = makePrefs(subscribedTo: [8, 9])
         prefs.region = .spain
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .spain)
 
@@ -232,10 +226,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         )
         let prefs = makePrefs(subscribedTo: [9])
         prefs.region = .spain
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .spain)
 
@@ -263,26 +254,23 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         )
     )
 
-    private func makeModel(_ repo: FakeMovieRepository, subscribedTo ids: [Int] = [8]) -> DetailsViewModel {
+    private func makeSpanishModel(_ repo: FakeMovieRepository, subscribedTo ids: [Int] = [8]) -> DetailsViewModel {
         let prefs = makePrefs(subscribedTo: ids)
         prefs.region = .spain
-        return DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        return makeModel(repository: repo, prefs: prefs)
     }
 
     /// Before the first load finishes the section must spin, not claim the
     /// film isn't on the user's services.
     @Test func isLoadingBeforeTheFirstLoad() {
-        let model = makeModel(FakeMovieRepository())
+        let model = makeSpanishModel(FakeMovieRepository())
 
         #expect(model.subscriptionsState == .loading)
         #expect(model.availabilityFailure == nil)
     }
 
     @Test func offersThePickerWithoutSubscriptions() {
-        let model = makeModel(FakeMovieRepository(), subscribedTo: [])
+        let model = makeSpanishModel(FakeMovieRepository(), subscribedTo: [])
 
         #expect(model.subscriptionsState == .needsSubscriptions)
     }
@@ -293,7 +281,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .failure(MovieError.offline)
-        let model = makeModel(repo)
+        let model = makeSpanishModel(repo)
 
         await model.load(region: .spain)
 
@@ -307,7 +295,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .failure(MovieError.offline)
-        let model = makeModel(repo, subscribedTo: [])
+        let model = makeSpanishModel(repo, subscribedTo: [])
 
         await model.load(region: .spain)
 
@@ -323,10 +311,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         repo.bundleResult = .success(netflixInSpain)
         let prefs = makePrefs(subscribedTo: [8])
         prefs.region = .spain
-        let model = DetailsViewModel(
-            movie: sampleMovie, repository: repo,
-            imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
-        )
+        let model = makeModel(repository: repo, prefs: prefs)
         await model.load(region: .spain)
         #expect(model.homeAvailability?.region == .spain)
 
@@ -339,7 +324,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .failure(MovieError.offline)
-        let model = makeModel(repo)
+        let model = makeSpanishModel(repo)
         await model.load(region: .spain)
 
         repo.bundleResult = .success(netflixInSpain)
@@ -356,7 +341,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .success(netflixInSpain)
-        let model = makeModel(repo)
+        let model = makeSpanishModel(repo)
         await model.load(region: .spain)
 
         repo.bundleResult = .failure(MovieError.timeout)
@@ -373,7 +358,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.availabilitiesWaitForCancellation = true
-        let model = makeModel(repo)
+        let model = makeSpanishModel(repo)
 
         let load = Task { await model.load(region: .spain) }
         load.cancel()
@@ -382,5 +367,204 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         #expect(model.error == nil)
         #expect(model.availabilityFailure == nil)
         #expect(model.globalAvailability == nil)
+    }
+}
+
+// MARK: - Where to watch
+
+@MainActor
+@Suite struct WhereToWatchTests {
+
+    private func bundle(
+        region: Region = .spain,
+        subscription: [WatchProvider] = [],
+        rent: [WatchProvider] = [],
+        buy: [WatchProvider] = [],
+        free: [WatchProvider] = [],
+        global: [ProviderRegionalAvailability] = []
+    ) -> AvailabilityBundle {
+        AvailabilityBundle(
+            regional: WatchAvailability(
+                movieID: sampleMovie.id, region: region,
+                subscription: subscription, rent: rent, buy: buy, free: free, externalLink: nil
+            ),
+            global: GlobalWatchAvailability(movieID: sampleMovie.id, subscription: global)
+        )
+    }
+
+    private func loadedModel(
+        _ bundle: AvailabilityBundle,
+        subscribedTo ids: [Int] = []
+    ) async -> DetailsViewModel {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(bundle)
+        let prefs = makePrefs(subscribedTo: ids)
+        prefs.region = .spain
+        let model = makeModel(repository: repo, prefs: prefs)
+        await model.load(region: .spain)
+        return model
+    }
+
+    @Test func homeRegionLabelCombinesFlagAndName() {
+        let prefs = makePrefs(subscribedTo: [])
+        prefs.region = .spain
+        let model = makeModel(repository: FakeMovieRepository(), prefs: prefs)
+
+        #expect(model.homeRegionLabel == "\(Region.spain.flag) \(Region.spain.displayName)")
+    }
+
+    @Test func homeSubscriptionsOthersDropsSubscribedAndFreeAndKeepsOrder() async {
+        let model = await loadedModel(
+            bundle(
+                subscription: [
+                    provider(337, "Disney+"), provider(8, "Netflix"), provider(9, "Prime Video"),
+                    provider(350, "Apple TV+"), provider(11, "Mubi")
+                ],
+                free: [provider(9, "Prime Video")],
+                global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.spain])]
+            ),
+            subscribedTo: [8]
+        )
+
+        #expect(model.homeSubscriptionsOthers.map(\.id) == [ProviderID(337), ProviderID(350), ProviderID(11)])
+        #expect(model.homeFreeProviders.map(\.id) == [ProviderID(9)])
+    }
+
+    @Test func homeListsAreEmptyUntilHomeAvailabilityLoads() {
+        let prefs = makePrefs(subscribedTo: [8])
+        prefs.region = .spain
+        let model = makeModel(repository: FakeMovieRepository(), prefs: prefs)
+
+        #expect(model.homeFreeProviders.isEmpty)
+        #expect(model.homeSubscriptionsOthers.isEmpty)
+    }
+
+    // MARK: whereToWatchState
+
+    @Test func whereToWatchIsLoadingBeforeTheLoad() {
+        let prefs = makePrefs(subscribedTo: [])
+        let model = makeModel(repository: FakeMovieRepository(), prefs: prefs)
+
+        #expect(model.whereToWatchState == .loading)
+    }
+
+    @Test func whereToWatchFailsWhenTheLoadFails() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .failure(MovieError.offline)
+        let model = makeModel(repository: repo, prefs: makePrefs(subscribedTo: []))
+
+        await model.load(region: .spain)
+
+        #expect(model.whereToWatchState == .failed(.offline))
+    }
+
+    @Test func whereToWatchIsUnavailableForRentAndBuyOnly() async {
+        let model = await loadedModel(
+            bundle(rent: [provider(2, "Apple TV")], buy: [provider(3, "Google Play")])
+        )
+
+        #expect(model.whereToWatchState == .unavailable)
+    }
+
+    @Test func whereToWatchIsUnavailableWithNothing() async {
+        let model = await loadedModel(bundle())
+
+        #expect(model.whereToWatchState == .unavailable)
+    }
+
+    @Test func whereToWatchIsAvailableWithFreeProviders() async {
+        let model = await loadedModel(bundle(free: [provider(9, "Prime Video")]))
+
+        #expect(model.whereToWatchState == .available)
+    }
+
+    @Test func whereToWatchIsAvailableWithOtherSubscriptions() async {
+        let model = await loadedModel(bundle(subscription: [provider(337, "Disney+")]))
+
+        #expect(model.whereToWatchState == .available)
+    }
+
+    @Test func whereToWatchIsAvailableWithSubscribedProvidersAtHome() async {
+        let netflix = provider(8, "Netflix")
+        let model = await loadedModel(
+            bundle(
+                subscription: [netflix],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.spain])]
+            ),
+            subscribedTo: [8]
+        )
+
+        #expect(model.whereToWatchState == .available)
+    }
+
+    /// After a region change the previous region's content must not show.
+    @Test func whereToWatchIsLoadingAfterARegionChange() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(bundle(free: [provider(9, "Prime Video")]))
+        let prefs = makePrefs(subscribedTo: [])
+        prefs.region = .spain
+        let model = makeModel(repository: repo, prefs: prefs)
+        await model.load(region: .spain)
+        #expect(model.whereToWatchState == .available)
+
+        prefs.region = .unitedStates
+
+        #expect(model.whereToWatchState == .loading)
+        #expect(model.homeFreeProviders.isEmpty)
+    }
+
+    // MARK: otherRegionsState
+
+    @Test func otherRegionsAreHiddenWithoutServices() async {
+        let model = await loadedModel(bundle())
+
+        #expect(model.otherRegionsState == .hidden)
+    }
+
+    @Test func otherRegionsAreHiddenWhileLoadingAndWhenFailed() async {
+        let prefs = makePrefs(subscribedTo: [8])
+        let loading = makeModel(repository: FakeMovieRepository(), prefs: prefs)
+        #expect(loading.otherRegionsState == .hidden)
+
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .failure(MovieError.offline)
+        let failed = makeModel(repository: repo, prefs: prefs)
+        await failed.load(region: .spain)
+        #expect(failed.otherRegionsState == .hidden)
+    }
+
+    @Test func otherRegionsAreHiddenWhenAvailableAtHomeOnly() async {
+        let netflix = provider(8, "Netflix")
+        let model = await loadedModel(
+            bundle(
+                subscription: [netflix],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.spain])]
+            ),
+            subscribedTo: [8]
+        )
+
+        #expect(model.otherRegionsState == .hidden)
+    }
+
+    @Test func otherRegionsHaveNoMatchesWhenServicesCarryItNowhere() async {
+        let model = await loadedModel(
+            bundle(global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.spain])]),
+            subscribedTo: [337]
+        )
+
+        #expect(model.otherRegionsState == .noMatches)
+    }
+
+    @Test func otherRegionsAreAvailableWhenServicesCarryItElsewhere() async {
+        let model = await loadedModel(
+            bundle(global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.france])]),
+            subscribedTo: [8]
+        )
+
+        #expect(model.otherRegionsState == .available)
     }
 }

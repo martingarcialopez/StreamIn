@@ -28,20 +28,6 @@ public final class DetailsViewModel {
     private(set) var globalAvailability: GlobalWatchAvailability?
     private(set) var error: MovieError?
 
-    /// What the "Watch with your subscriptions" section shows.
-    public enum SubscriptionsState: Equatable, Sendable {
-        /// No services picked yet: the section offers the picker.
-        case needsSubscriptions
-        /// Availability hasn't arrived yet.
-        case loading
-        /// The load failed and there's no earlier result to show.
-        case failed(MovieError)
-        /// None of the user's services carries this film anywhere.
-        case noMatches
-        /// At least one of the user's services carries it somewhere.
-        case available
-    }
-
     public init(
         movie: Movie,
         repository: MovieRepository,
@@ -120,6 +106,39 @@ public final class DetailsViewModel {
     }
 
     public var homeRegion: Region { prefs.region }
+
+    /// "🇪🇸 Spain"
+    public var homeRegionLabel: String {
+        "\(homeRegion.flag) \(homeRegion.displayName)"
+    }
+
+    /// Free providers in the home region; empty until home availability loads.
+    public var homeFreeProviders: [WatchProvider] {
+        homeAvailability?.free ?? []
+    }
+
+    /// Home-region subscription providers the user hasn't subscribed to and
+    /// that aren't free, in TMDB's order; empty until home availability loads.
+    public var homeSubscriptionsOthers: [WatchProvider] {
+        guard let home = homeAvailability else { return [] }
+        let excluded = Set((providersAvailableAtHome + homeFreeProviders).map(\.id))
+        return home.subscription.filter { !excluded.contains($0.id) }
+    }
+
+    public var whereToWatchState: WhereToWatchState {
+        guard homeAvailability != nil else {
+            return error.map(WhereToWatchState.failed) ?? .loading
+        }
+        let nothingToShow = homeFreeProviders.isEmpty
+            && providersAvailableAtHome.isEmpty
+            && homeSubscriptionsOthers.isEmpty
+        return nothingToShow ? .unavailable : .available
+    }
+
+    public var otherRegionsState: OtherRegionsState {
+        if !providersAvailableElsewhere.isEmpty { return .available }
+        return subscriptionsState == .noMatches ? .noMatches : .hidden
+    }
 
     public var hasAnySubscriptions: Bool {
         !prefs.subscribedProviderIDs.isEmpty
