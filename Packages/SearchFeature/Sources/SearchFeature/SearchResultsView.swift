@@ -126,7 +126,7 @@ private struct SearchResultRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            PosterView(url: model.posterURL(for: movie))
+            MoviePoster(url: model.posterURL(for: movie))
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(movie.title)
@@ -175,35 +175,6 @@ private struct ProviderStrip: View {
             ProgressView()
                 .controlSize(.mini)
         }
-    }
-}
-
-// MARK: - Image subviews
-
-private struct PosterView: View {
-    let url: URL?
-
-    @ScaledMetric(relativeTo: .headline) private var width: CGFloat = 60
-
-    var body: some View {
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .empty:
-                Color.gray.opacity(0.15)
-            case .success(let image):
-                image.resizable().aspectRatio(contentMode: .fill)
-            case .failure:
-                Color.gray.opacity(0.15)
-                    .overlay {
-                        Image(systemName: Symbol.photo).foregroundStyle(.tertiary)
-                    }
-            @unknown default:
-                Color.gray.opacity(0.15)
-            }
-        }
-        .frame(width: width, height: width * 1.5)
-        .clipShape(.rect(cornerRadius: 6))
-        .accessibilityHidden(true)
     }
 }
 
