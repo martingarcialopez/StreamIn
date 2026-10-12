@@ -11,6 +11,41 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-12 — Second claude[bot] issue: bot issues must fit in one run
+
+**The run:** #14 (test the TMDB image URLs, HTTP client, mappings and errors,
+then split `TMDBClient.swift`), rewritten first so the bot had every behavior to
+pin down, the test layout and the Swift 6 constraints. Triggered with `@claude`.
+
+**What it delivered** ([#28](https://github.com/martingarcialopez/StreamIn/pull/28)):
+in 2 min 16 s, 45 new tests in exactly the requested layout, with no production
+code touched. CI green on the first push: 151 tests, TMDBClient coverage
+53% → 96.9% (`TMDBClient.swift` 44% → 96.4%), target 85%. It reported honestly
+that none of it had run before CI.
+
+**What it didn't do, and why**
+
+- **Step 2 (the file split) never started.** The issue said "only after step 1
+  is green", and CI only starts after the bot pushes, so it can't wait for CI
+  inside a run. It stopped and asked for a second `@claude`. The flaw was in the
+  issue, not the bot. **Lesson: an issue for claude[bot] must fit in one run.**
+  Several steps become one commit each in the same PR; CI checks every push and
+  the PR can't merge until it's green.
+- **The PR description was the empty template**, `Closes #` without a number, so
+  merging wouldn't have closed the issue. The run had 8 denied commands: the
+  allow-list had `gh pr create` but not `gh pr edit`, and a long description
+  usually goes through a temporary file or `$(cat <<EOF …)`, which weren't
+  allowed either. It fell back to a bare `gh pr create`.
+
+**Changed:** `claude.yml` allows `gh pr edit`, and the bot's instructions say to
+finish every step in one run (one commit each), to write the description inline
+with `--body`, and to name any denied command in its reply. The one-run rule is
+also in the task issue form and CLAUDE.md, where issues get written.
+`show_full_output` (which would log every tool call) stays off: the repo is
+public and those logs would be too.
+
+---
+
 ## 2026-10-12 — Coverage in CI
 
 **Why:** "are the tests any good?" had no number behind it.

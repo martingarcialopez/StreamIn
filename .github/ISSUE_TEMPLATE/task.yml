@@ -39,3 +39,5 @@ body:
     attributes:
       value: |
         Add the **milestone** for its roadmap phase. Small, well-specified tasks that don't need Xcode can get `good-for-claude`; adding the `claude` label hands it to claude[bot].
+
+        **For claude[bot], the issue must fit in one run.** CI only starts after the bot pushes, so it can't "wait for CI, then…". Write several steps as one commit each, all in the same PR: CI checks every push, and the PR can't merge until it's green.
