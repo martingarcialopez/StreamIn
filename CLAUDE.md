@@ -46,7 +46,7 @@ TMDBClient or SwiftData directly.**
 
 ## How we work
 
-- **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label.
+- **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label. When writing an issue for claude[bot], make it fit in one run: it can't wait for CI, so several steps become one commit each in the same PR, never "after step 1 is green".
 - **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI.
 - **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.

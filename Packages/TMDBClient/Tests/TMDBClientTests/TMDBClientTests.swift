@@ -3,33 +3,6 @@ import Foundation
 import Domain
 @testable import TMDBClient
 
-// MARK: - Test double
-
-/// Simple in-memory TMDBClient. Each method returns whatever the test puts
-/// into its `result` property; if untouched, the methods throw to flush out
-/// accidental unexpected calls.
-final class StubTMDBClient: TMDBClient, @unchecked Sendable {
-    var watchProvidersResult: Result<TMDBWatchProvidersResponse, Error> = .failure(MovieError.unknown)
-    var providerListResult: Result<TMDBProviderListResponse, Error> = .failure(MovieError.unknown)
-    var providerListCallCount = 0
-    var providerListLastWatchRegion: String?
-
-    func searchMovies(query: String, page: Int) async throws -> TMDBSearchResponse {
-        throw MovieError.unknown
-    }
-    func movieDetails(id: Int) async throws -> TMDBMovieDetailDTO {
-        throw MovieError.unknown
-    }
-    func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse {
-        try watchProvidersResult.get()
-    }
-    func providerList(watchRegion: String?) async throws -> TMDBProviderListResponse {
-        providerListCallCount += 1
-        providerListLastWatchRegion = watchRegion
-        return try providerListResult.get()
-    }
-}
-
 // MARK: - availabilities bundle (regional + global from one HTTP call)
 
 @Suite struct AvailabilitiesBundleTests {
