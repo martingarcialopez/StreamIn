@@ -1,6 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "watchlistDirectorsOverflow" : {
+      "comment" : "Directors line under a movie title in a Watchlist row when the movie has three or more directors: the first two names, then how many more. %1$@ and %2$@ are director names, %3$lld is the number of remaining directors.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@ & %3$lld more"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@ y %3$lld más"
+          }
+        }
+      }
+    },
     "watchlistEmptyDescription" : {
       "comment" : "Description on the empty watchlist screen explaining how to add movies",
       "extractionState" : "manual",
