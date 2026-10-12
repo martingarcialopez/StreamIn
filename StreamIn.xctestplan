@@ -46,6 +46,20 @@
     },
     {
       "target" : {
+        "containerPath" : "container:Packages\/Persistence",
+        "identifier" : "PersistenceTests",
+        "name" : "PersistenceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Packages\/Watchlist",
+        "identifier" : "WatchlistTests",
+        "name" : "WatchlistTests"
+      }
+    },
+    {
+      "target" : {
         "containerPath" : "container:Packages\/DesignSystem",
         "identifier" : "DesignSystemTests",
         "name" : "DesignSystemTests"

@@ -11,6 +11,54 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-12 — Phases 3 and 4 kick off: plans as issues, three bot PRs in parallel
+
+**Why:** the first phases run through the issue flow, with claude[bot] taking
+the small pieces while local sessions take the rest (#9's trial).
+
+**What happened**
+
+- **Both phases planned in one session**, in plan mode, then published so the
+  plans outlive it:
+  - eight issues (#30–#37) with the decisions in their bodies
+  - both milestone descriptions
+  - the roadmap and a "Parallel sessions" how-to in CLAUDE.md (#38)
+- **Ordering the issues around one shared test helper** (#33's `makeModel`)
+  let Phase 3's heart and Phase 4's layout both build on the Details view model
+  without editing the same nine call sites.
+- **claude[bot] took three issues at once** (#31, #32, #33):
+  - 1–2.5 min from label to PR
+  - all three green in CI on the first run
+  - merged within 45 min of kickoff, after Martín's review
+- **A review comment refined before sending:** "take the enums out of the
+  ViewModel" was rewritten to name all three enums, keep them in DetailsFeature
+  and change no behavior. The bot did exactly that in one 50 s run.
+- **`ios-reviewer` on #30 found three real problems** that 19 passing store
+  tests had missed, all fixed before the PR:
+  - two failing writes to one movie could leave the screen showing the opposite
+    of what's stored
+  - `@ModelActor` made a SwiftData initializer public, so callers could skip
+    the migration plan
+  - a test passed whether or not writes waited for the initial load
+
+  Each fix was checked by breaking it on purpose and watching its test fail.
+
+**What broke**
+
+- **The bot can't generate string symbols.** The `localize` script needs
+  `xcrun xcstringstool`, which doesn't exist on its Linux runner. On #32 it
+  added the catalog key and hand-wrote a `LocalizedStringResource` (a faithful
+  copy of what the generator emits) instead of the generated symbol. Fixed
+  locally in a temporary worktree: re-ran the script, swapped in
+  `.watchlistDirectorsOverflow(…)`, one commit on the bot's branch.
+  Issues that add strings aren't fully `good-for-claude` until the script can
+  generate symbols without Xcode.
+- **`@claude` in an unsubmitted review does nothing.** Comments made with
+  "Start a review" stay private drafts and fire no events until the review is
+  submitted. A plain PR comment triggers the bot at once.
+
+---
+
 ## 2026-10-12 — Second claude[bot] issue: bot issues must fit in one run
 
 **The run:** #14 (test the TMDB image URLs, HTTP client, mappings and errors,

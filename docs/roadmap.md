@@ -20,8 +20,8 @@ This file doesn't repeat them.
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
 | — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ⏭ planned: #30–#32, #34, #35 |
-| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | ⏭ planned: #33, #36 — in parallel with 3 |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #31, #32 merged; #30 in review; #34, #35 next |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 next, in parallel with 3 |
 | 5 | [Landing page animation](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
 
@@ -104,10 +104,12 @@ open Details from there. Today `WatchlistView` is a placeholder.
     the store answers it from memory.
   - `WatchlistError`.
 - **Persistence** (new package):
-  - A versioned SwiftData schema (V1 plus an empty migration plan) and a
-    `@ModelActor` `SwiftDataWatchlistRepository`.
-  - It's built from a `Storage` option (`.appDefault`, `.inMemory` or `.file(URL)`), so SwiftData
-    types never leave the package.
+  - A versioned SwiftData schema (V1 plus an empty migration plan) and an
+    internal `@ModelActor` repository.
+  - The only public entry point is `WatchlistPersistence.makeRepository(storage:)`, with
+    `.appDefault`, `.inMemory` or `.file(URL)`, returning `any WatchlistRepository`.
+    `@ModelActor` would otherwise make `init(modelContainer:)` public and let callers
+    skip the migration plan.
 - **Watchlist** (new package, depends on Domain only): `WatchlistStore`, `@MainActor @Observable`,
   modeled on `ProviderCatalog`.
   - Updates show immediately and are undone per item if the write fails.
