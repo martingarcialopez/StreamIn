@@ -28,42 +28,6 @@ public final class DetailsViewModel {
     private(set) var globalAvailability: GlobalWatchAvailability?
     private(set) var error: MovieError?
 
-    /// What the "Watch with your subscriptions" section shows.
-    public enum SubscriptionsState: Equatable, Sendable {
-        /// No services picked yet: the section offers the picker.
-        case needsSubscriptions
-        /// Availability hasn't arrived yet.
-        case loading
-        /// The load failed and there's no earlier result to show.
-        case failed(MovieError)
-        /// None of the user's services carries this film anywhere.
-        case noMatches
-        /// At least one of the user's services carries it somewhere.
-        case available
-    }
-
-    /// What the "Where to watch" section shows for the home region.
-    public enum WhereToWatchState: Equatable, Sendable {
-        /// Home availability hasn't arrived yet.
-        case loading
-        /// The load failed and there's no home availability to show.
-        case failed(MovieError)
-        /// Nothing free or on a subscription at home (rent/buy isn't shown in v1).
-        case unavailable
-        /// Something free or on a subscription at home.
-        case available
-    }
-
-    /// What the "Other regions" section shows.
-    public enum OtherRegionsState: Equatable, Sendable {
-        /// No services, still loading, failed, or available at home only.
-        case hidden
-        /// The user's services carry the film nowhere.
-        case noMatches
-        /// The user's services carry it in other regions.
-        case available
-    }
-
     public init(
         movie: Movie,
         repository: MovieRepository,
