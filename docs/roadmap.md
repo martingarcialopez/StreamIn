@@ -8,7 +8,7 @@ themselves live in GitHub: each phase is a milestone, each task an issue.
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
 This file doesn't repeat them.
 
-## Status (Oct 11, 2026)
+## Status (Oct 12, 2026)
 
 | Phase | What | State |
 |---|---|---|
@@ -18,10 +18,10 @@ This file doesn't repeat them.
 | — | Claude GitHub app: `@claude`, automatic PR review | ✅ [#3](https://github.com/martingarcialopez/StreamIn/pull/3), [#4](https://github.com/martingarcialopez/StreamIn/pull/4) |
 | — | `commit` skill: gitmoji, co-author trailer, one-prompt commit + push | ✅ [#5](https://github.com/martingarcialopez/StreamIn/pull/5) |
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
-| — | macOS CI + issue-driven work (workflow upgrades 1–2) | 🔄 [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
-| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | ⏭ next |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | planned — split into issues in its planning session |
-| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | planned |
+| — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
+| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ⏭ planned: #30–#32, #34, #35 |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | ⏭ planned: #33, #36 — in parallel with 3 |
 | 5 | [Landing page animation](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
 
@@ -67,44 +67,70 @@ From the outside review of Oct 11. CI comes first because the others lean on it.
 
 ---
 
+## Phases 3 and 4 run in parallel (#9)
+
+Planned together on Oct 12. Two local sessions, each in its own checkout, with claude[bot] alongside:
+
+| Who | Where | Issues, in order |
+|---|---|---|
+| Session 1 | main checkout | Phase 3: #30 → #34 → #35 |
+| Session 2 | worktree `../StreamIn-phase4` | Phase 4: #36 |
+| claude[bot] | GitHub | #31, #32, #33 |
+
+- **#33 merges first.** It adds the `makeModel` test helper and the view-model state that both #34
+  and #36 build on.
+- **Each phase owns part of Details.**
+  - Phase 3: `DetailsViewModel.init`, the toolbar and the watchlist parameter in the previews.
+  - Phase 4: the body, the section views, the strings and the preview data.
+- **The one expected conflict** is the preview block in `DetailsView.swift`. Prefer merging #34 first;
+  then #36 merges `main` into its branch.
+- **Afterwards:** split `DetailsView.swift` into one file per section (#37).
+
+How to run two sessions: CLAUDE.md, "Parallel sessions".
+
+---
+
 ## Phase 3 — Watchlist
 
 **Goal:** save movies from Details with a heart, list them in the Watchlist tab,
 open Details from there. Today `WatchlistView` is a placeholder.
 
-**Architecture — fixes the earlier plan.** The first draft had a SwiftData
-`WatchlistStore` handing `@Model` objects to features, which breaks the rule
-"features never depend on SwiftData". Instead:
+**Architecture (decided Oct 12).** Features never see SwiftData:
 
-- **Domain:** a `WatchlistItem` value type (movie ID, title, poster path, release
-  year, director names, date added) and a `WatchlistRepository` protocol
-  (list, add, remove, contains), Sendable and async.
-- **Persistence** (new package, via the `new-package` skill): a SwiftData `@Model`
-  and a `SwiftDataWatchlistRepository` implementing the protocol. SwiftData types
-  never leave the package.
-- **Observable state** that Details (the heart) and Watchlist (the list) share
-  without importing Persistence: a `@MainActor @Observable` store built on the
-  Domain protocol. *Decide in plan mode where it lives* (a small package next to
-  `ReferenceData`, or Domain-only types plus the store in the App target).
-- **Composition root** builds the `ModelContainer`, the repository and the store.
+- **Domain:**
+  - `WatchlistItem`: the whole `Movie` plus `addedAt`, so Details opens complete from the
+    Watchlist, even offline.
+  - `WatchlistRepository`: `items()` newest first, `save` (upsert), `remove`. There's no `contains`:
+    the store answers it from memory.
+  - `WatchlistError`.
+- **Persistence** (new package):
+  - A versioned SwiftData schema (V1 plus an empty migration plan) and a
+    `@ModelActor` `SwiftDataWatchlistRepository`.
+  - It's built from a `Storage` option (`.appDefault`, `.inMemory` or `.file(URL)`), so SwiftData
+    types never leave the package.
+- **Watchlist** (new package, depends on Domain only): `WatchlistStore`, `@MainActor @Observable`,
+  modeled on `ProviderCatalog`.
+  - Updates show immediately and are undone per item if the write fails.
+  - Writes are chained and wait for the initial load.
+  - `refresh(movie)` updates a saved snapshot when Details loads.
+- **Composition root** builds the repository, falling back to in-memory if the store can't open.
+  `STREAMIN_IN_MEMORY_WATCHLIST=1` forces a fresh store.
+- **Heart everywhere:** the Details toggle, the tab icon and the empty state.
 
-**Scope**
+**Issues**
 
-- Heart toggle in Details' toolbar (`heart` / `heart.fill`); saving stores the
-  directors already loaded on Details, so no extra request.
-- Watchlist tab: list of rows — poster, title, year, directors — newest first;
-  swipe to delete; empty state ("Add movies from the Details screen").
-- Directors on a row: none → no line; one → name; two → "A, B"; three or more →
-  "A, B & N more" (localized: `watchlistDirectorsOverflow`, en + es, via
-  `localize`).
-- Tapping a row opens Details. The Watchlist tab's Details destination passes
-  `onEditSubscriptions`, like the Search tab, through a `showingStreamingServices`
-  binding from `RootView`. Settings stays on the tab's first screen only.
-- Tests: repository against an in-memory `ModelContainer`; store add/remove/
-  contains; the heart toggle in `DetailsViewModel`; the directors formatter.
+1. #30 — Data layer: Domain types, Persistence, `Watchlist` store
+2. #31 — `PosterView` → DesignSystem `MoviePoster` (claude[bot])
+3. #32 — Directors line formatter (claude[bot]): none → no line; one → name;
+   two → "A, B"; three or more → "A, B & N more" (`watchlistDirectorsOverflow`)
+4. #34 — Heart on Details, composition root, shared `MovieDetailsDestination`
+5. #35 — Watchlist tab: list, swipe to delete, empty and error states, Details from the list
 
-**Verify:** heart a movie → it's in Watchlist; delete by swiping; relaunch → it's
-still there; open Details from Watchlist.
+**Verify:**
+- Heart a movie, and it's in the Watchlist.
+- Swipe to delete it.
+- Relaunch, and saved movies are still there, in the same order.
+- Open Details from the Watchlist: complete on its first frame, heart filled.
 
 ---
 
@@ -112,31 +138,35 @@ still there; open Details from Watchlist.
 
 **Goal:** where to watch comes first, grouped by the user's region.
 
-New section order, top to bottom:
+```
+[Backdrop] Title · metadata · Directed by …
+Where to watch in 🇪🇸 Spain
+  Free / With your subscriptions / With other services   (each only with data)
+  (no services picked: "Choose your services" in the subscriptions slot)
+  (nothing at all: "Not available in your region.")
+──────────
+Watch with your subscriptions in other regions
+  (no service carries it anywhere: one quiet line; at home only: hidden)
+──────────
+Overview
+```
 
-1. Backdrop, title, metadata, directors (unchanged).
-2. **"Where to watch in 🇪🇸 Spain"** with up to three subsections, each shown only
-   when it has data: **Free** (`availability.free`), **With your subscriptions**
-   (`providersAvailableAtHome`), **With other services** (regional subscription
-   providers minus the ones already shown).
-3. Separator.
-4. **"Watch with your subscriptions in other regions"** (`providersAvailableElsewhere`).
-5. Separator.
-6. Overview, moved to the bottom.
+**Decided (Oct 12):**
+- The three home subsections share one wrapping logo grid (`LazyVGrid`, adaptive columns).
+- "With other services" is the regional subscription providers minus the ones already shown.
+- **Rent and buy stay hidden in v1**: the audience wants free, subscription and VPN options. The data
+  stays in Domain.
 
-- New strings via `localize` (en + es): `detailsWhereToWatchRegion` ("Where to
-  watch in %@"), `detailsWhereToWatchFree`, `detailsWhereToWatchSubs`,
-  `detailsWhereToWatchOther`.
-- `DetailsViewModel.homeSubscriptionsOthers` (subscription providers minus those
-  already listed), with tests.
-- Empty states: nothing at home → one "not available" line for the section; no
-  other-region availability → no header.
-- **Rent and buy stay hidden in v1** (decided): the audience wants free,
-  subscription and VPN options; the data stays in Domain.
-- Keep the "Choose your services" button for users with no services picked.
+**Issues**
 
-**Verify:** a movie with full availability shows every subsection; a home-only
-movie shows no other-regions header; iPhone and iPad layouts both hold.
+1. #33 — `DetailsViewModel`: `whereToWatchState`, `otherRegionsState`,
+   `homeSubscriptionsOthers`, `homeRegionLabel`, plus the `makeModel` test helper (claude[bot])
+2. #36 — The layout, the new strings via `localize`, six previews
+
+**Verify:**
+- A movie with full availability shows every subsection.
+- A home-only movie shows no other-regions header.
+- iPhone and iPad layouts both hold.
 
 ---
 

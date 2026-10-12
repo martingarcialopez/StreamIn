@@ -28,7 +28,7 @@ One Swift Package per layer; boundaries are enforced at build time.
 | `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
-Planned: `Persistence` (Phase 3) — the SwiftData watchlist store.
+Planned (Phase 3, #30): `Persistence` — the SwiftData watchlist repository; `Watchlist` — the `@Observable` `WatchlistStore` that Details and the Watchlist tab share.
 
 **The most important rule: features depend on Domain protocols, never on
 TMDBClient or SwiftData directly.**
@@ -52,6 +52,21 @@ TMDBClient or SwiftData directly.**
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
 - **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
+
+### Parallel sessions
+
+Two sessions never share one checkout: each gets its own worktree, branch and PR (#9).
+
+- **Create it from an up-to-date `main`:**
+  - `git worktree add ../StreamIn-<task> -b <type>/<task> origin/main`
+  - Then copy the gitignored `Secrets.xcconfig` (and `.claude/settings.local.json`) into it.
+- **Each worktree is its own world:**
+  - Open its `StreamIn.xcodeproj` in a separate Xcode window, and use only that window in the Xcode MCP (`XcodeListWindows`, match the path).
+  - Use a different simulator per session, so installs don't overwrite each other.
+  - `-derivedDataPath .build/xcode` already builds separately per worktree.
+- **Project memory is keyed by path,** so a worktree session may not load it. Its kickoff prompt restates the essentials: `gh` path, no commits without approval, and the files the other session owns.
+- **When the other PR merges,** `git fetch && git merge origin/main`, resolve conflicts, run the local check, and push.
+- **When done:** `git worktree remove ../StreamIn-<task>` and delete the branch.
 
 | Tool | What it's for |
 |---|---|
