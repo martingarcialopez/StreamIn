@@ -12,8 +12,9 @@ command=$(jq -r '.tool_input.command // empty')
 writes_git='git[[:space:]]([^;&|]*[[:space:]])?(commit|push)([[:space:];&|)]|$)'
 [[ "$command" =~ $writes_git ]] || exit 0
 
-# Creating the branch in the same command (git switch -c … && git commit) is fine.
-creates_branch='(switch|checkout)[[:space:]]+(-c|-b|--create)'
+# Creating the branch in the same command (git switch -c … && git commit) is fine,
+# with other flags before the create flag too (git switch -q -c …).
+creates_branch='git[[:space:]]+(switch|checkout)([[:space:]]+-[^[:space:];&|]+)*[[:space:]]+(-c|-C|-b|-B|--create|--force-create)([[:space:]]|$)'
 [[ "$command" =~ $creates_branch ]] && exit 0
 
 branch=$(git -C "$CLAUDE_PROJECT_DIR" branch --show-current 2>/dev/null)
