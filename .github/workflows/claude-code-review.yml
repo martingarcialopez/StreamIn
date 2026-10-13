@@ -1,44 +1,76 @@
 name: Claude Code Review
 
-# One review per PR, when it's opened or ready — not on every push, so commits
-# that address review comments don't each trigger a new full review. Ask for
-# another one by commenting "@claude review" (handled by claude.yml).
+# The project's own review on every PR: the `ios-reviewer` subagent
+# (.claude/agents/ios-reviewer.md: CLAUDE.md, the rules, the swiftui-pro skill)
+# reads the diff, and its findings are posted on the PR, inline on each line
+# plus one summary comment. A clean run still posts its summary, so you can see
+# it ran.
+#
+# Once per PR, when it's opened or ready, not on every push, so commits that
+# address the findings don't each repost them. Comment "@claude review" on the
+# PR to review it again (claude.yml leaves those comments to this workflow).
 on:
   pull_request:
     types: [opened, ready_for_review, reopened]
+  issue_comment:
+    types: [created]
 
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
   claude-review:
-    if: github.event.pull_request.draft == false
+    # PRs: every non-draft PR, claude[bot]'s included. Comments: only Martín's
+    # "@claude review" on a PR, so a stray comment can't spend the usage.
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+       github.actor == github.repository_owner &&
+       contains(github.event.comment.body, '@claude review'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
+      pull-requests: write
+      issues: write
       id-token: write
+      actions: read
 
     steps:
+      # A comment event checks out main by default; review the PR's own code.
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          ref: ${{ github.event_name == 'issue_comment' && format('refs/pull/{0}/head', github.event.issue.number) || '' }}
 
-      - name: Run Claude Code Review
+      - name: Run ios-reviewer and post its findings
         id: claude-review
         uses: anthropics/claude-code-action@v1
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # PRs that claude[bot] opens for issues get reviewed too. The action
-          # refuses bot-initiated runs unless the bot is listed; claude[bot]
-          # only acts when Martín triggers it, so this opens nothing new.
+          # claude[bot]'s PRs are reviewed too. The action refuses bot-started
+          # runs unless the bot is listed; claude[bot] only acts when Martín
+          # triggers it, so this starts nothing on its own.
           allowed_bots: 'claude[bot]'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
 
+            Review this pull request with the project's reviewer and post its findings on the PR.
+
+            1. Run the `ios-reviewer` subagent on pull request #${{ github.event.pull_request.number || github.event.issue.number }}. Tell it this is GitHub Actions, the checkout is shallow, and it should get the diff with `gh pr diff`. If the subagent isn't available, read .claude/agents/ios-reviewer.md and follow it yourself.
+            2. For each finding whose `path:line` falls inside the PR's diff, post one inline comment on that line with mcp__github_inline_comment__create_inline_comment. Start the body with the severity in bold, then the problem, the failure scenario, the suggested fix, and the source if the finding has one. A finding that doesn't map to a diff line goes only in the summary.
+            3. Post exactly one summary comment with gh pr comment <PR number> --body '<text>', writing the text inline in the --body argument (no heredocs, no command substitution, no temporary files). Format:
+               - First line: `### ios-reviewer`
+               - Counts by severity, e.g. `0 critical · 1 high · 2 medium · 0 low`
+               - One line per finding: severity, `path:line`, the problem in one sentence
+               - The reviewer's verdict line (**Ready for PR** or **Fix before PR**)
+               - If nothing survived verification: "No findings." and the verdict
+            Post only what ios-reviewer reported, without findings of your own, and don't change any code.
+          # Read-only tools for the review, plus the two ways to post.
+          # Options: https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          claude_args: |
+            --allowedTools "Agent,Task,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*),Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment"
