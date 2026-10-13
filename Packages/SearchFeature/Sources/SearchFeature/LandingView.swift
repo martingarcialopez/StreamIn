@@ -15,6 +15,13 @@ struct LandingView: View {
                 .padding(.horizontal, Spacing.screenPadding)
             Spacer(minLength: 0)
             Spacer(minLength: 0)
+            // TMDB's terms ask for credit, and for JustWatch's on watch-provider data.
+            Text(.searchLandingCredits)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.bottom, Spacing.default)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppPalette.background)
