@@ -17,7 +17,11 @@ let package = Package(
     targets: [
         .target(
             name: "DesignSystem",
-            resources: [.process("Resources/Assets.xcassets")]
+            resources: [
+                .process("Resources/Assets.xcassets"),
+                // Read pixel by pixel by `WorldMap`, so it ships as is.
+                .copy("Resources/worldMap.png"),
+            ]
         ),
         .testTarget(
             name: "DesignSystemTests",

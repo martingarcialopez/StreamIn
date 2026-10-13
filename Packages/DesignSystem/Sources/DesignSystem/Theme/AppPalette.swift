@@ -5,4 +5,8 @@ public enum AppPalette {
     public static let secondaryBackground = Color("secondaryBackground", bundle: .module)
     public static let separator = Color("separator", bundle: .module)
     public static let accent = Color("accent", bundle: .module)
+    /// Good news, such as "you can watch this now".
+    public static let positive = Color.green
+    /// A gentle "not available", lilac rather than an alarming red.
+    public static let unavailable = Color.purple
 }

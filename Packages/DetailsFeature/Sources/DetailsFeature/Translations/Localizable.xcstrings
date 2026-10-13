@@ -55,60 +55,6 @@
         }
       }
     },
-    "detailsNotAvailable" : {
-      "comment" : "Shown on the Details screen when no streaming providers cover the user's region",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not available in your region."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No disponible en tu región."
-          }
-        }
-      }
-    },
-    "detailsProvidersFree" : {
-      "comment" : "Sub-section header for movies available to watch for free",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gratuito"
-          }
-        }
-      }
-    },
-    "detailsProvidersSubscription" : {
-      "comment" : "Sub-section header for movies available via a streaming subscription",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Streaming"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Streaming"
-          }
-        }
-      }
-    },
     "detailsRetry" : {
       "comment" : "Button on the Details screen that re-runs the failed full-details load",
       "extractionState" : "manual",
@@ -123,42 +69,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reintentar"
-          }
-        }
-      }
-    },
-    "detailsWhereToWatch" : {
-      "comment" : "Section header on the Details screen above the streaming providers",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Where to watch"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Donde ver "
-          }
-        }
-      }
-    },
-    "detailsSubscriptionsSectionTitle" : {
-      "comment" : "Section header for the multi-region availability across the user's subscriptions",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch with your subscriptions"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ver con tus suscripciones"
           }
         }
       }
@@ -181,24 +91,6 @@
         }
       }
     },
-    "detailsSubscriptionsNoMatches" : {
-      "comment" : "Empty state shown when the film isn't available with any of the user's subscriptions in any region",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not available with any of your subscriptions."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No disponible con ninguna de tus suscripciones."
-          }
-        }
-      }
-    },
     "detailsSubscriptionsConfigureButton" : {
       "comment" : "Button in the no-subscriptions state that opens the streaming-services picker",
       "extractionState" : "manual",
@@ -213,78 +105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elegir tus servicios"
-          }
-        }
-      }
-    },
-    "detailsSubscriptionsAvailableIn" : {
-      "comment" : "Caption next to a list of regions where a given provider carries the film",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Available in"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disponible en"
-          }
-        }
-      }
-    },
-    "detailsSubscriptionsHomeRegion" : {
-      "comment" : "Section header above providers carrying the film in the user's home region. %@ is a 'flag + name' label, e.g. '🇪🇸 Spain'.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch with your subscription in %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disponible con tu suscripción en %@"
-          }
-        }
-      }
-    },
-    "detailsSubscriptionsHomeNotAvailable" : {
-      "comment" : "Shown when none of the user's subscriptions carry the film in their home region. %@ is the 'flag + name' label for the home region.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not available with your subscriptions in %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No disponible con tus suscripciones en %@"
-          }
-        }
-      }
-    },
-    "detailsSubscriptionsOtherRegions" : {
-      "comment" : "Section header above the per-provider flag strips for regions other than home (accessible via VPN)",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watch with your subscriptions in other regions"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disponible con tus suscripciones en otras regiones"
           }
         }
       }
@@ -321,6 +141,168 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, disponible en otras %2$lld regiones"
+          }
+        }
+      }
+    },
+    "detailsWhereToWatchRegion" : {
+      "comment" : "VoiceOver label of the Details 'where to watch' card title, whose visible text shows only the region's flag. %@ is the region name, e.g. 'Spain'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where to watch in %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dónde ver en %@"
+          }
+        }
+      }
+    },
+    "detailsWhereToWatchTitle" : {
+      "comment" : "Small title of the Details 'where to watch' card. %@ is the home region's flag emoji, e.g. '🇪🇸'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where to watch · %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dónde ver · %@"
+          }
+        }
+      }
+    },
+    "detailsVerdictWatchNow" : {
+      "comment" : "Verdict on the Details card when one of the user's services, or a free service, carries the film in their region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch now"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya puedes verla"
+          }
+        }
+      }
+    },
+    "detailsVerdictAbroad" : {
+      "comment" : "Verdict on the Details card when the film is only on the user's services in other countries",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On your services abroad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con tus servicios en el extranjero"
+          }
+        }
+      }
+    },
+    "detailsVerdictUnavailable" : {
+      "comment" : "Playful verdict on the Details card when the user can't stream the film: not on their services anywhere and not free in their region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go read a book"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca leer un libro"
+          }
+        }
+      }
+    },
+    "detailsUnavailableNotOnYours" : {
+      "comment" : "Line under 'Go read a book' when services the user doesn't have carry the film in their region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not on your services, here or abroad."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No está en tus servicios, ni aquí ni fuera."
+          }
+        }
+      }
+    },
+    "detailsUnavailableNowhere" : {
+      "comment" : "Line under 'Go read a book' when no service carries the film in the user's region and none of theirs carries it abroad. 'Here' is the region the card's title shows with its flag.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available to stream here or on your services."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede ver en streaming aquí ni con tus servicios."
+          }
+        }
+      }
+    },
+    "detailsAlsoOn" : {
+      "comment" : "VoiceOver label for the small logos on the Details card's top border, when the user can already watch the film: the region's other services. Followed by their names.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also on:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "También en:"
+          }
+        }
+      }
+    },
+    "detailsInRegion" : {
+      "comment" : "VoiceOver label for the small logos on the Details card's top border: services the user doesn't have that carry the film in their region. %@ is the region name, e.g. 'Spain'. Followed by their names.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %@:"
           }
         }
       }
