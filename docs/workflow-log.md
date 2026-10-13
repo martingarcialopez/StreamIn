@@ -12,6 +12,45 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — `/parallel`: one command per parallel session (#61)
+
+**Why:** with a PR per issue and about 5 minutes of CI each, the session that
+shipped a PR sat waiting. The Phase 3/4 setup worked but was a page of manual
+steps: worktree, copying secrets, an Xcode window, a simulator, a kickoff
+prompt.
+
+**What exists, checked against the docs and a probe session:**
+- `claude --bg -w <name>` starts a session *inside* a new worktree, from a
+  fresh `origin/main`. The probe's first commands already ran there, so the
+  main checkout is never touched.
+- `claude agents` lists every session, this one included; a background session
+  there is just "managed", not hidden.
+- `claude rm` removes a session with its worktree and branch.
+- `.worktreeinclude` copies gitignored files.
+- Auto memory is shared across a repo's worktrees, which fixes last time's
+  "memory may not load" gotcha.
+
+**What the project adds:**
+- **`/parallel <issue>`** dispatches the session, named after the issue. It runs
+  `/start-issue` until its first question and waits in agent view (Martín's
+  choice: a row he opens, not a new tab).
+- **`/parallel <task in plain words>`** works too. The new session first turns
+  the text into a GitHub issue (Task form), then starts it, so every PR still
+  closes an issue and `/parallel` returns at once.
+- **A SessionStart hook,** in worktrees only, gives the session its own
+  simulator (`StreamIn <worktree>`, exported as `$STREAMIN_SIMULATOR`) and its
+  own Xcode window, and states the rules.
+- **`scripts/xcodebuild-locked.sh`:** `xcodebuild` under a shared `lockf`
+  lock, so two local test runs queue instead of fighting for the CPU. Tested:
+  the second waited and said so.
+- **`start-issue`** renames `worktree-<name>` to `<type>/<task>`.
+- **`ship-phase`** watches CI with Monitor instead of a blocking wait, so the
+  session stays usable for those 5 minutes.
+- **`/parallel clean`** removes finished worktrees, branches and simulators,
+  never anything unpushed.
+
+---
+
 ## 2026-10-13 — The review becomes a merge gate (#56)
 
 **Why:** the first working review, on #53, was useful but read like a log. It

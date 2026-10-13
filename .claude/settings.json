@@ -27,6 +27,13 @@
   },
   "enabledMcpjsonServers": ["xcode"],
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/worktree-session.sh", "timeout": 30 }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

@@ -28,15 +28,26 @@ can start right away; say which files you'll touch.
 
 ## 3. Branch from an up-to-date main
 
+Name the branch with the `commit` skill's rules (`feat/watchlist-heart-toggle`,
+`fix/details-offline-error`, `tooling/review-merge-gate`).
+
+**In the main checkout:**
+
 ```bash
 git switch main && git pull --ff-only origin main
 git switch -c <type>/<task>
 ```
 
-Name the branch with the `commit` skill's rules (`feat/watchlist-heart-toggle`,
-`fix/details-offline-error`). If `main` has uncommitted changes, ask before
-switching. In a worktree the app made, sync with the base branch through the app
-instead of pulling.
+If `main` has uncommitted changes, ask before switching.
+
+**In a worktree** (a `/parallel` session; `git rev-parse --git-dir` differs from
+`--git-common-dir`): don't switch to `main`, which is checked out in the main
+checkout. Claude Code created this worktree from a freshly fetched `origin/main`
+on a branch named `worktree-<name>`; rename it:
+
+```bash
+git branch -m <type>/<task>
+```
 
 ## 4. Work, then ship
 
