@@ -38,6 +38,11 @@ jobs:
       - name: Placeholder secrets
         run: scripts/setup.sh
 
+      # The PR review's merge verdict is decided by this script, so it's tested
+      # like app code.
+      - name: Review verdict script
+        run: bash .github/scripts/review-verdict-test.sh
+
       - name: Toolchain
         run: |
           xcodebuild -version

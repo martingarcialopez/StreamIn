@@ -1,53 +1,60 @@
 name: Claude Code Review
 
-# The project's own review on every PR: Claude follows
-# .claude/agents/ios-reviewer.md (CLAUDE.md, the rules, the swiftui-pro skill)
-# on the diff, and its findings are posted on the PR, inline on each line plus
-# one summary comment. A clean run still posts its summary, so you can see it
-# ran.
+# The project's own review on every PR, and the merge gate built on it.
 #
-# No subagent here: the Agent tool runs subagents in the background, so a CI
-# run would end its turn waiting for the reviewer and the job would finish
-# before the review existed (what happened on #53). Claude does the review
-# itself.
+# The `claude-review` job, on every push to a non-draft PR:
+#   1. marks the "ios-reviewer verdict" check as in progress
+#   2. collects the unresolved threads from earlier reviews
+#   3. Claude follows .claude/agents/ios-reviewer.md (CLAUDE.md, the rules, the
+#      swiftui-pro skill), writes its findings as JSON and posts one GitHub
+#      review: the summary as its body, one comment per new finding
+#   4. resolves the threads Claude found fixed
+#   5. .github/scripts/review-verdict.sh turns the JSON into the verdict:
+#      critical or high → failure (blocks the merge), medium → neutral,
+#      low or nothing → success. The script decides, not the model.
 #
-# Sonnet, not Opus like the local subagent: on PRs Claude opens, this is the
-# second review (the first ran in /ship-phase). On the planted-bug PR #53,
-# Sonnet found all five problems in 30 s for $0.15 (Opus: 53 s, $0.42). Left
-# alone it skipped the rulebooks, so the prompt requires them and the summary
-# lists what was read ("Checked against:").
+# The `review-override` label turns a failure into neutral for the current
+# commit; the next push removes it. Comment "@claude review" (or edit a comment
+# to add it) to run the review again without pushing.
 #
-# Once per PR, when it's opened or ready, not on every push, so commits that
-# address the findings don't each repost them. Comment "@claude review" on the
-# PR to review it again, or edit a comment to add it (claude.yml leaves those
-# comments to this workflow).
+# No subagent: the Agent tool runs subagents in the background, so a CI run
+# would end before the review existed (#53). On Sonnet: on PRs Claude opens,
+# this is the second review after the Opus one in /ship-phase, and on #53
+# Sonnet found all five planted problems once it was made to read the
+# rulebooks (#54).
 on:
   pull_request:
-    types: [opened, ready_for_review, reopened]
+    types: [opened, synchronize, ready_for_review, reopened, labeled, unlabeled]
   issue_comment:
     types: [created, edited]
 
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   claude-review:
-    # PRs: every non-draft PR, claude[bot]'s included. Comments: only Martín's
-    # "@claude review" on a PR, so a stray comment can't spend the usage.
+    # PRs: every push to a non-draft PR, claude[bot]'s included. Comments: only
+    # Martín's "@claude review" on a PR, so a stray comment can't spend usage.
     if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false &&
+       contains(fromJSON('["opened", "synchronize", "ready_for_review", "reopened"]'), github.event.action)) ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
        github.actor == github.repository_owner &&
        contains(github.event.comment.body, '@claude review') &&
        !contains(github.event.changes.body.from, '@claude review'))
+    # A newer push replaces a review still running for an older one.
+    concurrency:
+      group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
       issues: write
+      checks: write
       id-token: write
       actions: read
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+      GH_TOKEN: ${{ github.token }}
+      CHECK_NAME: ios-reviewer verdict
 
     steps:
       # A comment event checks out main by default; review the PR's own code.
@@ -57,11 +64,52 @@ jobs:
           fetch-depth: 1
           ref: ${{ github.event_name == 'issue_comment' && format('refs/pull/{0}/head', github.event.issue.number) || '' }}
 
-      - name: Run ios-reviewer and post its findings
-        id: claude-review
+      - name: Prepare the review
+        run: |
+          # Inside the checkout: Claude Code only writes within its working
+          # directory. Never committed, the job doesn't push.
+          WORK="$GITHUB_WORKSPACE/.ios-reviewer"
+          mkdir -p "$WORK"
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
+          { echo "WORK=$WORK"; echo "HEAD_SHA=$HEAD_SHA"; } >> "$GITHUB_ENV"
+
+          # The verdict check exists from the start, so a required check reads
+          # "in progress" instead of "expected".
+          CHECK_ID=$(gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" \
+            -f name="$CHECK_NAME" -f head_sha="$HEAD_SHA" -f status=in_progress \
+            -f 'output[title]=Reviewing…' \
+            -f 'output[summary]=ios-reviewer is reviewing this commit.' --jq .id)
+          echo "CHECK_ID=$CHECK_ID" >> "$GITHUB_ENV"
+
+          # An override covered the previous commit, not this one.
+          if [ "${{ github.event.action }}" = "synchronize" ]; then
+            gh pr edit "$PR_NUMBER" --remove-label review-override >/dev/null 2>&1 || true
+          fi
+
+          # Unresolved threads Claude opened in earlier reviews of this PR.
+          gh api graphql -F owner="${GITHUB_REPOSITORY%/*}" -F name="${GITHUB_REPOSITORY#*/}" -F number="$PR_NUMBER" -f query='
+            query($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviews(first: 100) { nodes { author { login } } }
+                  reviewThreads(first: 100) {
+                    nodes {
+                      id isResolved isOutdated path line originalLine
+                      comments(first: 1) { nodes { author { login } body } }
+                    }
+                  }
+                }
+              }
+            }' --jq '.data.repository.pullRequest as $pr | {
+              first_review: ([$pr.reviews.nodes[] | select(.author.login == "claude")] | length == 0),
+              threads: [$pr.reviewThreads.nodes[]
+                | select((.isResolved | not) and .comments.nodes[0].author.login == "claude")
+                | {thread_id: .id, path, line: (.line // .originalLine), outdated: .isOutdated, body: .comments.nodes[0].body}]
+            }' > "$WORK/previous-findings.json"
+          jq -c '{first_review, open_threads: (.threads | length)}' "$WORK/previous-findings.json"
+
+      - name: Review and post the findings
         uses: anthropics/claude-code-action@v1
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # claude[bot]'s PRs are reviewed too. The action refuses bot-started
@@ -70,23 +118,112 @@ jobs:
           allowed_bots: 'claude[bot]'
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+            PR NUMBER: ${{ env.PR_NUMBER }}
+            HEAD COMMIT: ${{ env.HEAD_SHA }}
 
-            Review this pull request with the project's reviewer and post its findings on the PR.
+            You are this project's automatic PR reviewer. Do the review yourself: don't start a subagent, because here it would run in the background and this run would end before it reports. Then write two files and post one GitHub review.
 
-            1. Read .claude/agents/ios-reviewer.md and do that review yourself on pull request #${{ github.event.pull_request.number || github.event.issue.number }}, following every step of it: read the rule files and the swiftui-pro files its "Gather context" step lists for this change, and the full changed files, not only the diff. Don't start a subagent: in this environment it would run in the background and this run would end before it reports. This is GitHub Actions and the checkout is shallow, so get the diff with `gh pr diff`. Finish the whole review before step 2.
-            2. For each finding whose `path:line` falls inside the PR's diff, post one inline comment on that line with mcp__github_inline_comment__create_inline_comment. Start the body with the severity in bold, then the problem, the failure scenario, the suggested fix, and the source if the finding has one. A finding that doesn't map to a diff line goes only in the summary.
-            3. Post exactly one summary comment with gh pr comment <PR number> --body '<text>', writing the text inline in the --body argument (no heredocs, no command substitution, no temporary files). Format:
-               - First line: `### ios-reviewer`
-               - Counts by severity, e.g. `0 critical · 1 high · 2 medium · 0 low`
-               - One line per finding: severity, `path:line`, the problem in one sentence
-               - The reviewer's verdict line (**Ready for PR** or **Fix before PR**)
-               - If nothing survived verification: "No findings." and the verdict
-               - Last line: `Checked against:` and every rule file and swiftui-pro file you actually read in this run
-            Post only findings that survived the reviewer's own verification step, and don't change any code.
-          # Sonnet (see above). Read-only tools for the review, plus the two
-          # ways to post; no Agent tool (see above).
+            1. Review. Read .claude/agents/ios-reviewer.md and follow every step of it on this PR. The checkout is shallow, so get the diff with `gh pr diff ${{ env.PR_NUMBER }}`. Read the full changed files, CLAUDE.md, the matching rules and the swiftui-pro files it lists, not only the diff. Use its Severity and Output sections exactly.
+
+            2. Earlier findings. ${{ env.WORK }}/previous-findings.json lists the unresolved threads you opened in earlier reviews of this PR ("threads"), and whether this is your first review of it ("first_review"). For each thread, check the current code. If the problem is gone, it's resolved. If it's still there, it's still open: keep its severity unless the code changed it. Never post a new comment for a problem that already has an open thread.
+
+            3. Write ${{ env.WORK }}/verdict.json with the Write tool, in exactly this shape:
+               {"new": [{"severity": "critical|high|medium|low", "title": "<one line>", "where": "<File.swift:21>"}],
+                "still_open": [{"thread_id": "<id from previous-findings.json>", "severity": "critical|high|medium|low", "title": "<one line>", "where": "<File.swift:21>"}],
+                "resolved": [{"thread_id": "<id from previous-findings.json>", "title": "<one line>"}],
+                "checked_against": ["<readable name of every rule file you read>"]}
+               Every thread in previous-findings.json goes in exactly one of still_open or resolved. A script turns this file into the merge verdict: any critical or high finding, new or still open, blocks the merge.
+
+            4. Write ${{ env.WORK }}/review.json, the GitHub review payload:
+               {"commit_id": "${{ env.HEAD_SHA }}", "event": "COMMENT", "body": "<review body>",
+                "comments": [{"path": "<repo-relative path>", "line": <line>, "side": "RIGHT", "body": "<comment>"}]}
+               Add "start_line" for a range. One comment per new finding, on a line inside the diff.
+
+               Each comment body, in this order, with a blank line between the parts (GitHub joins consecutive lines into one paragraph):
+               - `<icon> **<Severity> · <Category>**`. Icons: 🔴 critical or high, 🟠 medium, 🟡 low.
+               - One to three sentences: what's wrong and what goes wrong because of it. Name other places with the same root cause.
+               - When the fix is a direct replacement of exactly the commented lines, a ```suggestion block with the complete replacement, indented as in the file (an empty block deletes the lines). Otherwise one sentence with the fix. A suggestion is applied with one click, so on its own it must leave complete, compiling code: comment on every line it changes ("start_line" to "line"), e.g. a whole test function rather than only its middle line. If the fix also needs changes outside those lines (another line further away, another file), describe it in words instead of a suggestion.
+               - Only when a rulebook is the source: a last line `<sub>📏 [<readable name>](https://github.com/${{ github.repository }}/blob/main/<path>)</sub>`, using 📏 for CLAUDE.md and the project rules and 📚 for swiftui-pro, joined with " · " when there are several.
+
+               The review body:
+               - First review: `**ios-reviewer: <verdict words>** · <counts>`, for example `🔴 2 high · 🟠 3 medium`. Then a table `| | Finding | Where |` of the findings (one that can't be anchored to a diff line goes only in this table). Then `<details><summary>Checked against</summary>` with the readable names joined by " · ".
+               - Later reviews: `**ios-reviewer re-review of <first 7 characters of HEAD COMMIT>** · <n> new · <n> fixed · <n> still open`. Then the table of new findings, then a "Fixed" list.
+               - Verdict words, counting new and still-open findings: any critical or high → "changes needed before merge"; worst is medium → "merge at your discretion"; otherwise → "ready to merge".
+
+            5. Post the review with:
+               gh api --method POST repos/${{ github.repository }}/pulls/${{ env.PR_NUMBER }}/reviews --input ${{ env.WORK }}/review.json
+               Post it only if there are new findings or first_review is true, so a clean first review still shows. If GitHub rejects a comment's line (422), move that finding into the body's table, remove it from "comments", rewrite review.json and post again.
+
+            Don't post anything else, don't resolve threads (a later step does that from verdict.json), and don't change any code.
+          # Read-only tools, Write for the two files, and one way to post: a
+          # review on this repository's PRs.
           # Options: https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*),Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Grep,Glob,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*),Bash(gh api --method POST repos/${{ github.repository }}/pulls/:*)"
+
+      # Only threads from previous-findings.json, so the model can't resolve
+      # anything else.
+      - name: Resolve fixed threads
+        if: always() && env.WORK != ''
+        run: |
+          [ -s "$WORK/verdict.json" ] || exit 0
+          jq -r --slurpfile prev "$WORK/previous-findings.json" \
+            '($prev[0].threads | map(.thread_id)) as $known
+             | (.resolved // [])[] | .thread_id | select(. as $id | $known | index($id))' \
+            "$WORK/verdict.json" 2>/dev/null | while read -r thread; do
+            gh api graphql -F thread="$thread" \
+              -f query='mutation($thread: ID!) { resolveReviewThread(input: {threadId: $thread}) { thread { isResolved } } }' \
+              --jq '.data.resolveReviewThread.thread.isResolved' \
+              || echo "::warning::Couldn't resolve review thread $thread"
+          done
+
+      # Labels are read now, not at the start, so an override added during the
+      # review still counts.
+      - name: Publish the verdict
+        if: always() && env.CHECK_ID != ''
+        run: |
+          OVERRIDE=$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | index("review-override") != null')
+          .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" > "$WORK/check.json"
+          jq '{status: "completed", conclusion, output: {title, summary, text}}' "$WORK/check.json" \
+            | gh api --method PATCH "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_ID" --input - --jq '"\(.conclusion): \(.output.title)"'
+
+  review-override:
+    # Adding or removing the label re-evaluates the last verdict for the
+    # current commit, without reviewing again.
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) &&
+      github.event.label.name == 'review-override'
+    concurrency:
+      group: review-override-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CHECK_NAME: ios-reviewer verdict
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Re-evaluate the verdict
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=$(jq -rn --arg n "$CHECK_NAME" '$n|@uri')" \
+            --jq '[.check_runs[] | select(.status == "completed")] | sort_by(.completed_at) | last | .output.text // ""' \
+            > "$RUNNER_TEMP/verdict.json"
+          if [ ! -s "$RUNNER_TEMP/verdict.json" ]; then
+            echo "No finished review for this commit yet; the running review reads the label when it publishes."
+            exit 0
+          fi
+          OVERRIDE=${{ github.event.action == 'labeled' }}
+          .github/scripts/review-verdict.sh "$RUNNER_TEMP/verdict.json" "$OVERRIDE" \
+            | jq --arg name "$CHECK_NAME" --arg sha "$HEAD_SHA" \
+                '{name: $name, head_sha: $sha, status: "completed", conclusion, output: {title, summary, text}}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.conclusion): \(.output.title)"'

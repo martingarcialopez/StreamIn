@@ -47,10 +47,10 @@ TMDBClient or SwiftData directly.**
 ## How we work
 
 - **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label. When writing an issue for claude[bot], make it fit in one run: it can't wait for CI, so several steps become one commit each in the same PR, never "after step 1 is green".
-- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI.
+- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI and the review verdict.
 - **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
-- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews the PR again and posts its findings as comments.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict gates the merge: any critical or high finding blocks it, medium is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
 ### Parallel sessions
@@ -81,7 +81,7 @@ Two sessions never share one checkout: each gets its own worktree, branch and PR
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package test results and line coverage in the job summary. Required to merge |
-| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue (a new comment, or an edit that adds the mention); implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens: Sonnet follows `ios-reviewer.md` and posts its findings inline, plus a summary comment that ends with the rulebooks it checked (`@claude review` re-runs it). Runs on Linux, so it can't build — CI does, and it reads CI's results |
+| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue (a new comment, or an edit that adds the mention); implements an issue labeled `claude` and opens its PR; reviews every push to a PR: Sonnet follows `ios-reviewer.md` and posts one review (the summary, plus a comment with a one-click suggestion per finding), resolves the threads it finds fixed, and `.github/scripts/review-verdict.sh` turns its findings into the required "ios-reviewer verdict" check (`@claude review` re-runs it). Runs on Linux, so it can't build — CI does, and it reads CI's results |
 
 ## Decisions
 
