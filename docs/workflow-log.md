@@ -97,6 +97,32 @@ Phase 4 worktree, in parallel with Phase 3.
 **Lesson:** a check that can pass without doing its job needs a visible output,
 so check the output, not the green tick.
 
+**Follow-up, same day: the real cause.** The new review also posted nothing on
+the smoke-test PR #53: 3 turns, ~5 s, no Opus usage.
+- **A debug re-run didn't help:** the action prints the conversation only with
+  `show_full_output`, which is off on this public repo.
+- **A local dry run (`claude -p`, same prompt and tools) showed it:**
+  - The Agent tool runs subagents in the background.
+  - The CI agent started `ios-reviewer`, then ended its turn "until it
+    finishes", and in Actions the first final answer ends the job.
+  - The old plugin starts its reviewers as subagents too, so this was very
+    likely its problem as well.
+- **The fix:** in CI, Claude follows `ios-reviewer.md` itself on Opus, with no
+  subagent. The same local dry run then took 53 s and $0.42, and found all five
+  planted problems with their sources:
+  - a test that compiles but fails
+  - hard-coded English
+  - a feature importing TMDBClient
+  - a fixed font size
+  - `foregroundColor`
+- **CI's test reporting passed the same smoke test:**
+  - "Build and test" went red
+  - the failing test is named in an annotation with its expectation
+  - the summary step still runs
+
+  One gap: the annotation's path is the bare file name, so it may not attach to
+  the line in "Files changed".
+
 ---
 
 ## 2026-10-12 — Phases 3 and 4 kick off: plans as issues, three bot PRs in parallel
