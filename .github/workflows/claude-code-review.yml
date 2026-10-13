@@ -3,20 +3,26 @@ name: Claude Code Review
 # The project's own review on every PR, and the merge gate built on it.
 #
 # The `run review` job, on every push to a non-draft PR:
-#   1. marks the "ios-reviewer verdict" check as in progress
+#   1. sets the "ios-reviewer verdict" commit status to pending
 #   2. collects the unresolved threads from earlier reviews
 #   3. Claude follows .claude/agents/ios-reviewer.md (CLAUDE.md, the rules, the
 #      swiftui-pro skill), writes its findings as JSON and posts one GitHub
 #      review: the summary as its body, one comment per new finding
 #   4. resolves the threads Claude found fixed
 #   5. .github/scripts/review-verdict.sh turns the JSON into the verdict:
-#      critical or high → failure (blocks the merge), medium → neutral,
-#      low or nothing → success. The script decides, not the model.
+#      critical or high → failure (blocks the merge); medium, low or nothing →
+#      success, with the counts in its text. The script decides, not the model.
 #
-# The `review-override` label turns a failure into neutral for the current
-# commit (review-override.yml); the next push removes it. Comment "@claude
-# review" (or edit a comment to add it) to run the review again without
-# pushing.
+# The verdict is a commit status, not a check run: a check run created through
+# the API lands in whatever check suite GitHub picks, and when that suite's
+# workflow run is superseded (a draft marked ready runs this twice on one
+# commit), GitHub hides it and the required check stays "Expected" (#59).
+# The status links to this run, whose job summary has the full verdict.
+#
+# The `review-override` label turns a failure into success for the current
+# commit (review-override.yml, which re-reads the verdict.json artifact); the
+# next push removes it. Comment "@claude review" (or edit a comment to add it)
+# to run the review again without pushing.
 #
 # No subagent: the Agent tool runs subagents in the background, so a CI run
 # would end before the review existed (#53). On Sonnet: on PRs Claude opens,
@@ -32,7 +38,7 @@ on:
 jobs:
   claude-review:
     # Shown as "Claude Code Review / run review": the job that reviews. The
-    # verdict is the separate "ios-reviewer verdict" check this job sets.
+    # verdict is the separate "ios-reviewer verdict" status this job sets.
     name: run review
     # PRs: every push to a non-draft PR, claude[bot]'s included. Comments: only
     # Martín's "@claude review" on a PR, so a stray comment can't spend usage.
@@ -51,13 +57,14 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
-      checks: write
+      statuses: write
       id-token: write
       actions: read
     env:
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
       GH_TOKEN: ${{ github.token }}
-      CHECK_NAME: ios-reviewer verdict
+      STATUS_CONTEXT: ios-reviewer verdict
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     steps:
       # A comment event checks out main by default; review the PR's own code.
@@ -76,13 +83,11 @@ jobs:
           HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
           { echo "WORK=$WORK"; echo "HEAD_SHA=$HEAD_SHA"; } >> "$GITHUB_ENV"
 
-          # The verdict check exists from the start, so a required check reads
-          # "in progress" instead of "expected".
-          CHECK_ID=$(gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" \
-            -f name="$CHECK_NAME" -f head_sha="$HEAD_SHA" -f status=in_progress \
-            -f 'output[title]=Reviewing…' \
-            -f 'output[summary]=ios-reviewer is reviewing this commit.' --jq .id)
-          echo "CHECK_ID=$CHECK_ID" >> "$GITHUB_ENV"
+          # The verdict exists from the start, so the required check reads
+          # "pending" instead of "expected".
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" \
+            -f context="$STATUS_CONTEXT" -f state=pending -f target_url="$RUN_URL" \
+            -f description='ios-reviewer is reviewing this commit…' --jq .state
 
           # An override covered the previous commit, not this one.
           if [ "${{ github.event.action }}" = "synchronize" ]; then
@@ -183,18 +188,31 @@ jobs:
               || echo "::warning::Couldn't resolve review thread $thread"
           done
 
+      # Kept so review-override.yml can re-evaluate this commit's verdict
+      # without reviewing again.
+      - name: Keep the findings
+        if: always() && env.HEAD_SHA != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-reviewer-verdict-${{ env.HEAD_SHA }}
+          path: ${{ env.WORK }}/verdict.json
+          if-no-files-found: ignore
+          include-hidden-files: true
+          overwrite: true
+          retention-days: 30
+
       # Labels are read now, not at the start, so an override added during the
       # review still counts. A PR that changes this workflow gets no review
       # (GitHub only runs it when it matches main), and the verdict says so.
       - name: Publish the verdict
-        if: always() && env.CHECK_ID != ''
+        if: always() && env.HEAD_SHA != ''
         run: |
           OVERRIDE=$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | index("review-override") != null')
           SKIP_REASON=""
           if gh pr diff "$PR_NUMBER" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
             SKIP_REASON=workflow-change
           fi
-          .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" "$SKIP_REASON" > "$WORK/check.json"
+          .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" "$SKIP_REASON" > "$WORK/status.json"
 
           # The verdict comes from verdict.json, so it stands even if posting
           # failed; but a review that should exist and doesn't is flagged.
@@ -205,9 +223,11 @@ jobs:
               --jq "[.[] | select(.user.login == \"claude[bot]\" and .commit_id == \"$HEAD_SHA\")] | length")
             if [ "$EXPECTED" = "true" ] && [ "$POSTED" = "0" ]; then
               echo "::warning::The review for $HEAD_SHA wasn't posted"
-              jq '.summary += "\n\n⚠️ The review for this commit wasn'"'"'t posted, so its findings are only in this check. See the log of the `run review` job."' \
-                "$WORK/check.json" > "$WORK/check.tmp" && mv "$WORK/check.tmp" "$WORK/check.json"
+              jq '.summary += "\n\n⚠️ The review for this commit wasn'"'"'t posted, so its findings are only in this summary. See the log of the `run review` job."' \
+                "$WORK/status.json" > "$WORK/status.tmp" && mv "$WORK/status.tmp" "$WORK/status.json"
             fi
           fi
-          jq '{status: "completed", conclusion, output: {title, summary, text}}' "$WORK/check.json" \
-            | gh api --method PATCH "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_ID" --input - --jq '"\(.conclusion): \(.output.title)"'
+          jq -r .summary "$WORK/status.json" >> "$GITHUB_STEP_SUMMARY"
+          jq --arg context "$STATUS_CONTEXT" --arg url "$RUN_URL" \
+              '{state, description, context: $context, target_url: $url}' "$WORK/status.json" \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" --input - --jq '"\(.state): \(.description)"'

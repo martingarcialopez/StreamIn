@@ -12,6 +12,35 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — The review verdict becomes a commit status
+
+**Why:** #59's review was clean and its verdict concluded ✅ on the head
+commit, but the merge box kept showing "ios-reviewer verdict — Expected" and
+the PR stayed blocked.
+
+**Root cause, from the API:**
+- The verdict was a check run created with `POST /check-runs`. GitHub, not the
+  workflow, picks the check suite it joins: the oldest github-actions suite on
+  the commit. That was CI's on #57 and the review's on #60.
+- #59 was opened as a draft and marked ready seconds later, so the review
+  workflow ran twice on one commit: a skipped run, then the real one.
+- GitHub keeps only the newest run per workflow and event on a commit. The
+  skipped run's suite, which held the verdict, was dropped from the PR and from
+  branch protection. GraphQL still listed it as required and successful.
+- Re-running the review or adding the override label landed in the same hidden
+  suite, so nothing on the PR could fix it.
+
+**Fix:** "ios-reviewer verdict" is now a commit status. Statuses don't belong to
+any suite, so no other run can hide them.
+- Medium findings pass in green and say "🟠 … merge at your discretion". A
+  status has no neutral; that's why the check was kept last time, and Martín
+  traded it for a gate that can't vanish.
+- The full summary is the review run's job summary, and the status links there.
+- `verdict.json` is kept as an artifact (30 days), so `review-override.yml` can
+  still re-evaluate without reviewing again.
+
+---
+
 ## 2026-10-14 — `/parallel`: one command per parallel session (#61)
 
 **Why:** with a PR per issue and about 5 minutes of CI each, the session that
@@ -141,7 +170,8 @@ merging. Martín asked for a gate: high blocks, medium is his call, low passes.
   verdict") both show, and the names now say which is which.
 - **Kept as is:** GitHub files the API-created verdict under the "CI" group
   ("CI / ios-reviewer verdict"). Martín kept that over a commit status, because
-  only checks can show medium findings as neutral.
+  only checks can show medium findings as neutral. (Replaced by a status on 2026-10-14: see
+  that entry.)
 
 ---
 
