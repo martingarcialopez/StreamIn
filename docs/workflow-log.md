@@ -39,6 +39,11 @@ any suite, so no other run can hide them.
 - `verdict.json` is kept as an artifact (30 days), so `review-override.yml` can
   still re-evaluate without reviewing again.
 
+**Found while shipping it:** `guard-main-branch.sh` read the branch of
+`$CLAUDE_PROJECT_DIR`, the main checkout. With the main checkout now parked on
+`main`, it blocked every commit from a worktree session. It now reads the
+session's `cwd` from the hook input, and falls back to the project directory.
+
 ---
 
 ## 2026-10-14 — `/parallel`: one command per parallel session (#61)
