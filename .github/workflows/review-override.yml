@@ -1,0 +1,58 @@
+name: Review override
+
+# Adding or removing the `review-override` label re-evaluates the last
+# "ios-reviewer verdict" for the PR's current commit, without reviewing again:
+# with the label, critical or high findings (or a review that never finished)
+# become neutral, so the PR can merge. The next push removes the label
+# (claude-code-review.yml).
+#
+# Its own workflow, so normal pushes don't list a skipped override job.
+on:
+  pull_request:
+    types: [labeled, unlabeled]
+
+jobs:
+  review-override:
+    if: github.event.label.name == 'review-override'
+    concurrency:
+      group: review-override-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      CHECK_NAME: ios-reviewer verdict
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Re-evaluate the verdict
+        run: |
+          # The latest finished verdict for this commit: whether there is one,
+          # and the findings it stored (empty when the review never finished).
+          gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=$(jq -rn --arg n "$CHECK_NAME" '$n|@uri')" \
+            --jq '[.check_runs[] | select(.status == "completed")] | sort_by(.completed_at) | last
+                  | {found: (. != null), text: (if . == null then "" else (.output.text // "") end)}' \
+            > "$RUNNER_TEMP/last.json"
+          if [ "$(jq -r .found "$RUNNER_TEMP/last.json")" != "true" ]; then
+            echo "No finished review for this commit yet; the running review reads the label when it publishes."
+            exit 0
+          fi
+          jq -r .text "$RUNNER_TEMP/last.json" > "$RUNNER_TEMP/verdict.json"
+
+          SKIP_REASON=""
+          if gh pr diff "$PR_NUMBER" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
+            SKIP_REASON=workflow-change
+          fi
+          OVERRIDE=${{ github.event.action == 'labeled' }}
+          .github/scripts/review-verdict.sh "$RUNNER_TEMP/verdict.json" "$OVERRIDE" "$SKIP_REASON" \
+            | jq --arg name "$CHECK_NAME" --arg sha "$HEAD_SHA" \
+                '{name: $name, head_sha: $sha, status: "completed", conclusion, output: {title, summary, text}}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.conclusion): \(.output.title)"'
