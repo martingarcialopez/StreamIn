@@ -12,7 +12,7 @@ Details answers "can I watch this?" first, with one of three verdicts:
 
 | 🍿 Watch now | 🌍 On your services abroad | 📖 Go read a book |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for The Fellowship of the Ring: Watch now, on HBO Max in Spain"> | <img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Peter Pan (2003): on your services abroad, Netflix and HBO Max with the countries that carry it"> | <img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"> |
+| <img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for Spirited Away: Watch now, on Netflix in the UK"> | <img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Paddington: on your services abroad, Netflix with the countries that carry it"> | <img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"> |
 | One of your services, or a free one, has it in your country. | Not at home, but your services carry it in other countries. | Not on your services, here or abroad. |
 
 ## Status
