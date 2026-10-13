@@ -11,6 +11,7 @@
 import Foundation
 import Domain
 import Preferences
+import Watchlist
 
 @Observable
 @MainActor
@@ -19,6 +20,7 @@ public final class DetailsViewModel {
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
     private let prefs: Preferences
+    private let watchlist: WatchlistStore
 
     /// Starts with the summary that the search screen already had (so the title,
     /// year, and poster render instantly), then gets replaced by the richer
@@ -32,12 +34,14 @@ public final class DetailsViewModel {
         movie: Movie,
         repository: MovieRepository,
         imageURLBuilder: ImageURLBuilder,
-        prefs: Preferences
+        prefs: Preferences,
+        watchlist: WatchlistStore
     ) {
         self.movie = movie
         self.repository = repository
         self.imageURLBuilder = imageURLBuilder
         self.prefs = prefs
+        self.watchlist = watchlist
     }
 
     /// Fetches full detail and the combined regional+global availability bundle
@@ -65,10 +69,27 @@ public final class DetailsViewModel {
             movie = detail
             availability = bundle.regional
             globalAvailability = bundle.global
+            // A heart tapped before the detail arrived saved the summary
+            // (no directors, no runtime); store the full movie instead.
+            await watchlist.refresh(detail)
         } catch {
             guard !Task.isCancelled else { return }
             self.error = (error as? MovieError) ?? .unknown
         }
+    }
+
+    // MARK: - Watchlist
+
+    /// Whether the heart is filled. Read from the shared store, so it follows
+    /// changes made from the Watchlist tab too.
+    public var isSaved: Bool {
+        watchlist.contains(movie.id)
+    }
+
+    /// Saves the movie as currently shown (the full detail once loaded), or
+    /// removes it.
+    public func toggleWatchlist() async {
+        await watchlist.toggle(movie)
     }
 
     /// The load failed and there's no earlier result to keep on screen. The

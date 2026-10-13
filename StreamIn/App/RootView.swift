@@ -17,12 +17,14 @@ import Preferences
 import ReferenceData
 import SettingsFeature
 import DesignSystem
+import Watchlist
 
 struct RootView: View {
     let imageURLBuilder: ImageURLBuilder
     let prefs: Preferences
     let repository: MovieRepository
     let providerCatalog: ProviderCatalog
+    let watchlist: WatchlistStore
     let tmdbClient: LiveTMDBClient
 
     @State private var showingSettings = false
@@ -36,6 +38,7 @@ struct RootView: View {
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,
                     prefs: prefs,
+                    watchlist: watchlist,
                     showingSettings: $showingSettings,
                     showingStreamingServices: $showingStreamingServices
                 )
@@ -100,6 +103,11 @@ struct RootView: View {
         .task(id: prefs.region) {
             await providerCatalog.load(region: prefs.region)
             prefetchSubscribedProviderLogos()
+        }
+        // Saved movies load at launch, so Details' heart and the Watchlist
+        // tab are right on their first frame.
+        .task {
+            await watchlist.load()
         }
         // TODO: ship-time trigger should be a first-launch flag persisted in
         // `Preferences` (e.g. `hasCompletedOnboarding: Bool`). The current

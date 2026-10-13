@@ -6,7 +6,7 @@
 //
 //  Composition root. This file holds the `@main` App entry point and
 //  constructs the long-lived dependencies (TMDB client, repository, provider
-//  catalog, image URL builder, Preferences). Concrete implementations are
+//  catalog, image URL builder, Preferences, watchlist). Concrete implementations are
 //  wired up here exactly once and passed down as protocol-typed references.
 //
 //  All UI lives in `RootView` / the per-tab files — this file stays UI-free
@@ -14,10 +14,15 @@
 //
 
 import SwiftUI
+import OSLog
 import Domain
 import TMDBClient
 import Preferences
 import ReferenceData
+import Persistence
+import Watchlist
+
+private let logger = Logger(subsystem: "StreamIn", category: "watchlist")
 
 @main
 struct StreamInApp: App {
@@ -27,6 +32,7 @@ struct StreamInApp: App {
     private let tmdbClient: LiveTMDBClient
     private let repository: MovieRepository
     private let providerCatalog: ProviderCatalog
+    private let watchlist: WatchlistStore
 
     init() {
         let client = LiveTMDBClient(
@@ -43,6 +49,25 @@ struct StreamInApp: App {
         self.tmdbClient = client
         self.repository = repository
         self.providerCatalog = ProviderCatalog(repository: repository)
+        self.watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
+    }
+
+    /// The on-disk store, or a throwaway in-memory one when the launch
+    /// environment asks for it. If the store can't be opened, the app still
+    /// launches: this session's watchlist lives in memory and the failure is
+    /// logged, rather than crashing on every launch.
+    private static func makeWatchlistRepository() -> any WatchlistRepository {
+        let storage: WatchlistStorage = AppConfig.isWatchlistInMemory ? .inMemory : .appDefault
+        do {
+            return try WatchlistPersistence.makeRepository(storage: storage)
+        } catch {
+            logger.error("Couldn't open the watchlist store (\(String(describing: error), privacy: .public)); using an in-memory one for this launch.")
+            do {
+                return try WatchlistPersistence.makeRepository(storage: .inMemory)
+            } catch {
+                preconditionFailure("Couldn't create even an in-memory watchlist store: \(error)")
+            }
+        }
     }
 
     var body: some Scene {
@@ -52,6 +77,7 @@ struct StreamInApp: App {
                 prefs: prefs,
                 repository: repository,
                 providerCatalog: providerCatalog,
+                watchlist: watchlist,
                 tmdbClient: tmdbClient
             )
             .environment(prefs)

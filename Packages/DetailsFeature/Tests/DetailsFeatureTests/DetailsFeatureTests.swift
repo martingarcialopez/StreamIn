@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import Domain
 import Preferences
+import Watchlist
 @testable import DetailsFeature
 
 // MARK: - Test doubles
@@ -65,15 +66,18 @@ private let sampleMovie = Movie(
     runtime: nil
 )
 
+/// `watchlist` defaults to an empty store over an in-memory repository.
 @MainActor
 func makeModel(
     repository: FakeMovieRepository,
     prefs: Preferences,
-    movie: Movie = sampleMovie
+    movie: Movie = sampleMovie,
+    watchlist: WatchlistStore? = nil
 ) -> DetailsViewModel {
     DetailsViewModel(
         movie: movie, repository: repository,
-        imageURLBuilder: NoopImageURLBuilder(), prefs: prefs
+        imageURLBuilder: NoopImageURLBuilder(), prefs: prefs,
+        watchlist: watchlist ?? WatchlistStore(repository: InMemoryWatchlistRepository())
     )
 }
 

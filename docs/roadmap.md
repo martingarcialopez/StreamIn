@@ -20,7 +20,7 @@ This file doesn't repeat them.
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
 | — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #31, #32 merged; #30 in review; #34, #35 next |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #30–#32 merged; #34 in review; #35 next |
 | 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 next, in parallel with 3 |
 | 5 | [Landing page animation](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
