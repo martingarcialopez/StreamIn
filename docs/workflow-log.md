@@ -61,6 +61,21 @@ merging. Martín asked for a gate: high blocks, medium is his call, low passes.
   Both are now rules in the prompt. The real test is the throwaway PR after
   merging.
 
+**Found on #57 itself, before merging:**
+- **Fail-closed works on GitHub:** the review step was skipped (the PR changes
+  the workflow), and the verdict published as ❌ "Review didn't finish".
+- **A real bug:** a missing review stored no findings, so the override label had
+  nothing to re-evaluate. With admins bound by branch protection, a PR that
+  changes the review workflow could never have merged. The label now also
+  overrides a missing review.
+- **Clearer message:** such PRs get "This PR changes the review workflow, which
+  can't review itself: add review-override to merge" instead of advice to retry.
+- **Less clutter:** the override job moved to `review-override.yml`, so normal
+  pushes no longer list a skipped job.
+- **Kept as is:** GitHub files the API-created verdict under the "CI" group
+  ("CI / ios-reviewer verdict"). Martín kept that over a commit status, because
+  only checks can show medium findings as neutral.
+
 ---
 
 ## 2026-10-13 — Phase 4 (#36): designing on screen with Martín

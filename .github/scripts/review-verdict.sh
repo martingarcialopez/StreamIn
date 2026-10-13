@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Turns the PR review's findings into the "ios-reviewer verdict" check.
 #
-#   review-verdict.sh <verdict.json> <override: true|false>
+#   review-verdict.sh <verdict.json> <override: true|false> [skip reason]
 #
 # Prints the check run's JSON fields: conclusion, title, summary, text.
 # The model writes verdict.json; this script, not the model, decides what it
@@ -12,7 +12,9 @@
 #   only low, or nothing   → success
 #
 # A missing or malformed verdict.json is a failure: a review that didn't finish
-# must not read as a pass.
+# must not read as a pass. The override label still applies, so a PR whose
+# review can't run (one that changes the review workflow) can be merged on
+# purpose. The skip reason `workflow-change` says that's what happened.
 #
 # verdict.json, as the review prompt asks for it:
 #   {
@@ -27,11 +29,27 @@
 
 set -euo pipefail
 
-verdict_file="${1:?usage: review-verdict.sh <verdict.json> <override: true|false>}"
+verdict_file="${1:?usage: review-verdict.sh <verdict.json> <override: true|false> [skip reason]}"
 override="${2:-false}"
+skip_reason="${3:-}"
 
-failure() {
-  jq -n --arg title "$1" --arg summary "$2" \
+no_verdict() {
+  local title summary
+  if [[ "$override" == "true" ]]; then
+    jq -n '{conclusion: "neutral",
+            title: "⚠️ No finished review, overridden with review-override",
+            summary: "There is no review for this commit, and the `review-override` label lets it merge anyway. The next push removes the label.",
+            text: ""}'
+    return
+  fi
+  if [[ "$skip_reason" == "workflow-change" ]]; then
+    title="This PR changes the review workflow, which can't review itself: add review-override to merge"
+    summary="GitHub only runs the review workflow when it matches the one on \`main\`, so a PR that changes it gets no review. Review it yourself, then add the \`review-override\` label to merge."
+  else
+    title="Review didn't finish: comment \"@claude review\" to retry"
+    summary="The review produced no valid findings file, so there is no verdict for this commit. Check the \`claude-review\` job's log, then comment \`@claude review\` on the PR."
+  fi
+  jq -n --arg title "$title" --arg summary "$summary" \
     '{conclusion: "failure", title: $title, summary: $summary, text: ""}'
 }
 
@@ -39,8 +57,7 @@ if [[ ! -s "$verdict_file" ]] || ! jq -e '
     (.new | type == "array") and (.still_open | type == "array") and
     ([.new[], .still_open[]] | all(.severity as $s | ["critical", "high", "medium", "low"] | index($s)))
   ' "$verdict_file" >/dev/null 2>&1; then
-  failure "Review didn't finish: comment \"@claude review\" to retry" \
-    "The review produced no valid findings file, so there is no verdict for this commit. Check the \`claude-review\` job's log, then comment \`@claude review\` on the PR."
+  no_verdict
   exit 0
 fi
 

@@ -14,8 +14,9 @@ name: Claude Code Review
 #      low or nothing → success. The script decides, not the model.
 #
 # The `review-override` label turns a failure into neutral for the current
-# commit; the next push removes it. Comment "@claude review" (or edit a comment
-# to add it) to run the review again without pushing.
+# commit (review-override.yml); the next push removes it. Comment "@claude
+# review" (or edit a comment to add it) to run the review again without
+# pushing.
 #
 # No subagent: the Agent tool runs subagents in the background, so a CI run
 # would end before the review existed (#53). On Sonnet: on PRs Claude opens,
@@ -24,7 +25,7 @@ name: Claude Code Review
 # rulebooks (#54).
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened, labeled, unlabeled]
+    types: [opened, synchronize, ready_for_review, reopened]
   issue_comment:
     types: [created, edited]
 
@@ -33,8 +34,7 @@ jobs:
     # PRs: every push to a non-draft PR, claude[bot]'s included. Comments: only
     # Martín's "@claude review" on a PR, so a stray comment can't spend usage.
     if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false &&
-       contains(fromJSON('["opened", "synchronize", "ready_for_review", "reopened"]'), github.event.action)) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
        github.actor == github.repository_owner &&
        contains(github.event.comment.body, '@claude review') &&
@@ -179,51 +179,16 @@ jobs:
           done
 
       # Labels are read now, not at the start, so an override added during the
-      # review still counts.
+      # review still counts. A PR that changes this workflow gets no review
+      # (GitHub only runs it when it matches main), and the verdict says so.
       - name: Publish the verdict
         if: always() && env.CHECK_ID != ''
         run: |
           OVERRIDE=$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | index("review-override") != null')
-          .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" > "$WORK/check.json"
+          SKIP_REASON=""
+          if gh pr diff "$PR_NUMBER" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
+            SKIP_REASON=workflow-change
+          fi
+          .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" "$SKIP_REASON" > "$WORK/check.json"
           jq '{status: "completed", conclusion, output: {title, summary, text}}' "$WORK/check.json" \
             | gh api --method PATCH "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_ID" --input - --jq '"\(.conclusion): \(.output.title)"'
-
-  review-override:
-    # Adding or removing the label re-evaluates the last verdict for the
-    # current commit, without reviewing again.
-    if: |
-      github.event_name == 'pull_request' &&
-      contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) &&
-      github.event.label.name == 'review-override'
-    concurrency:
-      group: review-override-${{ github.event.pull_request.number }}
-      cancel-in-progress: false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: read
-    env:
-      GH_TOKEN: ${{ github.token }}
-      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      CHECK_NAME: ios-reviewer verdict
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Re-evaluate the verdict
-        run: |
-          gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=$(jq -rn --arg n "$CHECK_NAME" '$n|@uri')" \
-            --jq '[.check_runs[] | select(.status == "completed")] | sort_by(.completed_at) | last | .output.text // ""' \
-            > "$RUNNER_TEMP/verdict.json"
-          if [ ! -s "$RUNNER_TEMP/verdict.json" ]; then
-            echo "No finished review for this commit yet; the running review reads the label when it publishes."
-            exit 0
-          fi
-          OVERRIDE=${{ github.event.action == 'labeled' }}
-          .github/scripts/review-verdict.sh "$RUNNER_TEMP/verdict.json" "$OVERRIDE" \
-            | jq --arg name "$CHECK_NAME" --arg sha "$HEAD_SHA" \
-                '{name: $name, head_sha: $sha, status: "completed", conclusion, output: {title, summary, text}}' \
-            | gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.conclusion): \(.output.title)"'

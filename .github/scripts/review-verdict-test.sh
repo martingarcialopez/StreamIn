@@ -9,9 +9,9 @@ dir="$(mktemp -d)"
 trap 'rm -r "$dir"' EXIT
 
 failures=0
-expect() { # name, file, override, conclusion, title fragment
+expect() { # name, file, override, conclusion, title fragment[, skip reason]
   local out conclusion title
-  out=$("$script" "$dir/$2" "$3")
+  out=$("$script" "$dir/$2" "$3" "${6:-}")
   conclusion=$(jq -r .conclusion <<<"$out")
   title=$(jq -r .title <<<"$out")
   if [[ "$conclusion" == "$4" && "$title" == *"$5"* ]]; then
@@ -59,7 +59,9 @@ expect "unknown severity fails"           bad-severity.json    false failure "di
 expect "missing field fails"              no-still-open.json   false failure "didn't finish"
 expect "malformed JSON fails"             garbage.json         false failure "didn't finish"
 expect "missing file fails"               missing.json         false failure "didn't finish"
-expect "missing file fails even overridden" missing.json       true  failure "didn't finish"
+expect "missing file is overridable"      missing.json         true  neutral "No finished review, overridden"
+expect "workflow change says so"          missing.json         false failure "can't review itself" workflow-change
+expect "workflow change is overridable"   missing.json         true  neutral "overridden"           workflow-change
 
 # The label path re-evaluates from the check's stored `text`.
 "$script" "$dir/high.json" false | jq -r .text > "$dir/stored.json"
