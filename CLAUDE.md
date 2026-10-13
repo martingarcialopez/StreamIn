@@ -27,7 +27,7 @@ One Swift Package per layer; boundaries are enforced at build time.
 | `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
 | `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
 | `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
-| `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData) | One screen each, with its view model |
+| `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData, Watchlist) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
 **The most important rule: features depend on Domain protocols, never on
@@ -108,6 +108,8 @@ Three mechanisms, one per kind of data:
 - **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`): `AsyncImage` always starts on its placeholder, so `ProviderLogo` uses `RemoteImage`, which renders synchronously from memory. `RootView` prefetches subscribed providers' logos.
 
 `LiveTMDBClient` keeps `urlCache = nil`, so all caching is app-level and testable. Launch with `STREAMIN_DISABLE_CACHE=1` (scheme → Run → Environment Variables) to put every request on the wire for Proxyman.
+
+**Watchlist storage** — `StreamInApp` opens the SwiftData store through `WatchlistPersistence.makeRepository`; if it can't, that launch keeps the watchlist in memory and logs why, rather than crashing. `RootView` loads `WatchlistStore` at launch. Launch with `STREAMIN_IN_MEMORY_WATCHLIST=1` to start with an empty, throwaway watchlist.
 
 `SearchViewModel` remembers the request behind the results on screen: the results screen's `.task` re-fires whenever it reappears (e.g. Details popped), and a repeated request keeps the results, only retrying rows whose availability never arrived.
 

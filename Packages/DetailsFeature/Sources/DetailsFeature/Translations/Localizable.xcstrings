@@ -306,6 +306,42 @@
           }
         }
       }
+    },
+    "detailsWatchlistAdd" : {
+      "comment" : "Label of the heart button in the Details toolbar when the movie isn't saved; VoiceOver reads it, the button shows only the heart.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Watchlist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir a tu watchlist"
+          }
+        }
+      }
+    },
+    "detailsWatchlistRemove" : {
+      "comment" : "Label of the filled heart button in the Details toolbar when the movie is saved; VoiceOver reads it, the button shows only the heart.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from Watchlist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar de tu watchlist"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

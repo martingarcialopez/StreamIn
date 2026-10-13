@@ -95,6 +95,11 @@ public struct DetailsView: View {
         // Same page color as Search, so pushing Details doesn't flash white.
         .background(AppPalette.background)
         .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                WatchlistToggleButton(model: model)
+            }
+        }
         // Loads on first render, and again when the language or region
         // changes or Retry is tapped. SwiftUI cancels the previous run, so
         // only the latest one writes to the model.
@@ -640,6 +645,7 @@ private struct BackdropView: View {
     previewDetails(
         "watch-now",
         subscribedTo: [.netflix, .primeVideo],
+        saved: true,
         repository: PreviewMovieRepository(
             free: [.rtvePlay, .plutoTV],
             subscription: [.netflix, .movistarPlus, .disneyPlus, .hboMax, .filmin, .appleTVPlus,
@@ -723,6 +729,7 @@ private struct BackdropView: View {
 private func previewDetails(
     _ name: String,
     subscribedTo providers: [WatchProvider],
+    saved: Bool = false,
     repository: PreviewMovieRepository
 ) -> some View {
     let prefs = Preferences(defaultRegion: .spain, defaults: UserDefaults(suiteName: "DetailsView.preview.\(name)")!)
@@ -734,7 +741,8 @@ private func previewDetails(
                 movie: PreviewMovieRepository.inception,
                 repository: repository,
                 imageURLBuilder: PreviewImageURLBuilder(),
-                prefs: prefs
+                prefs: prefs,
+                watchlist: .preview(saving: saved ? [PreviewMovieRepository.inception] : [])
             ),
             onEditSubscriptions: {}
         )

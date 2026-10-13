@@ -41,4 +41,11 @@ enum AppConfig {
     static var isResponseCachingEnabled: Bool {
         ProcessInfo.processInfo.environment["STREAMIN_DISABLE_CACHE"] != "1"
     }
+
+    /// The watchlist is stored on disk unless the launch environment sets
+    /// `STREAMIN_IN_MEMORY_WATCHLIST=1`, which starts every launch with an
+    /// empty, throwaway list — for testing on the simulator and for UI tests.
+    static var isWatchlistInMemory: Bool {
+        ProcessInfo.processInfo.environment["STREAMIN_IN_MEMORY_WATCHLIST"] == "1"
+    }
 }

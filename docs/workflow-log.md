@@ -8,7 +8,7 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off | Review rounds |
 |---|---|---|---|---|---|---|
 | 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 | 1 (iPad support) |
-| 4 — Details redesign (#36) | this PR | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
+| 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
 
 ---
 
@@ -91,6 +91,13 @@ the small pieces while local sessions take the rest (#9's trial).
   - a test passed whether or not writes waited for the initial load
 
   Each fix was checked by breaking it on purpose and watching its test fail.
+- **`ios-reviewer` on #34:** two LOW findings, both fixed before the PR:
+  - a log line OSLog would have redacted
+  - the architecture table not listing `Watchlist` as a feature dependency
+- **The cost of one PR per issue:** after #34, hearting a movie works but the
+  Watchlist tab still shows its placeholder until #35. Martín hit it on the
+  simulator and read it as a bug. When a phase ships over several PRs, each PR
+  should say what's still missing on screen.
 
 **What broke**
 
