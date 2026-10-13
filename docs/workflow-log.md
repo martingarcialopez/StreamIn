@@ -115,6 +115,22 @@ the smoke-test PR #53: 3 turns, ~5 s, no Opus usage.
   - a feature importing TMDBClient
   - a fixed font size
   - `foregroundColor`
+- **Opus or Sonnet for the GitHub review?** Measured with the same dry run on
+  #53:
+
+  | Model | Time | Cost | Plants found | Rulebooks read |
+  |---|---|---|---|---|
+  | Opus | 53 s | $0.42 | 5 of 5 | all |
+  | Sonnet | 35 s | $0.12 | 5 of 5 | none of `swiftui-pro` |
+  | Sonnet, told to read them and list what it read | 30 s | $0.15 | 5 of 5 | all 4 required, plus `accessibility.md` |
+
+  Martín chose Sonnet: on PRs Claude opens, this is the second review, after
+  the Opus one in `/ship-phase`. Requiring a `Checked against:` line in the
+  summary makes a skipped rulebook visible on every PR.
+- **Editing a comment to add `@claude` now wakes the bot** (Martín had added it
+  by editing on #54 and nothing ran). The workflows listen to `edited` too, but
+  only when the previous text didn't mention `@claude` yet, so fixing a typo in
+  such a comment doesn't start a second run.
 - **CI's test reporting passed the same smoke test:**
   - "Build and test" went red
   - the failing test is named in an annotation with its expectation

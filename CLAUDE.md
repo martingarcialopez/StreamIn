@@ -81,7 +81,7 @@ Two sessions never share one checkout: each gets its own worktree, branch and PR
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package test results and line coverage in the job summary. Required to merge |
-| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue; implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens by running `ios-reviewer` and posting its findings inline plus a summary comment (`@claude review` re-runs it). Runs on Linux, so it can't build — CI does, and it reads CI's results |
+| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue (a new comment, or an edit that adds the mention); implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens: Sonnet follows `ios-reviewer.md` and posts its findings inline, plus a summary comment that ends with the rulebooks it checked (`@claude review` re-runs it). Runs on Linux, so it can't build — CI does, and it reads CI's results |
 
 ## Decisions
 
