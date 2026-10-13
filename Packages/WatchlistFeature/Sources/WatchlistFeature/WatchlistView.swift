@@ -10,8 +10,11 @@
 
 import SwiftUI
 import DesignSystem
+import TMDBClient
 
 public struct WatchlistView: View {
+
+    private let images = TMDBImageURLBuilder()
 
     public init() {}
 
@@ -20,6 +23,10 @@ public struct WatchlistView: View {
             Label { Text(.watchlistEmptyTitle) } icon: { Image(systemName: Symbol.bookmark) }
         } description: {
             Text(.watchlistEmptyDescription)
+                .foregroundColor(.secondary)
+                .font(.system(size: 13))
+        } actions: {
+            Text("Your saved movies will show up here")
         }
         .navigationTitle(Text(.watchlistTitle))
     }

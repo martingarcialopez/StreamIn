@@ -18,6 +18,7 @@ let package = Package(
     dependencies: [
         .package(path: "../Domain"),
         .package(path: "../DesignSystem"),
+        .package(path: "../TMDBClient"),
     ],
     targets: [
         .target(
@@ -25,6 +26,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Domain", package: "Domain"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TMDBClient", package: "TMDBClient"),
             ],
             resources: [.process("Translations/Localizable.xcstrings")]
         ),

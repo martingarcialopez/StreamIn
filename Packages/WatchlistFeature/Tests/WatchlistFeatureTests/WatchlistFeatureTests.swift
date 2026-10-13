@@ -12,6 +12,10 @@ struct WatchlistDirectorsFormatterTests {
         #expect(WatchlistDirectorsFormatter.line(for: ["Greta Gerwig"]) == "Greta Gerwig")
     }
 
+    @Test func twoDirectorsUseAnd() {
+        #expect(WatchlistDirectorsFormatter.line(for: ["Joel Coen", "Ethan Coen"]) == "Joel Coen and Ethan Coen")
+    }
+
     @Test func twoDirectorsAreCommaSeparated() {
         #expect(WatchlistDirectorsFormatter.line(for: ["Joel Coen", "Ethan Coen"]) == "Joel Coen, Ethan Coen")
     }
