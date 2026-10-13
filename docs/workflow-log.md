@@ -34,7 +34,10 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 - **It runs once per PR,** and again on "@claude review".
 - **`swiftui-pro`** (Paul Hudson, MIT) is vendored in the repo at v1.1. It was
   only on Martín's Mac, so CI and claude[bot] never had it.
-  - `ios-reviewer` reads it for changed SwiftUI files.
+  - `ios-reviewer` reads it in tiers. `swift.md` and `hygiene.md` (5 KB) load
+    for every Swift change. `SKILL.md` and `api.md` (7 KB) load for SwiftUI
+    files. The other six topic files load only when they fit the change, so
+    the whole 28 KB isn't loaded on every review.
   - Where it overlaps the project's rules, it reports once and the project wins.
   - Upstream v2.0 targets Xcode 27, so it waits for the toolchain upgrade.
 - **`ios-reviewer` can now review a PR, uncommitted work or a branch,** and

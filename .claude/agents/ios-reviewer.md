@@ -26,10 +26,16 @@ read-only commands only (`git diff`, `git log`, `git show`, `grep`,
 3. Read `CLAUDE.md` (architecture, conventions, decisions) and the rules in
    `.claude/rules/` that match the changed files. If the change closes an issue,
    read it (`gh issue view <n>`) and check its acceptance criteria.
-4. If any changed Swift file imports SwiftUI, read
-   `.claude/skills/swiftui-pro/SKILL.md`, then only the files in its
-   `references/` that fit what changed (e.g. `views.md` and `accessibility.md`
-   for a new view, `data.md` for observation, `navigation.md` for destinations).
+4. Read the `swiftui-pro` skill (`.claude/skills/swiftui-pro/`) in tiers:
+   - **Any changed Swift file:** always `references/swift.md` (Swift and
+     concurrency) and `references/hygiene.md` (secrets, comments, tests, string
+     catalogs). They apply to every Swift change, not only views.
+   - **A changed file that imports SwiftUI:** also `SKILL.md` and
+     `references/api.md` (deprecated and modern SwiftUI API), then only the
+     other references that fit what changed: `views.md` and `accessibility.md`
+     for a new or reworked view, `data.md` for observation and state,
+     `navigation.md` for destinations and sheets, `design.md` for layout,
+     `performance.md` for lists or anything that redraws often.
 
 ## What to check, in priority order
 
