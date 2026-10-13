@@ -4,8 +4,8 @@
 //
 //  Owns the state for one movie's detail screen: the movie itself (initially the
 //  summary passed in from search, then enriched with full detail), its
-//  region-specific watch availability, and its cross-region availability for
-//  the "Watch with your subscriptions" section.
+//  region-specific watch availability, and its cross-region availability, which
+//  together decide the "Where to watch" card's verdict.
 //
 
 import Foundation
@@ -71,23 +71,6 @@ public final class DetailsViewModel {
         }
     }
 
-    /// The load failed and there's no earlier result to keep on screen. The
-    /// availability sections show this error instead of their content, so a
-    /// failure never reads as "not available with your subscriptions".
-    public var availabilityFailure: MovieError? {
-        globalAvailability == nil ? error : nil
-    }
-
-    /// No services picked wins over a failure: the picker works offline,
-    /// since the provider catalog is loaded at launch.
-    public var subscriptionsState: SubscriptionsState {
-        guard hasAnySubscriptions else { return .needsSubscriptions }
-        guard globalAvailability != nil else {
-            return error.map(SubscriptionsState.failed) ?? .loading
-        }
-        return subscribedAvailability.isEmpty ? .noMatches : .available
-    }
-
     /// Regional providers for the current home region, or `nil` until they
     /// load. After a region change (made from the other tab while Details
     /// stays open), the previous region's list would otherwise sit unlabeled
@@ -125,28 +108,50 @@ public final class DetailsViewModel {
         return home.subscription.filter { !excluded.contains($0.id) }
     }
 
-    public var whereToWatchState: WhereToWatchState {
+    /// The answer the "Where to watch" card leads with. Your services and
+    /// free ones at home come first; only without them do your services
+    /// abroad matter. Rent and buy aren't shown in v1.
+    public var verdict: WhereToWatchVerdict {
         guard homeAvailability != nil else {
-            return error.map(WhereToWatchState.failed) ?? .loading
+            return error.map(WhereToWatchVerdict.failed) ?? .loading
         }
-        let nothingToShow = homeFreeProviders.isEmpty
-            && providersAvailableAtHome.isEmpty
-            && homeSubscriptionsOthers.isEmpty
-        return nothingToShow ? .unavailable : .available
+        if !watchNowProviders.isEmpty { return .watchNow }
+        guard hasAnySubscriptions else { return .chooseServices }
+        return hasProvidersElsewhere ? .abroad : .unavailable
     }
 
-    public var otherRegionsState: OtherRegionsState {
-        if !providersAvailableElsewhere.isEmpty { return .available }
-        return subscriptionsState == .noMatches ? .noMatches : .hidden
+    /// Whether `providersAvailableElsewhere` has anything, without sorting
+    /// every region by its localized name: the view reads `verdict` often.
+    private var hasProvidersElsewhere: Bool {
+        let home = homeRegion
+        return subscribedAvailability.contains { entry in entry.regions.contains { $0 != home } }
+    }
+
+    /// Your services that carry the film at home, then the free ones.
+    public var watchNowProviders: [WatchProvider] {
+        var seen = Set<ProviderID>()
+        return (providersAvailableAtHome + homeFreeProviders).filter { seen.insert($0.id).inserted }
+    }
+
+    /// Free providers carry the verdict without any services picked; the
+    /// card then offers the picker in a compact row to unlock the rest.
+    public var offersServicePicker: Bool {
+        verdict == .watchNow && !hasAnySubscriptions
+    }
+
+    /// A reload failed while the home region's earlier results stay on
+    /// screen; the error shows below them. With nothing to keep, the failure
+    /// is `WhereToWatchVerdict.failed` instead.
+    public var reloadError: MovieError? {
+        homeAvailability == nil ? nil : error
     }
 
     public var hasAnySubscriptions: Bool {
         !prefs.subscribedProviderIDs.isEmpty
     }
 
-    /// Subscribed providers that carry this film **in the user's home region**.
-    /// Drives the "Watch with your subscription in [Home]" subsection — these
-    /// are the providers the user can use without a VPN.
+    /// Subscribed providers that carry this film **in the user's home region**:
+    /// the ones the user can watch on without a VPN.
     public var providersAvailableAtHome: [WatchProvider] {
         let home = homeRegion
         return subscribedAvailability
@@ -155,15 +160,13 @@ public final class DetailsViewModel {
     }
 
     /// Subscribed providers + the regions where they carry this film
-    /// **outside** the user's home region. Each entry's `regions` is sorted
-    /// by localized display name. Providers whose only region IS home are
-    /// excluded (they appear in `providersAvailableAtHome` instead).
+    /// **outside** the user's home region. Each entry's `regions` leads with
+    /// popular VPN locations (`PopularRegions`). Providers whose only region
+    /// IS home are excluded (they appear in `providersAvailableAtHome` instead).
     public var providersAvailableElsewhere: [ProviderRegionalAvailability] {
         let home = homeRegion
         return subscribedAvailability.compactMap { entry in
-            let others = entry.regions
-                .filter { $0 != home }
-                .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+            let others = PopularRegions.sorted(entry.regions.filter { $0 != home })
             guard !others.isEmpty else { return nil }
             return ProviderRegionalAvailability(provider: entry.provider, regions: others)
         }

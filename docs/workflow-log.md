@@ -8,6 +8,55 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off | Review rounds |
 |---|---|---|---|---|---|---|
 | 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 | 1 (iPad support) |
+| 4 — Details redesign (#36) | this PR | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
+
+---
+
+## 2026-10-13 — Phase 4 (#36): designing on screen with Martín
+
+**Why:** #36 shipped its planned layout, but on the simulator it answered "can I
+watch this?" badly: "not available" said twice, services you don't have as big as
+yours, and headers like a settings page. The redesign was done live, in the
+Phase 4 worktree, in parallel with Phase 3.
+
+**What happened**
+
+- **Design as a Q&A, not a spec:**
+  - Plan mode plus `AskUserQuestion` with ASCII previews, four questions a round, four rounds.
+  - Martín answered as a stakeholder ("only the meaningful bits, nothing twice").
+  - The result was a one-verdict card, written into the plan, #36's body and the roadmap before any code.
+- **The look iterated through `RenderPreview` snapshots,** about 15 rounds:
+  - the card surface
+  - the emoji badge (dropped)
+  - the gradient
+  - the legends on the border
+  - three tries at the label cutting the tint
+  - opaque vs translucent cells
+  - Martín judged each one on the simulator with real logos, which previews don't have.
+- **A spinning globe:**
+  - The first try was emoji frames, which Martín called "lame".
+  - A Metal shader came next. It needed Xcode 26's separately downloaded Metal Toolchain, which is missing locally and possibly in CI.
+  - It became a Swift CPU renderer: a public-domain Natural Earth map, a projection cached per size, and a spin curve that slows like a ball on a table. Unit tested.
+- **`ios-reviewer` caught what the previews hid:**
+  - the border legends overlapping the lines around them at large Dynamic Type sizes
+  - the verdict sorting ~90 regions with locale lookups on every render
+  - a VoiceOver regression on the abroad rows
+  - the merge conflicts waiting with Phase 3
+
+  All fixed before the PR. Then the large-size case was checked in previews at XXX Large and AX 5.
+
+**What broke**
+
+- **Preview snapshots often catch the loading frame:** `.task` hasn't finished
+  when the snapshot is taken, so a second render was routinely needed.
+- **Xcode re-sorts `project.pbxproj` on open** (same content, new order). Each time,
+  it was restored by hand so the PR stays limited to the feature.
+- **The Search results preview doesn't build in preview mode,** an issue in its
+  existing code. The app build and tests are fine.
+- **Martín still found by eye** every design problem (the twice-said "not
+  available", a redundant flag, a label crossed by the tint). No tool judges taste.
+  Flags also showed as empty boxes on the iOS 26.3 simulator and drew fine on
+  26.4, most likely the runtime (not confirmed).
 
 ---
 

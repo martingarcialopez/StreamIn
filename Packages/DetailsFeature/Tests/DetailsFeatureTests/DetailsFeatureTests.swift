@@ -178,7 +178,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         #expect(model.providersAvailableAtHome.map(\.id) == [ProviderID(9)])
     }
 
-    @Test func providersAvailableElsewhereStripsHomeAndExcludesHomeOnlyProviders() async {
+    @Test func providersAvailableElsewhereStripsHomeAndExcludesHomeOnlyProviders() async throws {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .success(
@@ -203,24 +203,26 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         // Netflix is home-only → not in elsewhere. Prime's elsewhere list
         // excludes ES.
         #expect(model.providersAvailableElsewhere.count == 1)
-        let primeElsewhere = try! #require(
+        let primeElsewhere = try #require(
             model.providersAvailableElsewhere.first(where: { $0.provider.id == ProviderID(9) })
         )
         #expect(Set(primeElsewhere.regions.map(\.code)) == Set(["FR", "DE"]))
         #expect(!primeElsewhere.regions.contains(.spain))
     }
 
-    @Test func providersAvailableElsewhereSortsAlphabeticallyByLocalizedName() async {
+
+    /// Popular VPN locations lead; the rest follow by localized name.
+    @Test func providersAvailableElsewhereLeadWithPopularRegions() async throws {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
-        // Put regions in deliberately-bad order: ZA, AR, MX. Sorted by
-        // localized name in en-US: Argentina, Mexico, South Africa.
         repo.bundleResult = .success(
             bundle(
                 movieID: sampleMovie.id, region: .spain,
                 subscriptions: [
-                    ProviderRegionalAvailability(provider: provider(9, "Prime Video"),
-                                                  regions: [Region(code: "ZA"), Region(code: "AR"), Region(code: "MX")])
+                    ProviderRegionalAvailability(
+                        provider: provider(9, "Prime Video"),
+                        regions: ["ZA", "AR", "MX", "GB", "AD", "US"].map(Region.init(code:))
+                    )
                 ]
             )
         )
@@ -230,11 +232,11 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
 
         await model.load(region: .spain)
 
-        let elsewhere = model.providersAvailableElsewhere.first!
-        // Whatever Locale.current returns for the names, they should be
-        // sorted in increasing order.
-        let names = elsewhere.regions.map(\.displayName)
-        #expect(names == names.sorted { $0.localizedStandardCompare($1) == .orderedAscending })
+        let regions = try #require(model.providersAvailableElsewhere.first).regions
+        #expect(regions.prefix(3).map(\.code) == ["US", "GB", "MX"])
+        let rest = regions.dropFirst(3).map(\.displayName)
+        #expect(rest.count == 3)
+        #expect(rest == rest.sorted { $0.localizedStandardCompare($1) == .orderedAscending })
     }
 }
 
@@ -260,24 +262,17 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         return makeModel(repository: repo, prefs: prefs)
     }
 
-    /// Before the first load finishes the section must spin, not claim the
+    /// Before the first load finishes the card must spin, not claim the
     /// film isn't on the user's services.
     @Test func isLoadingBeforeTheFirstLoad() {
         let model = makeSpanishModel(FakeMovieRepository())
 
-        #expect(model.subscriptionsState == .loading)
-        #expect(model.availabilityFailure == nil)
+        #expect(model.verdict == .loading)
+        #expect(model.reloadError == nil)
     }
 
-    @Test func offersThePickerWithoutSubscriptions() {
-        let model = makeSpanishModel(FakeMovieRepository(), subscribedTo: [])
-
-        #expect(model.subscriptionsState == .needsSubscriptions)
-    }
-
-    /// Offline must read as an error, never as "not available with your
-    /// subscriptions".
-    @Test func failedLoadIsAFailureNotANoMatch() async {
+    /// Offline must read as an error, never as "go read a book".
+    @Test func failedLoadIsAFailureNotUnavailable() async {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .failure(MovieError.offline)
@@ -285,22 +280,8 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
 
         await model.load(region: .spain)
 
-        #expect(model.availabilityFailure == .offline)
-        #expect(model.subscriptionsState == .failed(.offline))
-    }
-
-    /// The picker works offline (the provider catalog loads at launch), so a
-    /// failed load must not hide it.
-    @Test func failedLoadWithoutServicesStillOffersThePicker() async {
-        let repo = FakeMovieRepository()
-        repo.movieResult = .success(sampleMovie)
-        repo.bundleResult = .failure(MovieError.offline)
-        let model = makeSpanishModel(repo, subscribedTo: [])
-
-        await model.load(region: .spain)
-
-        #expect(model.subscriptionsState == .needsSubscriptions)
-        #expect(model.availabilityFailure == .offline)
+        #expect(model.verdict == .failed(.offline))
+        #expect(model.reloadError == nil)
     }
 
     /// After a region change, the previous region's providers must not stay
@@ -318,6 +299,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         prefs.region = .unitedStates
 
         #expect(model.homeAvailability == nil)
+        #expect(model.verdict == .loading)
     }
 
     @Test func retryAfterAFailureShowsTheResults() async {
@@ -330,9 +312,9 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         repo.bundleResult = .success(netflixInSpain)
         await model.load(region: .spain)
 
-        #expect(model.availabilityFailure == nil)
+        #expect(model.reloadError == nil)
         #expect(model.error == nil)
-        #expect(model.subscriptionsState == .available)
+        #expect(model.verdict == .watchNow)
     }
 
     /// A failed reload keeps the earlier results on screen: the error shows
@@ -347,9 +329,27 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         repo.bundleResult = .failure(MovieError.timeout)
         await model.load(region: .spain)
 
-        #expect(model.error == .timeout)
-        #expect(model.availabilityFailure == nil)
-        #expect(model.subscriptionsState == .available)
+        #expect(model.reloadError == .timeout)
+        #expect(model.verdict == .watchNow)
+    }
+
+    /// After a region change there's nothing left to keep for the new
+    /// region, so a failed reload replaces the card's content instead.
+    @Test func failedReloadAfterARegionChangeIsAFailure() async {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(netflixInSpain)
+        let prefs = makePrefs(subscribedTo: [8])
+        prefs.region = .spain
+        let model = makeModel(repository: repo, prefs: prefs)
+        await model.load(region: .spain)
+
+        prefs.region = .unitedStates
+        repo.bundleResult = .failure(MovieError.offline)
+        await model.load(region: .unitedStates)
+
+        #expect(model.reloadError == nil)
+        #expect(model.verdict == .failed(.offline))
     }
 
     /// A load cancelled by a newer one (region or language change) or by the
@@ -365,7 +365,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         await load.value
 
         #expect(model.error == nil)
-        #expect(model.availabilityFailure == nil)
+        #expect(model.reloadError == nil)
         #expect(model.globalAvailability == nil)
     }
 }
@@ -374,6 +374,11 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
 
 @MainActor
 @Suite struct WhereToWatchTests {
+
+    private let netflix = provider(8, "Netflix")
+    private let prime = provider(9, "Prime Video")
+    private let disney = provider(337, "Disney+")
+    private let rtve = provider(541, "RTVE Play")
 
     private func bundle(
         region: Region = .spain,
@@ -418,11 +423,10 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let model = await loadedModel(
             bundle(
                 subscription: [
-                    provider(337, "Disney+"), provider(8, "Netflix"), provider(9, "Prime Video"),
-                    provider(350, "Apple TV+"), provider(11, "Mubi")
+                    disney, netflix, prime, provider(350, "Apple TV+"), provider(11, "Mubi")
                 ],
-                free: [provider(9, "Prime Video")],
-                global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.spain])]
+                free: [prime],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.spain])]
             ),
             subscribedTo: [8]
         )
@@ -440,16 +444,26 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         #expect(model.homeSubscriptionsOthers.isEmpty)
     }
 
-    // MARK: whereToWatchState
+    @Test func watchNowProvidersListYoursThenFreeWithoutDuplicates() async {
+        let model = await loadedModel(
+            bundle(
+                subscription: [netflix, prime],
+                free: [rtve, prime],
+                global: [
+                    ProviderRegionalAvailability(provider: netflix, regions: [.spain]),
+                    ProviderRegionalAvailability(provider: prime, regions: [.spain]),
+                ]
+            ),
+            subscribedTo: [8, 9]
+        )
 
-    @Test func whereToWatchIsLoadingBeforeTheLoad() {
-        let prefs = makePrefs(subscribedTo: [])
-        let model = makeModel(repository: FakeMovieRepository(), prefs: prefs)
-
-        #expect(model.whereToWatchState == .loading)
+        #expect(model.watchNowProviders.map(\.id) == [ProviderID(8), ProviderID(9), ProviderID(541)])
     }
 
-    @Test func whereToWatchFailsWhenTheLoadFails() async {
+    // MARK: verdict
+
+    /// No services picked, but a failed load shows the error, not the picker.
+    @Test func failedLoadWinsOverThePicker() async {
         let repo = FakeMovieRepository()
         repo.movieResult = .success(sampleMovie)
         repo.bundleResult = .failure(MovieError.offline)
@@ -457,114 +471,89 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
 
         await model.load(region: .spain)
 
-        #expect(model.whereToWatchState == .failed(.offline))
+        #expect(model.verdict == .failed(.offline))
     }
 
-    @Test func whereToWatchIsUnavailableForRentAndBuyOnly() async {
+    /// Watchable at home on a service the user pays for: their services
+    /// abroad don't matter, even when they carry it there too.
+    @Test func watchNowWithYourServiceAtHomeEvenWhenAlsoAbroad() async {
         let model = await loadedModel(
-            bundle(rent: [provider(2, "Apple TV")], buy: [provider(3, "Google Play")])
+            bundle(
+                subscription: [netflix],
+                global: [
+                    ProviderRegionalAvailability(provider: netflix, regions: [.spain, .france]),
+                    ProviderRegionalAvailability(provider: prime, regions: [.unitedStates]),
+                ]
+            ),
+            subscribedTo: [8, 9]
         )
 
-        #expect(model.whereToWatchState == .unavailable)
+        #expect(model.verdict == .watchNow)
+        #expect(model.offersServicePicker == false)
     }
 
-    @Test func whereToWatchIsUnavailableWithNothing() async {
-        let model = await loadedModel(bundle())
+    /// Free at home counts as much as the user's own services.
+    @Test func watchNowWithFreeAtHomeHidesAbroad() async {
+        let model = await loadedModel(
+            bundle(
+                free: [rtve],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]
+            ),
+            subscribedTo: [8]
+        )
 
-        #expect(model.whereToWatchState == .unavailable)
+        #expect(model.verdict == .watchNow)
+        #expect(model.watchNowProviders.map(\.id) == [ProviderID(541)])
     }
 
-    @Test func whereToWatchIsAvailableWithFreeProviders() async {
-        let model = await loadedModel(bundle(free: [provider(9, "Prime Video")]))
+    @Test func watchNowWithFreeAndNoServicesOffersThePicker() async {
+        let model = await loadedModel(bundle(subscription: [disney], free: [rtve]))
 
-        #expect(model.whereToWatchState == .available)
+        #expect(model.verdict == .watchNow)
+        #expect(model.offersServicePicker)
     }
 
-    @Test func whereToWatchIsAvailableWithOtherSubscriptions() async {
-        let model = await loadedModel(bundle(subscription: [provider(337, "Disney+")]))
+    @Test func abroadWhenOnlyYourServicesElsewhereCarryIt() async {
+        let model = await loadedModel(
+            bundle(
+                subscription: [disney],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]
+            ),
+            subscribedTo: [8]
+        )
 
-        #expect(model.whereToWatchState == .available)
+        #expect(model.verdict == .abroad)
+        #expect(model.homeSubscriptionsOthers.map(\.id) == [ProviderID(337)])
     }
 
-    @Test func whereToWatchIsAvailableWithSubscribedProvidersAtHome() async {
-        let netflix = provider(8, "Netflix")
+    @Test func chooseServicesWithoutServicesAndNothingFree() async {
+        let model = await loadedModel(bundle(subscription: [disney]))
+
+        #expect(model.verdict == .chooseServices)
+        #expect(model.offersServicePicker == false)
+    }
+
+    @Test func unavailableWhenYourServicesCarryItNowhere() async {
         let model = await loadedModel(
             bundle(
                 subscription: [netflix],
                 global: [ProviderRegionalAvailability(provider: netflix, regions: [.spain])]
             ),
-            subscribedTo: [8]
-        )
-
-        #expect(model.whereToWatchState == .available)
-    }
-
-    /// After a region change the previous region's content must not show.
-    @Test func whereToWatchIsLoadingAfterARegionChange() async {
-        let repo = FakeMovieRepository()
-        repo.movieResult = .success(sampleMovie)
-        repo.bundleResult = .success(bundle(free: [provider(9, "Prime Video")]))
-        let prefs = makePrefs(subscribedTo: [])
-        prefs.region = .spain
-        let model = makeModel(repository: repo, prefs: prefs)
-        await model.load(region: .spain)
-        #expect(model.whereToWatchState == .available)
-
-        prefs.region = .unitedStates
-
-        #expect(model.whereToWatchState == .loading)
-        #expect(model.homeFreeProviders.isEmpty)
-    }
-
-    // MARK: otherRegionsState
-
-    @Test func otherRegionsAreHiddenWithoutServices() async {
-        let model = await loadedModel(bundle())
-
-        #expect(model.otherRegionsState == .hidden)
-    }
-
-    @Test func otherRegionsAreHiddenWhileLoadingAndWhenFailed() async {
-        let prefs = makePrefs(subscribedTo: [8])
-        let loading = makeModel(repository: FakeMovieRepository(), prefs: prefs)
-        #expect(loading.otherRegionsState == .hidden)
-
-        let repo = FakeMovieRepository()
-        repo.movieResult = .success(sampleMovie)
-        repo.bundleResult = .failure(MovieError.offline)
-        let failed = makeModel(repository: repo, prefs: prefs)
-        await failed.load(region: .spain)
-        #expect(failed.otherRegionsState == .hidden)
-    }
-
-    @Test func otherRegionsAreHiddenWhenAvailableAtHomeOnly() async {
-        let netflix = provider(8, "Netflix")
-        let model = await loadedModel(
-            bundle(
-                subscription: [netflix],
-                global: [ProviderRegionalAvailability(provider: netflix, regions: [.spain])]
-            ),
-            subscribedTo: [8]
-        )
-
-        #expect(model.otherRegionsState == .hidden)
-    }
-
-    @Test func otherRegionsHaveNoMatchesWhenServicesCarryItNowhere() async {
-        let model = await loadedModel(
-            bundle(global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.spain])]),
             subscribedTo: [337]
         )
 
-        #expect(model.otherRegionsState == .noMatches)
+        #expect(model.verdict == .unavailable)
+        #expect(model.homeSubscriptionsOthers.map(\.id) == [ProviderID(8)])
     }
 
-    @Test func otherRegionsAreAvailableWhenServicesCarryItElsewhere() async {
+    /// Rent and buy aren't shown in v1, so they don't make it watchable.
+    @Test func unavailableForRentAndBuyOnly() async {
         let model = await loadedModel(
-            bundle(global: [ProviderRegionalAvailability(provider: provider(8, "Netflix"), regions: [.france])]),
+            bundle(rent: [provider(2, "Apple TV")], buy: [provider(3, "Google Play")]),
             subscribedTo: [8]
         )
 
-        #expect(model.otherRegionsState == .available)
+        #expect(model.verdict == .unavailable)
+        #expect(model.homeSubscriptionsOthers.isEmpty)
     }
 }

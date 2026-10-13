@@ -19,6 +19,15 @@ private nonisolated let resourceBundleDescription = LocalizedStringResource.Bund
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 nonisolated extension LocalizedStringResource {
     /**
+     VoiceOver label for the small logos on the Details card's top border, when the user can already watch the film: the region's other services. Followed by their names.
+     
+     Localized string for key “detailsAlsoOn” in table “Localizable.xcstrings”.
+     */
+    static var detailsAlsoOn: LocalizedStringResource {
+        LocalizedStringResource("detailsAlsoOn", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Shown on the Details screen while the providers list is loading
      
      Localized string for key “detailsCheckingAvailability” in table “Localizable.xcstrings”.
@@ -37,39 +46,21 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     VoiceOver label for the small logos on the Details card's top border: services the user doesn't have that carry the film in their region. %@ is the region name, e.g. 'Spain'. Followed by their names.
+     
+     Localized string for key “detailsInRegion” in table “Localizable.xcstrings”.
+     */
+    static func detailsInRegion(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("detailsInRegion", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Error message on the Details screen when full details fail to load; %@ is the localized underlying error description
      
      Localized string for key “detailsLoadFailed” in table “Localizable.xcstrings”.
      */
     static func detailsLoadFailed(_ arg1: String) -> LocalizedStringResource {
         LocalizedStringResource("detailsLoadFailed", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Shown on the Details screen when no streaming providers cover the user's region
-     
-     Localized string for key “detailsNotAvailable” in table “Localizable.xcstrings”.
-     */
-    static var detailsNotAvailable: LocalizedStringResource {
-        LocalizedStringResource("detailsNotAvailable", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Sub-section header for movies available to watch for free
-     
-     Localized string for key “detailsProvidersFree” in table “Localizable.xcstrings”.
-     */
-    static var detailsProvidersFree: LocalizedStringResource {
-        LocalizedStringResource("detailsProvidersFree", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Sub-section header for movies available via a streaming subscription
-     
-     Localized string for key “detailsProvidersSubscription” in table “Localizable.xcstrings”.
-     */
-    static var detailsProvidersSubscription: LocalizedStringResource {
-        LocalizedStringResource("detailsProvidersSubscription", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -100,15 +91,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Caption next to a list of regions where a given provider carries the film
-     
-     Localized string for key “detailsSubscriptionsAvailableIn” in table “Localizable.xcstrings”.
-     */
-    static var detailsSubscriptionsAvailableIn: LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsAvailableIn", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Button in the no-subscriptions state that opens the streaming-services picker
      
      Localized string for key “detailsSubscriptionsConfigureButton” in table “Localizable.xcstrings”.
@@ -127,56 +109,65 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Shown when none of the user's subscriptions carry the film in their home region. %@ is the 'flag + name' label for the home region.
+     Line under 'Go read a book' when services the user doesn't have carry the film in their region
      
-     Localized string for key “detailsSubscriptionsHomeNotAvailable” in table “Localizable.xcstrings”.
+     Localized string for key “detailsUnavailableNotOnYours” in table “Localizable.xcstrings”.
      */
-    static func detailsSubscriptionsHomeNotAvailable(_ arg1: String) -> LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsHomeNotAvailable", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    static var detailsUnavailableNotOnYours: LocalizedStringResource {
+        LocalizedStringResource("detailsUnavailableNotOnYours", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     Section header above providers carrying the film in the user's home region. %@ is a 'flag + name' label, e.g. '🇪🇸 Spain'.
+     Line under 'Go read a book' when no service carries the film in the user's region and none of theirs carries it abroad. 'Here' is the region the card's title shows with its flag.
      
-     Localized string for key “detailsSubscriptionsHomeRegion” in table “Localizable.xcstrings”.
+     Localized string for key “detailsUnavailableNowhere” in table “Localizable.xcstrings”.
      */
-    static func detailsSubscriptionsHomeRegion(_ arg1: String) -> LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsHomeRegion", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    static var detailsUnavailableNowhere: LocalizedStringResource {
+        LocalizedStringResource("detailsUnavailableNowhere", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     Empty state shown when the film isn't available with any of the user's subscriptions in any region
+     Verdict on the Details card when the film is only on the user's services in other countries
      
-     Localized string for key “detailsSubscriptionsNoMatches” in table “Localizable.xcstrings”.
+     Localized string for key “detailsVerdictAbroad” in table “Localizable.xcstrings”.
      */
-    static var detailsSubscriptionsNoMatches: LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsNoMatches", table: "Localizable", bundle: resourceBundleDescription)
+    static var detailsVerdictAbroad: LocalizedStringResource {
+        LocalizedStringResource("detailsVerdictAbroad", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     Section header above the per-provider flag strips for regions other than home (accessible via VPN)
+     Playful verdict on the Details card when the user can't stream the film: not on their services anywhere and not free in their region
      
-     Localized string for key “detailsSubscriptionsOtherRegions” in table “Localizable.xcstrings”.
+     Localized string for key “detailsVerdictUnavailable” in table “Localizable.xcstrings”.
      */
-    static var detailsSubscriptionsOtherRegions: LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsOtherRegions", table: "Localizable", bundle: resourceBundleDescription)
+    static var detailsVerdictUnavailable: LocalizedStringResource {
+        LocalizedStringResource("detailsVerdictUnavailable", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     Section header for the multi-region availability across the user's subscriptions
+     Verdict on the Details card when one of the user's services, or a free service, carries the film in their region
      
-     Localized string for key “detailsSubscriptionsSectionTitle” in table “Localizable.xcstrings”.
+     Localized string for key “detailsVerdictWatchNow” in table “Localizable.xcstrings”.
      */
-    static var detailsSubscriptionsSectionTitle: LocalizedStringResource {
-        LocalizedStringResource("detailsSubscriptionsSectionTitle", table: "Localizable", bundle: resourceBundleDescription)
+    static var detailsVerdictWatchNow: LocalizedStringResource {
+        LocalizedStringResource("detailsVerdictWatchNow", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     Section header on the Details screen above the streaming providers
+     VoiceOver label of the Details 'where to watch' card title, whose visible text shows only the region's flag. %@ is the region name, e.g. 'Spain'.
      
-     Localized string for key “detailsWhereToWatch” in table “Localizable.xcstrings”.
+     Localized string for key “detailsWhereToWatchRegion” in table “Localizable.xcstrings”.
      */
-    static var detailsWhereToWatch: LocalizedStringResource {
-        LocalizedStringResource("detailsWhereToWatch", table: "Localizable", bundle: resourceBundleDescription)
+    static func detailsWhereToWatchRegion(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("detailsWhereToWatchRegion", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Small title of the Details 'where to watch' card. %@ is the home region's flag emoji, e.g. '🇪🇸'.
+     
+     Localized string for key “detailsWhereToWatchTitle” in table “Localizable.xcstrings”.
+     */
+    static func detailsWhereToWatchTitle(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("detailsWhereToWatchTitle", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
     }
 }

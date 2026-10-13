@@ -8,7 +8,7 @@ themselves live in GitHub: each phase is a milestone, each task an issue.
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
 This file doesn't repeat them.
 
-## Status (Oct 12, 2026)
+## Status (Oct 13, 2026)
 
 | Phase | What | State |
 |---|---|---|
@@ -20,9 +20,9 @@ This file doesn't repeat them.
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
 | — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #31, #32 merged; #30 in review; #34, #35 next |
-| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 next, in parallel with 3 |
-| 5 | [Landing page animation](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #30, #31, #32 merged; #34, #35 next |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 in review (redesigned Oct 13); #44 next |
+| 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned: #46–#49, one screen each |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
 
 Cleanup outside the phases is tracked as [`tech-debt` issues](https://github.com/martingarcialopez/StreamIn/issues?q=is%3Aopen+label%3Atech-debt).
@@ -138,51 +138,71 @@ open Details from there. Today `WatchlistView` is a placeholder.
 
 ## Phase 4 — Details page redesign
 
-**Goal:** where to watch comes first, grouped by the user's region.
+**Goal:** the answer to "can I watch this?" comes first, clear at a glance, and nothing is said twice.
 
-```
-[Backdrop] Title · metadata · Directed by …
-Where to watch in 🇪🇸 Spain
-  Free / With your subscriptions / With other services   (each only with data)
-  (no services picked: "Choose your services" in the subscriptions slot)
-  (nothing at all: "Not available in your region.")
-──────────
-Watch with your subscriptions in other regions
-  (no service carries it anywhere: one quiet line; at home only: hidden)
-──────────
-Overview
-```
+One outlined card sits right after the title, metadata and directors; the overview follows it.
+"Where to watch · 🇪🇸" cuts its top border on the left, and the home region's other services cut it
+on the right: up to 5 small logos + "+N", unlabeled since the flag already says where. Inside, only
+the answer: one verdict, an emoji plus a tinted headline.
+
+| Verdict | When | Card content |
+|---|---|---|
+| 🍿 **Watch now** | One of your services or a free one carries it at home | Big logos (yours, then free); no services picked: a small "Choose your services" button |
+| 🌍 **On your services abroad** (a real globe, flicked and slowing to a stop) | Nothing of yours or free at home; your services carry it elsewhere | One row per service: logo, name, top 3 flags `+N` ›, opening the full region list. Popular VPN countries first |
+| 📖 **Go read a book** | Nothing of yours or free at home, none of yours abroad | "Not on your services, here or abroad.", or "Not available to stream here or on your services." when no service carries it here |
+| (prompt) | No services picked, nothing free at home | "Add the streaming services you pay for…" + "Choose your services" |
 
 **Decided (Oct 12):**
-- The three home subsections share one wrapping logo grid (`LazyVGrid`, adaptive columns).
-- "With other services" is the regional subscription providers minus the ones already shown.
 - **Rent and buy stay hidden in v1**: the audience wants free, subscription and VPN options. The data
   stays in Domain.
 
+**Decided (Oct 13, design review after testing #36's first layout):**
+- **One verdict.** Free at home counts as much as your own services, and either one hides the abroad
+  block: there's no reason to reach for a VPN. "Not available" is said once.
+- **Other services in your region are secondary:** small logos (22pt) on one wrapping line, never a
+  section of their own.
+- **No VPN in the copy.** "On your services abroad" says it without inviting App Review trouble.
+- **No captions under logos;** minimal chrome. Logos are icon-only (VoiceOver reads the names).
+- **Credits** ("Powered by TMDB · Availability by JustWatch") go in the search landing page footer,
+  not on Details.
+
 **Issues**
 
-1. #33 — `DetailsViewModel`: `whereToWatchState`, `otherRegionsState`,
-   `homeSubscriptionsOthers`, `homeRegionLabel`, plus the `makeModel` test helper (claude[bot])
-2. #36 — The layout, the new strings via `localize`, six previews
+1. #33 — `DetailsViewModel` state and the `makeModel` test helper (claude[bot])
+2. #36 — The card: `verdict`, popular-region order, strings via `localize`, seven previews
+3. #44 — Credits footer on the landing page
 
 **Verify:**
-- A movie with full availability shows every subsection.
-- A home-only movie shows no other-regions header.
-- iPhone and iPad layouts both hold.
+- Each verdict on the simulator: LOTR (Watch now), Peter Pan 2003 (abroad), Peter Pan 1953 (read a
+  book, Disney+ in Spain), La bola negra (read a book, nothing).
+- iPhone and iPad layouts both hold, in en and es.
 
 ---
 
-## Phase 5 — Landing page animation
+## Phase 5 — App design & UX
 
-**Goal:** the visual touch deferred from Phase 1.
+**Goal:** bring every screen up to the level of the Phase 4 Details redesign. One issue per screen,
+each starting with a short design Q&A, then previews and the simulator (iPhone and iPad, en and es).
 
-- A conic-gradient halo behind the search bar is stashed:
-  `git stash list` → `landing-halo-wip` (12 s rotation, blur 28, opacity 0.7).
-  Default: restore it and refine; redo it only if the direction no longer fits.
-- Respect Reduce Motion (static gradient), check light and dark mode, check
-  performance on small iPhones (throttle `TimelineView` if needed), and make sure
-  the halo doesn't overlap the logo or the tab bar on iPhone or iPad.
-- Iterate with Xcode previews through the MCP server.
+**Reuse the Phase 4 language where it fits:**
+- `AppPalette.background` pages
+- tinted cards with legends on the border
+- app-icon `ProviderLogo`s
+- emoji + semibold headlines
+- `SpinningGlobe`
+
+A pattern used by two screens moves to DesignSystem.
+
+**Issues**
+
+1. #46 — Landing page and its animation.
+   - The conic-gradient halo is stashed as `landing-halo-wip` (12 s rotation, blur 28, opacity 0.7):
+     restore and refine it, or redo it.
+   - Reduce Motion, light and dark, small iPhones, no overlap with the logo or tab bar.
+   - The credits footer (#44) lives here.
+2. #47 — Search results: the same language as Details, maybe a verdict hint per row.
+3. #48 — Watchlist tab, after #35: an inviting empty state, maybe "what can I watch tonight".
+4. #49 — Settings, the services picker and onboarding's reuse of it.
 
 ---
 
@@ -216,3 +236,7 @@ Overview
   github-actions[bot].
 - Similar movies on Details; pagination; rent/buy if the Details page has room.
 - Package the `commit` skill and hooks as a plugin in an own marketplace.
+- Search: filter out "empty" movies (no year, no runtime, no rating, no backdrop, like "The Lord of
+  the Rings: Shadow of the Past"); they only add noise to the results (noted Oct 13, #45).
+- Details: tapping a service logo zooms it and shows its name with a playful animation (agreed
+  Oct 13, deferred). Also a candidate: opening TMDB's JustWatch page (`externalLink`) from the card.

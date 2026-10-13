@@ -1,12 +1,16 @@
 import SwiftUI
 
-/// A streaming provider's logo. Backed by `RemoteImageStore`, so a logo the
-/// app has already shown (or prefetched at launch) renders on the first frame.
+/// A streaming provider's logo, drawn like an app icon: continuous corners, a
+/// hairline edge and a soft shadow, so white logos don't melt into a white
+/// background. Backed by `RemoteImageStore`, so a logo the app has already
+/// shown (or prefetched at launch) renders on the first frame.
 public struct ProviderLogo: View {
     public let url: URL?
     public let providerName: String
     public let size: CGFloat
     public let cornerRadius: CGFloat
+
+    @Environment(\.displayScale) private var displayScale
 
     public init(
         url: URL?,
@@ -27,7 +31,12 @@ public struct ProviderLogo: View {
             Rectangle().fill(.quaternary)
         }
         .frame(width: size, height: size)
-        .clipShape(.rect(cornerRadius: cornerRadius))
+        .clipShape(.rect(cornerRadius: cornerRadius, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(.primary.opacity(0.12), lineWidth: 1 / displayScale)
+        }
+        .shadow(color: .black.opacity(0.12), radius: 1.5, y: 1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(providerName)
         .accessibilityAddTraits(.isImage)
