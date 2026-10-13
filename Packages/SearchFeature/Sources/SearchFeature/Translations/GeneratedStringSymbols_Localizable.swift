@@ -6,7 +6,7 @@
 import Foundation
 
 #if SWIFT_PACKAGE
-private let resourceBundle = Foundation.Bundle.module
+private nonisolated let resourceBundle = Foundation.Bundle.module
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 private nonisolated let resourceBundleDescription = LocalizedStringResource.BundleDescription.atURL(resourceBundle.bundleURL)
 #else
@@ -43,6 +43,15 @@ nonisolated extension LocalizedStringResource {
      */
     static var searchInProgress: LocalizedStringResource {
         LocalizedStringResource("searchInProgress", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Footer at the bottom of the search landing page crediting the data sources: TMDB (movie data) and JustWatch (where-to-watch data). Keep the brand names as they are.
+     
+     Localized string for key “searchLandingCredits” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingCredits: LocalizedStringResource {
+        LocalizedStringResource("searchLandingCredits", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

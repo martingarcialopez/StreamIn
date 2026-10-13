@@ -126,6 +126,24 @@
           }
         }
       }
+    },
+    "searchLandingCredits" : {
+      "comment" : "Footer at the bottom of the search landing page crediting the data sources: TMDB (movie data) and JustWatch (where-to-watch data). Keep the brand names as they are.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by TMDB · Availability by JustWatch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con datos de TMDB · Disponibilidad de JustWatch"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

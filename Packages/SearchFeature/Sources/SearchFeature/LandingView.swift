@@ -11,8 +11,15 @@ struct LandingView: View {
             AppLogoMark(size: 120)
             Text(verbatim: Self.appName)
                 .font(.largeTitle.bold())
-            SearchBar(text: $searchText, onSubmit: onSubmit)
-                .padding(.horizontal, Spacing.screenPadding)
+            VStack(spacing: Spacing.default) {
+                SearchBar(text: $searchText, onSubmit: onSubmit)
+                // TMDB's terms ask for credit, and for JustWatch's on watch-provider data.
+                Text(.searchLandingCredits)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
             Spacer(minLength: 0)
             Spacer(minLength: 0)
         }
