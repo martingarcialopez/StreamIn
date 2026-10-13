@@ -11,7 +11,7 @@ Only when Martín asks. Stop and report at the first step that fails.
 
 ## 1. Check the branch
 
-Must be a feature branch (`feat/…`, `fix/…`, `chore/…`), never `main`. Show
+Must be a feature branch (`feat/…`, `fix/…`, `chore/…`, `tooling/…`), never `main`. Show
 `git status` and `git log --oneline main..HEAD`. Uncommitted work belongs to this
 phase only if it's part of the plan — ask otherwise. Note the issue(s) the branch
 closes (`gh issue view <n>`) so the PR can link them.

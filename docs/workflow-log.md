@@ -12,6 +12,30 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-13 — Commit types: `tooling` for the workflow, `chore` for the app (#58)
+
+**Why:** every workflow PR went out as `🔧 chore(workflow)`, which mixed tooling
+with housekeeping in the app. Martín wanted the history to tell them apart.
+
+**What changed:**
+- `tooling` 🔧 for GitHub workflows, scripts and the Claude Code setup, with
+  scopes `ci` and `claude`.
+- `chore` 🧹 for app maintenance that changes no behavior (dependency bumps,
+  project settings, cleanup).
+- Branches follow: `tooling/…`, `chore/…`.
+
+**Choices:**
+- `tooling` is a custom type. Conventional Commits allows custom types, and
+  nothing here parses them. The standard `ci` and `build` wouldn't cover the
+  Claude setup.
+- 🔧 stays (gitmoji's "configuration") so the workflow history looks the same as
+  before.
+- 🧹 is the project's one addition to gitmoji, which has no maintenance emoji.
+- #57 was retitled before merging, so it's the first `tooling` commit on `main`.
+  Past commits weren't rewritten.
+
+---
+
 ## 2026-10-13 — Phase 4 (#36): designing on screen with Martín
 
 **Why:** #36 shipped its planned layout, but on the simulator it answered "can I

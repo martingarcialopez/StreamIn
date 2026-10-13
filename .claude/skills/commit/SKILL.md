@@ -68,11 +68,22 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ```
 
 - **gitmoji:** always, from the table below, before the type.
-- **type:** `feat`, `fix`, `refactor`, `test`, `docs`, `perf` or `chore` (tooling,
-  configuration, the Claude Code setup).
-- **scope** (optional): the package or area — `search`, `details`, `settings`,
-  `watchlist`, `tmdb`, `design-system`, `reference-data`, `persistence`, `app`,
-  `workflow`. Leave it out when the change spans several.
+- **type:** `feat`, `fix`, `refactor`, `test`, `docs`, `perf`, `chore` or
+  `tooling`:
+  - **`tooling`** — the workflow around the app, not the app: GitHub workflows
+    and their scripts, the Claude Code setup (skills, agents, hooks, rules,
+    settings). Not a Conventional Commits standard type; the spec allows custom
+    ones, and nothing here parses them.
+  - **`chore`** — housekeeping in the app that changes no behavior and isn't a
+    refactor: dependency or version bumps, Xcode project and build settings,
+    `.gitignore`, asset and catalog cleanup.
+- **scope** (optional):
+  - app types: the package or area — `search`, `details`, `settings`,
+    `watchlist`, `tmdb`, `design-system`, `reference-data`, `persistence`, `app`
+  - `tooling`: `ci` (GitHub workflows and scripts) or `claude` (skills, agents,
+    hooks, rules, settings)
+
+  Leave it out when the change spans several.
 - **summary:** imperative, starts lowercase, no final period. The whole title,
   emoji included, is 72 characters at most. It says what changes for the user or
   the code, not which files were touched.
@@ -91,7 +102,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 | `feat` | ✨ | | `perf` | ⚡️ |
 | `fix` | 🐛 | | `test` | ✅ |
 | `refactor` | ♻️ | | `docs` | 📝 |
-| `chore` | 🔧 | | | |
+| `chore` | 🧹 | | `tooling` | 🔧 |
+
+🔧 is gitmoji's "configuration files". 🧹 isn't in gitmoji, which has no general
+maintenance emoji; it's this project's one addition.
 
 One exception: a commit that only removes code or files (dead code, template
 tests) takes 🔥 whatever its type, as gitmoji intends.
@@ -102,8 +116,9 @@ Emoji go in commit and PR titles, never in branch names.
 
 `<type>/<task>`: the same types as commits, and a task of three or four
 hyphenated words that says what this branch does. Be specific —
-`feat/watchlist-heart-toggle`, `fix/search-field-flicker` — not
-`feat/update-details` or `chore/changes`. One roadmap phase is one branch.
+`feat/watchlist-heart-toggle`, `fix/search-field-flicker`,
+`tooling/review-merge-gate` — not `feat/update-details` or `chore/changes`. One
+roadmap phase is one branch.
 
 ## Pull requests and squash merges
 
