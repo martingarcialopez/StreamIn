@@ -53,25 +53,19 @@ TMDBClient or SwiftData directly.**
 - **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict gates the merge: any critical or high finding blocks it, medium is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
-### Parallel sessions
+### Parallel sessions: one worktree per change
 
-Two sessions never share one checkout: each issue gets its own worktree, branch and PR. **`/parallel <issue>`**, or **`/parallel <task in plain words>`** (the new session writes the issue first), run from the main checkout, does all the setup:
-- **It starts the session,** listed in `claude agents`, inside `.claude/worktrees/issue-<n>` (from a fresh `origin/main`). The session runs `/start-issue <n>` until its first question.
-- **It copies the gitignored files** listed in `.worktreeinclude` (the secrets, local permissions).
-- **Through a SessionStart hook (`.claude/hooks/worktree-session.sh`), it gives the session:**
-  - its own simulator, `StreamIn <worktree>` (in `$STREAMIN_SIMULATOR`)
-  - its own Xcode window
-  - the rules below as context
+The main checkout is a **control room** (planning, `gh`, merging, conversation). **Every session that changes the repository works in its own git worktree** under `.claude/worktrees/`, so any number of sessions can run at once without colliding. Start them any way you like: a new task in agent view (`claude agents`, or ← from a session), a terminal, or `/parallel`.
 
-Memory and "don't ask again" approvals are shared across worktrees.
-
-In a worktree session:
-- **Stay inside the worktree.** Claude Code blocks edits to the main checkout anyway.
-- **Use only your own Xcode window** (`XcodeListWindows`, match the path) **and your own simulator.**
-- **Run local builds through `scripts/xcodebuild-locked.sh`,** so parallel sessions' builds queue instead of competing for the CPU.
-- **When another PR merges first,** run `git fetch && git merge origin/main`, resolve conflicts, run the local check, and push.
-
-**Cleanup:** `/parallel clean` removes the worktrees, branches and simulators of merged or closed PRs, after asking.
+- **Before its first git command or edit, a session in the main checkout calls `EnterWorktree`.** `/start-issue` does it as its first step. This matters for shell commands: Claude Code guards file edits in background sessions, but a `git switch` would still run in the main checkout. The new worktree comes from a fresh `origin/main`, and `.worktreeinclude` copies the gitignored secrets into it.
+- **Simulator:** each worktree has its own, `StreamIn <worktree folder>`, created on first use by `scripts/worktree-simulator.sh`. Never use another session's.
+- **Builds:** run local builds through `scripts/xcodebuild-locked.sh`, with the same arguments as `xcodebuild`. Sessions' builds queue instead of competing for the CPU, and it defaults to your simulator.
+- **Xcode:** open your worktree's `StreamIn.xcodeproj` only when you first need the Xcode MCP (`open -g -a Xcode <worktree>/StreamIn.xcodeproj`), and use only that window (`XcodeListWindows`, match the path). Every open copy of the project is indexed, so don't open it otherwise.
+- **When another PR merges first:** `git fetch && git merge origin/main`, resolve conflicts, run the local check, and push.
+- **Shortcuts and cleanup:**
+  - `/parallel <issue>` or `/parallel <task in plain words>` dispatches a session that's already in its worktree. A plain-words task is written up as an issue first.
+  - `/parallel clean` removes the worktrees, branches and simulators of merged or closed PRs, after asking.
+- **Shared across worktrees:** memory and "don't ask again" approvals.
 
 | Tool | What it's for |
 |---|---|
@@ -83,7 +77,7 @@ In a worktree session:
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` (its Swift and hygiene checks on every Swift change, its SwiftUI checks on view code): locally before every PR, and on GitHub for every PR |
 | `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |
-| Hooks (`.claude/settings.json`) | Set up worktree sessions (own simulator, Xcode window, context); block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
+| Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package test results and line coverage in the job summary. Required to merge |

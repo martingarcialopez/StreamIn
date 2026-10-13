@@ -37,9 +37,8 @@ prompt.
 - **`/parallel <task in plain words>`** works too. The new session first turns
   the text into a GitHub issue (Task form), then starts it, so every PR still
   closes an issue and `/parallel` returns at once.
-- **A SessionStart hook,** in worktrees only, gives the session its own
-  simulator (`StreamIn <worktree>`, exported as `$STREAMIN_SIMULATOR`) and its
-  own Xcode window, and states the rules.
+- **`scripts/worktree-simulator.sh`:** each worktree gets its own simulator,
+  `StreamIn <worktree>`, created on first use.
 - **`scripts/xcodebuild-locked.sh`:** `xcodebuild` under a shared `lockf`
   lock, so two local test runs queue instead of fighting for the CPU. Tested:
   the second waited and said so.
@@ -48,6 +47,25 @@ prompt.
   session stays usable for those 5 minutes.
 - **`/parallel clean`** removes finished worktrees, branches and simulators,
   never anything unpushed.
+
+**Then the model changed (Martín's idea): every editing session in a worktree.**
+Agent view's "new task" already starts background sessions. So instead of making
+`/parallel` the only safe door, the main checkout became a control room, and any
+session that changes the repository moves into a worktree first. A probe of an
+agent-view-style session (no `-w`) showed what that takes:
+- **Shell commands run in the main checkout until the session moves.** Its
+  `touch` created a file there, so a `git switch` would have switched Martín's
+  branch.
+- **File edits are guarded natively:** "This background session hasn't
+  isolated its changes yet. Call EnterWorktree first."
+- **A SessionStart hook runs in the main checkout,** too early to set up the
+  worktree.
+
+So `/start-issue` calls `EnterWorktree` before any git command. The hook was
+dropped: setup became deterministic (the simulator is named after the worktree,
+and Xcode opens only when the session needs it, because every open copy of the
+project gets indexed). `claude rm` refusing to delete a worktree with
+uncommitted work turned out to be a useful safety net for cleanup.
 
 ---
 

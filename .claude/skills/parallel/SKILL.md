@@ -6,23 +6,21 @@ argument-hint: <issue number> | <task description> | clean
 
 # Parallel sessions
 
-Several sessions can work on StreamIn at once, one per issue, each in its own
-git worktree under `.claude/worktrees/`. Martín sees and opens them from
-`claude agents`. Most of the isolation is Claude Code's own:
+Every session that changes StreamIn works in its own git worktree under
+`.claude/worktrees/` (CLAUDE.md, "Parallel sessions"). A new task in agent view,
+or `/start-issue` in any session, already moves into one with `EnterWorktree`.
+This skill is the shortcut on top of that:
 
-- `claude --bg -w <name>` starts a session **inside** a new worktree, on branch
-  `worktree-<name>`, created from a freshly fetched `origin/main`.
-- `.worktreeinclude` copies the gitignored `Secrets.xcconfig` and
-  `.claude/settings.local.json` into it.
-- Auto memory and "don't ask again" approvals are shared across worktrees.
+- `claude --bg -w <name>` starts the session **inside** its worktree from the
+  first command, named after the issue or task, and visible in `claude agents`.
+- A task in plain words is turned into an issue first.
+- `clean` removes what finished sessions leave behind.
 
-The project adds:
-
-- **`.claude/hooks/worktree-session.sh`** (SessionStart): gives the session its
-  own simulator (`StreamIn <name>`, in `$STREAMIN_SIMULATOR`), opens its Xcode
-  project, and tells it which Xcode window is its own.
-- **`scripts/xcodebuild-locked.sh`:** queues local builds so two sessions don't
-  compete for the CPU.
+What every worktree session gets without this skill:
+- **The gitignored secrets:** `.worktreeinclude` copies them.
+- **Shared memory and approvals.**
+- **Its own simulator:** `scripts/worktree-simulator.sh`.
+- **Queued builds:** `scripts/xcodebuild-locked.sh`.
 
 `gh` is at `/opt/homebrew/bin/gh`. Run this skill from the **main checkout**.
 
@@ -51,9 +49,8 @@ The argument decides the mode:
      renames the branch to `<type>/<task>`, plans, and stops at its first
      question (plan approval) with "Needs input".
 3. **Report** the session id and name, and how to open it: `claude agents` (or
-   `claude attach <id>`). Mention that Xcode opens the worktree's project in the
-   background. The first Xcode MCP call from that session may make Xcode ask to
-   allow the agent.
+   `claude attach <id>`). When the session first needs the Xcode MCP, it opens
+   its worktree's project, and Xcode may ask to allow the agent.
 
 ## Start a task: `/parallel <task description>`
 

@@ -35,8 +35,7 @@ Fast feedback before pushing; CI (step 6) is the record.
 
   The script is `xcodebuild` under a lock shared by all sessions, so parallel
   sessions' builds queue instead of competing for the CPU. Its default
-  destination is this session's simulator (`$STREAMIN_SIMULATOR` in a worktree,
-  iPhone 17 otherwise).
+  destination is this checkout's simulator (`scripts/worktree-simulator.sh`).
 
 - **Previews** of every view the branch changed, with the Xcode MCP's
   `RenderPreview`. Look at each snapshot.

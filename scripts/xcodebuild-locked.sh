@@ -7,8 +7,9 @@
 # the Mac's CPU. Two test-plan runs at once slow each other down badly, so local
 # builds take a shared lock and the second one waits.
 #
-# Without a -destination, it uses this session's simulator: $STREAMIN_SIMULATOR
-# (set in worktree sessions by .claude/hooks/worktree-session.sh), or iPhone 17.
+# Without a -destination, it uses this checkout's simulator
+# (scripts/worktree-simulator.sh: iPhone 17 in the main checkout, a dedicated one
+# in a worktree, created on first use).
 
 set -euo pipefail
 
@@ -16,7 +17,8 @@ lock="${TMPDIR:-/tmp}/streamin-xcodebuild.lock"
 
 args=("$@")
 if [[ " $* " != *" -destination "* ]]; then
-  args+=(-destination "platform=iOS Simulator,name=${STREAMIN_SIMULATOR:-iPhone 17},OS=latest")
+  simulator=$("$(dirname "$0")/worktree-simulator.sh")
+  args+=(-destination "platform=iOS Simulator,name=$simulator,OS=latest")
 fi
 
 # lockf -t 0 fails at once if another session holds the lock.
