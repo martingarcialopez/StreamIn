@@ -29,10 +29,13 @@ Fast feedback before pushing; CI (step 6) is the record.
   that CI runs, which builds the app and every package's tests in one go:
 
   ```bash
-  xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn \
-    -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
-    -derivedDataPath .build/xcode
+  scripts/xcodebuild-locked.sh test -project StreamIn.xcodeproj -scheme StreamIn \
+    -testPlan StreamIn -derivedDataPath .build/xcode
   ```
+
+  The script is `xcodebuild` under a lock shared by all sessions, so parallel
+  sessions' builds queue instead of competing for the CPU. Its default
+  destination is this checkout's simulator (`scripts/worktree-simulator.sh`).
 
 - **Previews** of every view the branch changed, with the Xcode MCP's
   `RenderPreview`. Look at each snapshot.
@@ -57,9 +60,11 @@ If something can't run, say so — never imply it passed.
 
 ## 6. Wait for CI
 
-The `CI` workflow ("Build and test") runs on the PR. Read its result once it
-finishes — from the desktop app's PR status when you're in the app, otherwise
-with one blocking `gh pr checks <n> --watch` (no polling loops).
+The `CI` workflow ("Build and test") and the review ("ios-reviewer verdict") run
+on the PR, taking about 5 minutes. Don't block the conversation while they run:
+watch them with the **Monitor** tool (deadline 30 minutes), e.g. `gh pr checks <n>
+--watch`, and tell Martín you'll report when they finish, so he can keep talking
+to you meanwhile. In the desktop app, its PR status works too.
 
 - **Red:** read the failure (`gh run view <run-id> --log-failed`, or the job
   summary), fix it, commit with the `commit` skill, and wait again.
@@ -70,3 +75,6 @@ with one blocking `gh pr checks <n> --watch` (no polling loops).
 
 Reply with the PR URL, the CI run link and result, and a suggested reading order
 for the review.
+
+In a `/parallel` session, add that once the PR is merged, `/parallel clean` (run
+from the main checkout) removes this worktree, its branch and its simulator.

@@ -12,6 +12,63 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — `/parallel`: one command per parallel session (#61)
+
+**Why:** with a PR per issue and about 5 minutes of CI each, the session that
+shipped a PR sat waiting. The Phase 3/4 setup worked but was a page of manual
+steps: worktree, copying secrets, an Xcode window, a simulator, a kickoff
+prompt.
+
+**What exists, checked against the docs and a probe session:**
+- `claude --bg -w <name>` starts a session *inside* a new worktree, from a
+  fresh `origin/main`. The probe's first commands already ran there, so the
+  main checkout is never touched.
+- `claude agents` lists every session, this one included; a background session
+  there is just "managed", not hidden.
+- `claude rm` removes a session with its worktree and branch.
+- `.worktreeinclude` copies gitignored files.
+- Auto memory is shared across a repo's worktrees, which fixes last time's
+  "memory may not load" gotcha.
+
+**What the project adds:**
+- **`/parallel <issue>`** dispatches the session, named after the issue. It runs
+  `/start-issue` until its first question and waits in agent view (Martín's
+  choice: a row he opens, not a new tab).
+- **`/parallel <task in plain words>`** works too. The new session first turns
+  the text into a GitHub issue (Task form), then starts it, so every PR still
+  closes an issue and `/parallel` returns at once.
+- **`scripts/worktree-simulator.sh`:** each worktree gets its own simulator,
+  `StreamIn <worktree>`, created on first use.
+- **`scripts/xcodebuild-locked.sh`:** `xcodebuild` under a shared `lockf`
+  lock, so two local test runs queue instead of fighting for the CPU. Tested:
+  the second waited and said so.
+- **`start-issue`** renames `worktree-<name>` to `<type>/<task>`.
+- **`ship-phase`** watches CI with Monitor instead of a blocking wait, so the
+  session stays usable for those 5 minutes.
+- **`/parallel clean`** removes finished worktrees, branches and simulators,
+  never anything unpushed.
+
+**Then the model changed (Martín's idea): every editing session in a worktree.**
+Agent view's "new task" already starts background sessions. So instead of making
+`/parallel` the only safe door, the main checkout became a control room, and any
+session that changes the repository moves into a worktree first. A probe of an
+agent-view-style session (no `-w`) showed what that takes:
+- **Shell commands run in the main checkout until the session moves.** Its
+  `touch` created a file there, so a `git switch` would have switched Martín's
+  branch.
+- **File edits are guarded natively:** "This background session hasn't
+  isolated its changes yet. Call EnterWorktree first."
+- **A SessionStart hook runs in the main checkout,** too early to set up the
+  worktree.
+
+So `/start-issue` calls `EnterWorktree` before any git command. The hook was
+dropped: setup became deterministic (the simulator is named after the worktree,
+and Xcode opens only when the session needs it, because every open copy of the
+project gets indexed). `claude rm` refusing to delete a worktree with
+uncommitted work turned out to be a useful safety net for cleanup.
+
+---
+
 ## 2026-10-13 — The review becomes a merge gate (#56)
 
 **Why:** the first working review, on #53, was useful but read like a log. It

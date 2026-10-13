@@ -26,17 +26,32 @@ Non-trivial work (more than a couple of files, a new package, UI changes) goes
 through plan mode first and waits for Martín's approval. A small, clear change
 can start right away; say which files you'll touch.
 
-## 3. Branch from an up-to-date main
+## 3. Move into a worktree, then branch
 
-```bash
-git switch main && git pull --ff-only origin main
-git switch -c <type>/<task>
-```
+Every session that changes the repository works in its own git worktree, so
+parallel sessions never collide; the main checkout stays a control room for
+planning and GitHub.
 
-Name the branch with the `commit` skill's rules (`feat/watchlist-heart-toggle`,
-`fix/details-offline-error`). If `main` has uncommitted changes, ask before
-switching. In a worktree the app made, sync with the base branch through the app
-instead of pulling.
+1. **If this session is in the main checkout** (`git rev-parse --absolute-git-dir`
+   equals the absolute `--git-common-dir`), call **`EnterWorktree`** first, named
+   `issue-<n>`. Do it **before any git command**: shell commands run wherever the
+   session is, so a `git switch` here would switch the branch under every other
+   session using the main checkout. Skip this only if Martín asks to work in the
+   main checkout.
+
+   `EnterWorktree` creates `.claude/worktrees/issue-<n>` from a freshly fetched
+   `origin/main`, on branch `worktree-issue-<n>`, and copies the gitignored files
+   in `.worktreeinclude` (the secrets).
+2. **Name the branch** with the `commit` skill's rules
+   (`feat/watchlist-heart-toggle`, `fix/details-offline-error`,
+   `tooling/review-merge-gate`), renaming the worktree's branch:
+
+   ```bash
+   git branch -m <type>/<task>
+   ```
+
+   Don't switch to `main` from a worktree: it's checked out in the main
+   checkout.
 
 ## 4. Work, then ship
 
