@@ -20,10 +20,11 @@ jobs:
       cancel-in-progress: false
     # Only the repository owner can summon Claude, so a stray @claude can't
     # spend the subscription's usage. The `claude` label hands an issue to
-    # claude[bot] to implement; @claude anywhere asks it for help.
+    # claude[bot] to implement; @claude anywhere asks it for help, except
+    # "@claude review" on a PR, which claude-code-review.yml handles.
     if: |
       github.actor == github.repository_owner && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude review')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
         (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude') ||

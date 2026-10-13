@@ -50,7 +50,7 @@ TMDBClient or SwiftData directly.**
 - **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI.
 - **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
-- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews the PR again and posts its findings as comments.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
 ### Parallel sessions
@@ -75,12 +75,13 @@ Two sessions never share one checkout: each gets its own worktree, branch and PR
 | `start-issue` skill | Start work on a GitHub issue: read it, plan, branch |
 | `ship-phase` skill | Finish a phase and open its PR, then wait for CI (only when Martín asks) |
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
-| `ios-reviewer` subagent | Read-only review against these rules before every PR |
+| `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` for SwiftUI files: locally before every PR, and on GitHub for every PR |
+| `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |
 | Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package test results and line coverage in the job summary. Required to merge |
-| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue; implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens with Anthropic's `code-review` plugin. Runs on Linux, so it can't build — CI does, and it reads CI's results |
+| GitHub, claude[bot] (`claude.yml`, `claude-code-review.yml`) | Answers or pushes fixes when Martín writes `@claude` in a PR or issue; implements an issue labeled `claude` and opens its PR; reviews each PR once when it opens by running `ios-reviewer` and posting its findings inline plus a summary comment (`@claude review` re-runs it). Runs on Linux, so it can't build — CI does, and it reads CI's results |
 
 ## Decisions
 

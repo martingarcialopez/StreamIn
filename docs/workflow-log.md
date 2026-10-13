@@ -11,6 +11,42 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-13 — The PR review becomes ios-reviewer, and it posts what it finds
+
+**Why:** Martín noticed the automated PR review had never left a comment.
+
+**What we found**
+
+- **The review didn't review.** `claude-code-review.yml` ran Anthropic's
+  generic `code-review` plugin. All 8 runs since it was set up ended after 2–9
+  turns and 4–23 s, about $0.05–0.10 each, and reviewed nothing. Its output is
+  hidden from the log, so the exact reason isn't visible.
+- **It couldn't have posted anyway:** the job's token had `pull-requests: read`.
+- **The green check made it look fine.** "claude-review: pass" on every PR meant
+  "the job didn't crash", not "the PR was reviewed". It took a person asking
+  why there were never comments to notice.
+
+**What changed (#51)**
+
+- **The GitHub review runs `ios-reviewer`,** the reviewer `/ship-phase` already
+  used locally. It posts one inline comment per finding and a summary comment
+  every time, so a clean run is visible too.
+- **It runs once per PR,** and again on "@claude review".
+- **`swiftui-pro`** (Paul Hudson, MIT) is vendored in the repo at v1.1. It was
+  only on Martín's Mac, so CI and claude[bot] never had it.
+  - `ios-reviewer` reads it for changed SwiftUI files.
+  - Where it overlaps the project's rules, it reports once and the project wins.
+  - Upstream v2.0 targets Xcode 27, so it waits for the toolchain upgrade.
+- **`ios-reviewer` can now review a PR, uncommitted work or a branch,** and
+  cites the rulebook behind each finding. Until now it only knew
+  `main...HEAD`, and twice it needed hand-written instructions for uncommitted
+  work.
+
+**Lesson:** a check that can pass without doing its job needs a visible output,
+so check the output, not the green tick.
+
+---
+
 ## 2026-10-12 — Phases 3 and 4 kick off: plans as issues, three bot PRs in parallel
 
 **Why:** the first phases run through the issue flow, with claude[bot] taking
