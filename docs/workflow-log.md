@@ -72,6 +72,13 @@ merging. Martín asked for a gate: high blocks, medium is his call, low passes.
   can't review itself: add review-override to merge" instead of advice to retry.
 - **Less clutter:** the override job moved to `review-override.yml`, so normal
   pushes no longer list a skipped job.
+- **First real run, on #59:** it reviewed the PR and the verdict was ✅, but the
+  review was never posted (2 permission denials). In Claude Code's allow-list,
+  `:*` only matches at a word boundary, so `…/pulls/:*` never matched
+  `…/pulls/59/reviews`. A local test with a stand-in command confirmed it, and
+  showed the glob `…/pulls/*/reviews *` does match. The publish step now also
+  flags a review that should exist but wasn't posted, since the verdict alone
+  hid the failure.
 - **Two lines, renamed:** the review job is now called "run review". GitHub
   lists every job, so the engine ("run review") and its result ("ios-reviewer
   verdict") both show, and the names now say which is which.

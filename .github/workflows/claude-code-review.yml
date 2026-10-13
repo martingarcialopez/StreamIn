@@ -159,11 +159,13 @@ jobs:
 
             Don't post anything else, don't resolve threads (a later step does that from verdict.json), and don't change any code.
           # Read-only tools, Write for the two files, and one way to post: a
-          # review on this repository's PRs.
+          # review on this repository's PRs. The post rule is a glob: `:*` only
+          # matches at a word boundary, so `pulls/:*` never matched
+          # `pulls/59/reviews` and the review on #59 wasn't posted.
           # Options: https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Grep,Glob,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*),Bash(gh api --method POST repos/${{ github.repository }}/pulls/:*)"
+            --allowedTools "Read,Grep,Glob,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(grep:*),Bash(gh api --method POST repos/${{ github.repository }}/pulls/*/reviews *)"
 
       # Only threads from previous-findings.json, so the model can't resolve
       # anything else.
@@ -193,5 +195,19 @@ jobs:
             SKIP_REASON=workflow-change
           fi
           .github/scripts/review-verdict.sh "$WORK/verdict.json" "$OVERRIDE" "$SKIP_REASON" > "$WORK/check.json"
+
+          # The verdict comes from verdict.json, so it stands even if posting
+          # failed; but a review that should exist and doesn't is flagged.
+          if [ -s "$WORK/verdict.json" ]; then
+            EXPECTED=$(jq -r --slurpfile prev "$WORK/previous-findings.json" \
+              '(.new // [] | length > 0) or $prev[0].first_review' "$WORK/verdict.json" 2>/dev/null || echo false)
+            POSTED=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
+              --jq "[.[] | select(.user.login == \"claude[bot]\" and .commit_id == \"$HEAD_SHA\")] | length")
+            if [ "$EXPECTED" = "true" ] && [ "$POSTED" = "0" ]; then
+              echo "::warning::The review for $HEAD_SHA wasn't posted"
+              jq '.summary += "\n\n⚠️ The review for this commit wasn'"'"'t posted, so its findings are only in this check. See the log of the `run review` job."' \
+                "$WORK/check.json" > "$WORK/check.tmp" && mv "$WORK/check.tmp" "$WORK/check.json"
+            fi
+          fi
           jq '{status: "completed", conclusion, output: {title, summary, text}}' "$WORK/check.json" \
             | gh api --method PATCH "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_ID" --input - --jq '"\(.conclusion): \(.output.title)"'
