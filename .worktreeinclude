@@ -1,0 +1,8 @@
+# Gitignored files Claude Code copies into the worktrees it creates
+# (`claude -w`, /parallel). Only files that are also gitignored are copied.
+
+# The TMDB key: the app doesn't build without it.
+Secrets.xcconfig
+
+# Martín's local permission approvals.
+.claude/settings.local.json

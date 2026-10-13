@@ -12,6 +12,97 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — The review verdict becomes a commit status
+
+**Why:** #59's review was clean and its verdict concluded ✅ on the head
+commit, but the merge box kept showing "ios-reviewer verdict — Expected" and
+the PR stayed blocked.
+
+**Root cause, from the API:**
+- The verdict was a check run created with `POST /check-runs`. GitHub, not the
+  workflow, picks the check suite it joins: the oldest github-actions suite on
+  the commit. That was CI's on #57 and the review's on #60.
+- #59 was opened as a draft and marked ready seconds later, so the review
+  workflow ran twice on one commit: a skipped run, then the real one.
+- GitHub keeps only the newest run per workflow and event on a commit. The
+  skipped run's suite, which held the verdict, was dropped from the PR and from
+  branch protection. GraphQL still listed it as required and successful.
+- Re-running the review or adding the override label landed in the same hidden
+  suite, so nothing on the PR could fix it.
+
+**Fix:** "ios-reviewer verdict" is now a commit status. Statuses don't belong to
+any suite, so no other run can hide them.
+- Medium findings pass in green and say "🟠 … merge at your discretion". A
+  status has no neutral; that's why the check was kept last time, and Martín
+  traded it for a gate that can't vanish.
+- The full summary is the review run's job summary, and the status links there.
+- `verdict.json` is kept as an artifact (30 days), so `review-override.yml` can
+  still re-evaluate without reviewing again.
+
+**Found while shipping it:** `guard-main-branch.sh` read the branch of
+`$CLAUDE_PROJECT_DIR`, the main checkout. With the main checkout now parked on
+`main`, it blocked every commit from a worktree session. It now reads the
+session's `cwd` from the hook input, and falls back to the project directory.
+
+---
+
+## 2026-10-14 — `/parallel`: one command per parallel session (#61)
+
+**Why:** with a PR per issue and about 5 minutes of CI each, the session that
+shipped a PR sat waiting. The Phase 3/4 setup worked but was a page of manual
+steps: worktree, copying secrets, an Xcode window, a simulator, a kickoff
+prompt.
+
+**What exists, checked against the docs and a probe session:**
+- `claude --bg -w <name>` starts a session *inside* a new worktree, from a
+  fresh `origin/main`. The probe's first commands already ran there, so the
+  main checkout is never touched.
+- `claude agents` lists every session, this one included; a background session
+  there is just "managed", not hidden.
+- `claude rm` removes a session with its worktree and branch.
+- `.worktreeinclude` copies gitignored files.
+- Auto memory is shared across a repo's worktrees, which fixes last time's
+  "memory may not load" gotcha.
+
+**What the project adds:**
+- **`/parallel <issue>`** dispatches the session, named after the issue. It runs
+  `/start-issue` until its first question and waits in agent view (Martín's
+  choice: a row he opens, not a new tab).
+- **`/parallel <task in plain words>`** works too. The new session first turns
+  the text into a GitHub issue (Task form), then starts it, so every PR still
+  closes an issue and `/parallel` returns at once.
+- **`scripts/worktree-simulator.sh`:** each worktree gets its own simulator,
+  `StreamIn <worktree>`, created on first use.
+- **`scripts/xcodebuild-locked.sh`:** `xcodebuild` under a shared `lockf`
+  lock, so two local test runs queue instead of fighting for the CPU. Tested:
+  the second waited and said so.
+- **`start-issue`** renames `worktree-<name>` to `<type>/<task>`.
+- **`ship-phase`** watches CI with Monitor instead of a blocking wait, so the
+  session stays usable for those 5 minutes.
+- **`/parallel clean`** removes finished worktrees, branches and simulators,
+  never anything unpushed.
+
+**Then the model changed (Martín's idea): every editing session in a worktree.**
+Agent view's "new task" already starts background sessions. So instead of making
+`/parallel` the only safe door, the main checkout became a control room, and any
+session that changes the repository moves into a worktree first. A probe of an
+agent-view-style session (no `-w`) showed what that takes:
+- **Shell commands run in the main checkout until the session moves.** Its
+  `touch` created a file there, so a `git switch` would have switched Martín's
+  branch.
+- **File edits are guarded natively:** "This background session hasn't
+  isolated its changes yet. Call EnterWorktree first."
+- **A SessionStart hook runs in the main checkout,** too early to set up the
+  worktree.
+
+So `/start-issue` calls `EnterWorktree` before any git command. The hook was
+dropped: setup became deterministic (the simulator is named after the worktree,
+and Xcode opens only when the session needs it, because every open copy of the
+project gets indexed). `claude rm` refusing to delete a worktree with
+uncommitted work turned out to be a useful safety net for cleanup.
+
+---
+
 ## 2026-10-13 — Commit types: `tooling` for the workflow, `chore` for the app (#58)
 
 **Why:** every workflow PR went out as `🔧 chore(workflow)`, which mixed tooling
@@ -96,12 +187,20 @@ merging. Martín asked for a gate: high blocks, medium is his call, low passes.
   can't review itself: add review-override to merge" instead of advice to retry.
 - **Less clutter:** the override job moved to `review-override.yml`, so normal
   pushes no longer list a skipped job.
+- **First real run, on #59:** it reviewed the PR and the verdict was ✅, but the
+  review was never posted (2 permission denials). In Claude Code's allow-list,
+  `:*` only matches at a word boundary, so `…/pulls/:*` never matched
+  `…/pulls/59/reviews`. A local test with a stand-in command confirmed it, and
+  showed the glob `…/pulls/*/reviews *` does match. The publish step now also
+  flags a review that should exist but wasn't posted, since the verdict alone
+  hid the failure.
 - **Two lines, renamed:** the review job is now called "run review". GitHub
   lists every job, so the engine ("run review") and its result ("ios-reviewer
   verdict") both show, and the names now say which is which.
 - **Kept as is:** GitHub files the API-created verdict under the "CI" group
   ("CI / ios-reviewer verdict"). Martín kept that over a commit status, because
-  only checks can show medium findings as neutral.
+  only checks can show medium findings as neutral. (Replaced by a status on 2026-10-14: see
+  that entry.)
 
 ---
 
