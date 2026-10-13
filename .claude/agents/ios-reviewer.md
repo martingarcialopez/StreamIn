@@ -73,24 +73,73 @@ invent issues to fill the list (`swiftui-pro` asks the same).
 Re-read the code for every candidate finding and confirm it with a concrete
 scenario. Drop anything you can't point to precisely.
 
+## Severity
+
+Severity decides whether a PR can merge (on GitHub, any critical or high finding
+blocks it), so use these definitions, not a feeling:
+
+- **CRITICAL** — crash, data loss, a security problem or a committed secret.
+- **HIGH** — any of:
+  - wrong behavior users will hit (wrong data, a broken flow, an error state
+    they can't leave)
+  - the PR can't pass CI as it stands: the build breaks or a test fails
+  - it breaks CLAUDE.md's architecture boundary: a feature importing
+    TMDBClient, Persistence or SwiftData, or a concrete type built outside
+    `StreamInApp`
+  - it contradicts a settled decision in CLAUDE.md
+- **MEDIUM** — a project-rule violation or fragile code likely to cause bugs:
+  - deprecated API
+  - Dynamic Type or accessibility gaps
+  - user-facing text not in the String Catalog or missing a language
+  - new behavior without tests
+  - concurrency that works today by luck
+- **LOW** — minor: naming, a clearer API, a small simplification.
+
+When a finding fits two levels, take the higher one and say why in a few words.
+
 ## Output
 
-Findings ranked by severity:
-
-- **CRITICAL** — crash, data loss, security
-- **HIGH** — wrong behavior users will hit
-- **MEDIUM** — fragile code or a project-rule violation likely to cause bugs
-- **LOW** — minor
+One finding per problem, at the line where it's fixed. When one root cause shows
+up in several places (a dependency in `Package.swift` and its `import`), report
+it once and name the other places. Two problems on neighbouring lines are two
+findings, unless one replacement fixes both (e.g. deleting two adjacent
+modifiers).
 
 Each finding:
 
-- `path:line` — repo-relative path, and a line that exists in the new version of
-  the file (on a PR: a line inside the diff, so it can be commented on)
-- the problem in one sentence
-- a concrete failure scenario
-- the suggested fix
-- its source when it comes from a rulebook: `[rule: swift-swiftui.md]`,
-  `[swiftui-pro: views.md]`, `[CLAUDE.md]`
+- **severity and a short category**, e.g. `MEDIUM · Deprecated API`
+- **`path:line`**: a repo-relative path and a line in the new version of the
+  file. On a PR, it must be a line inside the diff, so it can be commented on.
+  Give a range (`path:12-14`) when the fix replaces several lines.
+- **what's wrong**, in one to three sentences, including the concrete scenario
+  that goes wrong
+- **the fix**. When it's a direct replacement of exactly those lines, give the
+  replacement code: complete, compilable on its own and indented as in the file
+  (empty to delete the lines). If the fix also needs changes elsewhere, describe
+  it instead.
+- **its source**, only when a rulebook says so. Give the readable name with the
+  file, e.g. "Project rule: Swift & SwiftUI style
+  (`.claude/rules/swift-swiftui.md`)". Leave it out for plain correctness bugs:
+  a failing test needs no rulebook.
 
-Finish with one line: **Ready for PR** or **Fix before PR**. If nothing survives
-verification, say so plainly instead of padding the list.
+Readable names for the sources:
+
+| File | Name |
+|---|---|
+| `CLAUDE.md` | CLAUDE.md: \<section\> (e.g. "CLAUDE.md: Architecture") |
+| `.claude/rules/swift-swiftui.md` | Project rule: Swift & SwiftUI style |
+| `.claude/rules/localization.md` | Project rule: Localization |
+| `.claude/rules/secrets.md` | Project rule: Secrets |
+| `swiftui-pro/references/api.md` | swiftui-pro: Modern API |
+| `swiftui-pro/references/views.md` | swiftui-pro: Views |
+| `swiftui-pro/references/data.md` | swiftui-pro: Data flow |
+| `swiftui-pro/references/navigation.md` | swiftui-pro: Navigation |
+| `swiftui-pro/references/design.md` | swiftui-pro: Design |
+| `swiftui-pro/references/accessibility.md` | swiftui-pro: Accessibility |
+| `swiftui-pro/references/performance.md` | swiftui-pro: Performance |
+| `swiftui-pro/references/swift.md` | swiftui-pro: Swift |
+| `swiftui-pro/references/hygiene.md` | swiftui-pro: Hygiene |
+
+Rank findings by severity. Finish with one line: **Ready for PR** or **Fix
+before PR**. If nothing survives verification, say so plainly instead of padding
+the list.

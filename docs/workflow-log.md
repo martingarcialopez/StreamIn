@@ -36,6 +36,75 @@ with housekeeping in the app. Martín wanted the history to tell them apart.
 
 ---
 
+## 2026-10-13 — The review becomes a merge gate (#56)
+
+**Why:** the first working review, on #53, was useful but read like a log. It
+posted 6 notifications, used `[rule: …]` tags, gave the same failing test
+MEDIUM in one run and HIGH in another, and its green tick meant nothing for
+merging. Martín asked for a gate: high blocks, medium is his call, low passes.
+
+**What changed**
+
+- **One review per run:** the summary is the review's body and every finding
+  is a line comment. It has a ```` ```suggestion ```` block when the fix
+  replaces exactly those lines, and a readable source footer
+  ("📏 Project rule: Swift & SwiftUI style", linked) only when a rulebook says
+  so.
+- **A written severity rubric in `ios-reviewer.md`.** HIGH now explicitly
+  includes "the PR can't pass CI" and "breaks the architecture boundary", so
+  merge-blocking doesn't depend on the model's mood.
+- **The verdict is computed, not judged.** Claude writes its findings as JSON,
+  and `review-verdict.sh` (14 tests, run in CI) maps them to the required
+  "ios-reviewer verdict" check:
+  - ❌ failure for critical or high
+  - ◻️ neutral for medium
+  - ✅ success for low or nothing
+
+  A review that doesn't finish is a failure, never a silent pass.
+- **Re-review on every push** (~$0.15 on Sonnet):
+  - Threads from earlier reviews are checked, and the fixed ones resolved.
+  - Still-open findings aren't posted again but still count for the verdict.
+  - Only threads the earlier reviews opened can be resolved.
+- **Override:** the `review-override` label turns a failure into neutral for the
+  current commit, and the next push removes it. Branch protection already
+  enforces rules for admins, so this is the only way past a red verdict, and it
+  leaves a trace.
+- **Writes moved out of the model's reach.** Claude can only write two local
+  files and post one review. Resolving threads, setting the verdict and
+  removing the label are deterministic workflow steps.
+
+**Tested before merging,** since a PR can't run a workflow it changes:
+- The verdict script's 14 cases ran locally.
+- Two local dry runs of the new prompt on #53's planted diff: 28–31 s and
+  $0.14–0.17 each.
+  - **First run:** consecutive lines ran together on GitHub, and a deletion
+    suggestion left an empty test that passes.
+  - **Second run:** those were fixed, but one suggestion only worked together
+    with another.
+
+  Both are now rules in the prompt. The real test is the throwaway PR after
+  merging.
+
+**Found on #57 itself, before merging:**
+- **Fail-closed works on GitHub:** the review step was skipped (the PR changes
+  the workflow), and the verdict published as ❌ "Review didn't finish".
+- **A real bug:** a missing review stored no findings, so the override label had
+  nothing to re-evaluate. With admins bound by branch protection, a PR that
+  changes the review workflow could never have merged. The label now also
+  overrides a missing review.
+- **Clearer message:** such PRs get "This PR changes the review workflow, which
+  can't review itself: add review-override to merge" instead of advice to retry.
+- **Less clutter:** the override job moved to `review-override.yml`, so normal
+  pushes no longer list a skipped job.
+- **Two lines, renamed:** the review job is now called "run review". GitHub
+  lists every job, so the engine ("run review") and its result ("ios-reviewer
+  verdict") both show, and the names now say which is which.
+- **Kept as is:** GitHub files the API-created verdict under the "CI" group
+  ("CI / ios-reviewer verdict"). Martín kept that over a commit status, because
+  only checks can show medium findings as neutral.
+
+---
+
 ## 2026-10-13 — Phase 4 (#36): designing on screen with Martín
 
 **Why:** #36 shipped its planned layout, but on the simulator it answered "can I
