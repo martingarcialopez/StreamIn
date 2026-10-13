@@ -47,7 +47,7 @@ no_verdict() {
     summary="GitHub only runs the review workflow when it matches the one on \`main\`, so a PR that changes it gets no review. Review it yourself, then add the \`review-override\` label to merge."
   else
     title="Review didn't finish: comment \"@claude review\" to retry"
-    summary="The review produced no valid findings file, so there is no verdict for this commit. Check the \`claude-review\` job's log, then comment \`@claude review\` on the PR."
+    summary="The review produced no valid findings file, so there is no verdict for this commit. Check the log of the \`run review\` job, then comment \`@claude review\` on the PR."
   fi
   jq -n --arg title "$title" --arg summary "$summary" \
     '{conclusion: "failure", title: $title, summary: $summary, text: ""}'

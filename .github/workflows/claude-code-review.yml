@@ -2,7 +2,7 @@ name: Claude Code Review
 
 # The project's own review on every PR, and the merge gate built on it.
 #
-# The `claude-review` job, on every push to a non-draft PR:
+# The `run review` job, on every push to a non-draft PR:
 #   1. marks the "ios-reviewer verdict" check as in progress
 #   2. collects the unresolved threads from earlier reviews
 #   3. Claude follows .claude/agents/ios-reviewer.md (CLAUDE.md, the rules, the
@@ -31,6 +31,9 @@ on:
 
 jobs:
   claude-review:
+    # Shown as "Claude Code Review / run review": the job that reviews. The
+    # verdict is the separate "ios-reviewer verdict" check this job sets.
+    name: run review
     # PRs: every push to a non-draft PR, claude[bot]'s included. Comments: only
     # Martín's "@claude review" on a PR, so a stray comment can't spend usage.
     if: |
