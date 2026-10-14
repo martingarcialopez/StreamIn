@@ -2,22 +2,44 @@
 //  WatchlistTab.swift
 //  StreamIn
 //
-//  Watchlist-tab NavigationStack. The Watchlist screen itself is a
-//  placeholder until Phase 3 (Persistence + Watchlist feature).
+//  Watchlist-tab NavigationStack: saved movies, and Details for the one
+//  tapped (`Movie` → `MovieDetailsDestination`, the same as Search).
 //
 
 import SwiftUI
+import Domain
+import Preferences
+import Watchlist
 import WatchlistFeature
 
 struct WatchlistTab: View {
+    let watchlist: WatchlistStore
+    let repository: MovieRepository
+    let imageURLBuilder: ImageURLBuilder
+    let prefs: Preferences
     @Binding var showingSettings: Bool
+    @Binding var showingStreamingServices: Bool
 
     var body: some View {
         NavigationStack {
-            WatchlistView()
-                .toolbar {
-                    SettingsToolbar(showingSettings: $showingSettings)
-                }
+            WatchlistView(
+                model: WatchlistViewModel(store: watchlist, imageURLBuilder: imageURLBuilder)
+            )
+            .navigationDestination(for: Movie.self) { movie in
+                MovieDetailsDestination(
+                    movie: movie,
+                    repository: repository,
+                    imageURLBuilder: imageURLBuilder,
+                    prefs: prefs,
+                    watchlist: watchlist,
+                    onEditSubscriptions: { showingStreamingServices = true }
+                )
+            }
+            // Settings is app-wide, so it sits on the tab's first screen only;
+            // pushed screens keep their toolbar for actions about their content.
+            .toolbar {
+                SettingsToolbar(showingSettings: $showingSettings)
+            }
         }
     }
 }

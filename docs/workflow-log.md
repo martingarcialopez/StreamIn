@@ -8,7 +8,38 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off | Review rounds |
 |---|---|---|---|---|---|---|
 | 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 | 1 (iPad support) |
+| 3 — Watchlist data layer (#30) | [#42](https://github.com/martingarcialopez/StreamIn/pull/42) | Yes (plan mode, then issues) | 3 medium + 2 low of 5 | Yes — CI green; each fix mutation-checked | 0 | 0 |
+| 3 — Heart on Details (#34) | [#43](https://github.com/martingarcialopez/StreamIn/pull/43) | Yes (issue) | 2 low of 2 | Yes — CI, 3 previews, Martín's simulator checks | 0 (the placeholder tab read as one) | 0 |
+| 3 — Watchlist tab (#35) | #35's PR | Yes (plan mode; Martín added the write-failure alert) | 1 medium + 1 low of 2 | Yes — full test plan, 3 previews (light, dark, XXX Large), launch in es; swipe flows left to Martín | — | — |
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
+
+---
+
+## 2026-10-14 — Phase 3 ships: the Watchlist (#35)
+
+**What shipped:** five PRs.
+- #42: the data layer
+- #39 and #40: `MoviePoster` and the directors formatter, by claude[bot]
+- #43: the heart
+- #35's PR: the tab, plus one app-wide alert for failed writes
+
+**Measured, as Phase 2's entry asked:**
+- **Reviewer vs Martín:** `ios-reviewer` found 4 medium + 5 low across #42, #43 and #35, all fixed before each PR. The #35 medium was a real race: swipe offsets read after a `Task` hop could delete the wrong row. Martín found no code bugs after hand-off.
+- **Manual steps avoided:** both new packages were registered by `new-package`, and 6 strings went through `localize`.
+- **Review rounds:** none on #42 and #43; both merged as opened.
+
+**What worked**
+- **Plan approval as a design review.** The #35 plan listed "surface `lastWriteError`" under *Not doing*. Martín rejected the plan to pull it in, and one `AskUserQuestion` with two previews settled the scope:
+  - the alert is app-wide, shown at `RootView`
+  - the store keeps the failure until it's dismissed
+  - failed refreshes stay silent
+
+**What broke**
+- **A fresh worktree's first app build fails.** The Run Script writes `GeneratedSecrets.swift` into a synchronized folder whose file list was planned before the file existed. The second build passes. Worth a fix in `/parallel` or the script.
+- **`localize` only knows package catalogs.** The alert's strings for the app catalog were added with a one-off script.
+- **Preview snapshots still catch the loading frame** after a rebuild. Two of six renders were blank, the same as in Phase 4.
+- **The simulator can't be driven.** Launching and screenshots work; taps and swipes don't. Heart → list, swipe, relaunch and Details-from-list are manual checks for Martín until the UI test (#8).
+- **The worktree guard refuses compound shell commands** (loops, `$VAR` paths, pipes into `gh`), so commands had to be split one per call.
 
 ---
 

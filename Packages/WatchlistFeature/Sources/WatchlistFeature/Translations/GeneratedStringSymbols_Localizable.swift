@@ -28,7 +28,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Description on the empty watchlist screen explaining how to add movies
+     Description on the empty Watchlist screen, explaining how to save movies with the heart button on a movie's page
      
      Localized string for key “watchlistEmptyDescription” in table “Localizable.xcstrings”.
      */
@@ -43,6 +43,33 @@ nonisolated extension LocalizedStringResource {
      */
     static var watchlistEmptyTitle: LocalizedStringResource {
         LocalizedStringResource("watchlistEmptyTitle", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Description under the title when the Watchlist couldn't be loaded; reassures that nothing was lost
+     
+     Localized string for key “watchlistLoadFailedDescription” in table “Localizable.xcstrings”.
+     */
+    static var watchlistLoadFailedDescription: LocalizedStringResource {
+        LocalizedStringResource("watchlistLoadFailedDescription", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Title on the Watchlist screen when the saved movies couldn't be read from the device
+     
+     Localized string for key “watchlistLoadFailedTitle” in table “Localizable.xcstrings”.
+     */
+    static var watchlistLoadFailedTitle: LocalizedStringResource {
+        LocalizedStringResource("watchlistLoadFailedTitle", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Button that tries loading the Watchlist again after it failed
+     
+     Localized string for key “watchlistRetry” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRetry: LocalizedStringResource {
+        LocalizedStringResource("watchlistRetry", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
