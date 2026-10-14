@@ -8,6 +8,13 @@ services you already pay for in other countries — the VPN use case.
 StreamIn is for people who watch on free and subscription services. It runs on
 iPhone and iPad (iOS 26), in English and Spanish.
 
+Details answers "can I watch this?" first, with one of three verdicts:
+
+| 🍿 Watch now | 🌍 On your services abroad | 📖 Go read a book |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for Spirited Away: Watch now, on Netflix in the UK"> | <img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Paddington: on your services abroad, Netflix with the countries that carry it"> | <img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"> |
+| One of your services, or a free one, has it in your country. | Not at home, but your services carry it in other countries. | Not on your services, here or abroad. |
+
 ## Status
 
 In development, with an App Store release as the goal. Work ships in roadmap
@@ -16,14 +23,13 @@ phases, one reviewed pull request each.
 **Works today**
 
 - Search, with each result's streaming services in your region filling in as they arrive.
-- Details: where to watch in your region, and on which of *your* services in other countries.
+- Details: one verdict on where you can watch it, in your region or on *your* services in other countries.
 - Onboarding and Settings to pick your services (home region or worldwide), region and language.
 - English and Spanish, switchable in the app.
 - Session caching, so going back and forth between screens doesn't refetch.
 
-**Next:** the Watchlist (SwiftData), a Details redesign that puts availability
-first, landing-page polish, and App Store readiness (icon, privacy manifest,
-attribution screens).
+**Next:** the Watchlist (SwiftData), landing-page polish, and App Store
+readiness (icon, privacy manifest, attribution screens).
 
 ## Quick start
 
