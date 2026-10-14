@@ -38,7 +38,9 @@ Fast feedback before pushing; CI (step 6) is the record.
   destination is this checkout's simulator (`scripts/worktree-simulator.sh`).
 
 - **Previews** of every view the branch changed, with the Xcode MCP's
-  `RenderPreview`. Look at each snapshot.
+  `RenderPreview`. Look at each snapshot. Step 5's `pr-screenshots` renders
+  them again on main for the before/after table, so a bug found here is fixed
+  before the PR shows it.
 
 If something can't run, say so — never imply it passed.
 
@@ -57,6 +59,10 @@ If something can't run, say so — never imply it passed.
 - Once pushed, `gh pr create --base main` with a body that follows
   `.github/pull_request_template.md`, including `Closes #<n>` for each issue.
   Leave the CI box for step 6 and manual checks for Martín unticked.
+- When the branch changed or added a screen, run the `pr-screenshots` skill on
+  the new PR: before/after previews, side by side, in its Screenshots section.
+  Tick "Previews of changed views rendered" with the count. When no view
+  changed, delete the Screenshots section from the body.
 
 ## 6. Wait for CI
 
@@ -67,7 +73,8 @@ watch them with the **Monitor** tool (deadline 30 minutes), e.g. `gh pr checks <
 to you meanwhile. In the desktop app, its PR status works too.
 
 - **Red:** read the failure (`gh run view <run-id> --log-failed`, or the job
-  summary), fix it, commit with the `commit` skill, and wait again.
+  summary), fix it, commit with the `commit` skill, and wait again. If the fix
+  changes a view, run `pr-screenshots` again: it replaces the section.
 - **Green:** tick the CI box and paste the run link into the PR body
   (`gh pr edit <n> --body-file …`).
 
