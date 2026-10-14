@@ -75,6 +75,19 @@ for case in "high.json false" "missing.json false" "missing.json false workflow-
   fi
 done
 
+# GitHub rejects a status whose description holds a 4-byte character (#69),
+# like the 🔴🟠🟡 severity dots in the title.
+for case in "high.json false" "high.json true" "critical.json false" "medium.json false" "low.json false" "none.json false" "missing.json true"; do
+  read -r file override <<<"$case"
+  out=$("$script" "$dir/$file" "$override")
+  if jq -e '(.description | explode | all(. < 65536)) and (.description | test("  ") | not)' <<<"$out" >/dev/null; then
+    echo "ok   description has no 4-byte characters: $case ($(jq -r .description <<<"$out"))"
+  else
+    echo "FAIL description holds a 4-byte character or a double space: $case ($(jq -r .description <<<"$out"))"
+    failures=$((failures + 1))
+  fi
+done
+
 if (( failures > 0 )); then
   echo "$failures failing"
   exit 1
