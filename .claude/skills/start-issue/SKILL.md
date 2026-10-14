@@ -7,12 +7,14 @@ argument-hint: <issue number>
 # Start an issue
 
 Work in StreamIn starts from a GitHub issue; the PR that finishes it closes it.
-`gh` lives at `/opt/homebrew/bin/gh` (not on the Bash tool's PATH).
+Call `gh` by its plain name, so the allow rules in `.claude/settings.json` match.
+Pass `--json` to `gh issue view` and `gh pr view`: without a terminal they can
+print nothing.
 
 ## 1. Read the issue
 
 ```bash
-gh issue view <n> --comments
+gh issue view <n> --json title,state,body,labels,milestone,comments
 ```
 
 Note the milestone (the roadmap phase), labels, acceptance criteria and how to

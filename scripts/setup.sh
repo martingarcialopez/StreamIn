@@ -1,6 +1,7 @@
 #!/bin/bash
 # One-time setup after cloning: creates the two gitignored secrets files the
-# build needs. Safe to run again; it never overwrites existing files.
+# build needs and enables the repository's git hooks. Safe to run again; it
+# never overwrites existing files.
 #
 # - Secrets.xcconfig: copied from the template. Put your TMDB key in it.
 # - StreamIn/Secrets/GeneratedSecrets.swift: a placeholder. The "Generate
@@ -25,4 +26,11 @@ enum GeneratedSecrets {
 }
 EOF
     echo "Created $generated (the build fills in the key)."
+fi
+
+# The repository's git hooks (.githooks/pre-commit: no commits on main).
+# Shared by every worktree of this clone.
+if [[ "$(git config --get core.hooksPath || true)" != ".githooks" ]]; then
+    git config core.hooksPath .githooks
+    echo "Enabled the repository's git hooks (.githooks)."
 fi

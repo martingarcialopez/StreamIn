@@ -9,10 +9,21 @@
       "Bash(git log *)",
       "Bash(git show *)",
       "Bash(git branch *)",
+      "Bash(git fetch)",
+      "Bash(git fetch origin)",
+      "Bash(git fetch origin main)",
+      "Bash(git worktree list)",
+      "Bash(git worktree list *)",
       "Bash(gh pr view *)",
       "Bash(gh pr diff *)",
       "Bash(gh pr checks *)",
       "Bash(gh pr list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
+      "Bash(gh run view *)",
+      "Bash(gh run list *)",
+      "Bash(scripts/xcodebuild-locked.sh *)",
+      "Bash(scripts/worktree-simulator.sh)",
       "Bash(plutil -lint *)",
       "Bash(xcrun xcstringstool *)",
       "Bash(xcrun simctl list *)",
@@ -27,13 +38,15 @@
   },
   "enabledMcpjsonServers": ["xcode"],
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash",
+        "matcher": "startup|resume",
         "hooks": [
-          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-main-branch.sh" }
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-main-checkout.sh", "timeout": 15 }
         ]
-      },
+      }
+    ],
+    "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
