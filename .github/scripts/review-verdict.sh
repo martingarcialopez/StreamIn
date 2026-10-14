@@ -40,9 +40,14 @@ verdict_file="${1:?usage: review-verdict.sh <verdict.json> <override: true|false
 override="${2:-false}"
 skip_reason="${3:-}"
 
-# A status's description holds at most 140 characters.
+# A status's description holds at most 140 characters, and GitHub rejects any
+# 4-byte character in it ("Description doesn't accept 4-byte Unicode", #69):
+# the 🔴🟠🟡 severity dots are dropped there. The title and summary keep them.
 describe() {
-  jq '.description = (if (.title | length) > 140 then .title[:139] + "…" else .title end)'
+  jq '.description = (.title
+        | explode | map(select(. < 65536)) | implode
+        | gsub("  +"; " ") | gsub("^ +| +$"; "")
+        | if length > 140 then .[:139] + "…" else . end)'
 }
 
 no_verdict() {
