@@ -8,12 +8,25 @@ services you already pay for in other countries — the VPN use case.
 StreamIn is for people who watch on free and subscription services. It runs on
 iPhone and iPad (iOS 26), in English and Spanish.
 
-Details answers "can I watch this?" first, with one of three verdicts:
+The app answers "can I watch this?" first, with one of three verdicts:
 
-| 🍿 Watch now | 🌍 On your services abroad | 📖 Go read a book |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for Spirited Away: Watch now, on Netflix in the UK"> | <img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Paddington: on your services abroad, Netflix with the countries that carry it"> | <img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"> |
-| One of your services, or a free one, has it in your country. | Not at home, but your services carry it in other countries. | Not on your services, here or abroad. |
+<table>
+  <tr>
+    <th width="33%">🍿 Watch now</th>
+    <th width="33%">🌍 On your services abroad</th>
+    <th width="33%">📖 Go read a book</th>
+  </tr>
+  <tr>
+    <td width="33%" align="center"><img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for Spirited Away: Watch now, on Netflix in the UK"></td>
+    <td width="33%" align="center"><img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Paddington: on your services abroad, Netflix with the countries that carry it"></td>
+    <td width="33%" align="center"><img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"></td>
+  </tr>
+  <tr>
+    <td align="center">One of your services, or a free one, has it in your country.</td>
+    <td align="center">Not at home, but your services carry it in other countries.</td>
+    <td align="center">Not on your services, here or abroad.</td>
+  </tr>
+</table>
 
 ## Status
 
