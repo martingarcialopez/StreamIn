@@ -18,6 +18,7 @@ import ReferenceData
 import SettingsFeature
 import DesignSystem
 import Watchlist
+import WatchlistFeature
 
 struct RootView: View {
     let imageURLBuilder: ImageURLBuilder
@@ -25,6 +26,7 @@ struct RootView: View {
     let repository: MovieRepository
     let providerCatalog: ProviderCatalog
     let watchlist: WatchlistStore
+    let watchlistModel: WatchlistViewModel
     let tmdbClient: LiveTMDBClient
 
     @State private var showingSettings = false
@@ -51,6 +53,7 @@ struct RootView: View {
             }
             Tab {
                 WatchlistTab(
+                    model: watchlistModel,
                     watchlist: watchlist,
                     repository: repository,
                     imageURLBuilder: imageURLBuilder,

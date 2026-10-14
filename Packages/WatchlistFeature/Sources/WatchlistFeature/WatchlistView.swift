@@ -14,10 +14,12 @@ import Watchlist
 
 public struct WatchlistView: View {
 
-    @State private var model: WatchlistViewModel
+    /// Passed in, not owned: the model keeps no state of its own (the shared
+    /// `WatchlistStore` does), and the app builds it once.
+    let model: WatchlistViewModel
 
     public init(model: WatchlistViewModel) {
-        _model = State(initialValue: model)
+        self.model = model
     }
 
     public var body: some View {

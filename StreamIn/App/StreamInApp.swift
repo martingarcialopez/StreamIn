@@ -6,7 +6,8 @@
 //
 //  Composition root. This file holds the `@main` App entry point and
 //  constructs the long-lived dependencies (TMDB client, repository, provider
-//  catalog, image URL builder, Preferences, watchlist). Concrete implementations are
+//  catalog, image URL builder, Preferences, watchlist, and the Watchlist tab's
+//  model, which lives as long as the tab does). Concrete implementations are
 //  wired up here exactly once and passed down as protocol-typed references.
 //
 //  All UI lives in `RootView` / the per-tab files — this file stays UI-free
@@ -21,6 +22,7 @@ import Preferences
 import ReferenceData
 import Persistence
 import Watchlist
+import WatchlistFeature
 
 private let logger = Logger(subsystem: "StreamIn", category: "watchlist")
 
@@ -33,6 +35,7 @@ struct StreamInApp: App {
     private let repository: MovieRepository
     private let providerCatalog: ProviderCatalog
     private let watchlist: WatchlistStore
+    private let watchlistModel: WatchlistViewModel
 
     init() {
         let client = LiveTMDBClient(
@@ -49,7 +52,9 @@ struct StreamInApp: App {
         self.tmdbClient = client
         self.repository = repository
         self.providerCatalog = ProviderCatalog(repository: repository)
-        self.watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
+        let watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
+        self.watchlist = watchlist
+        self.watchlistModel = WatchlistViewModel(store: watchlist, imageURLBuilder: imageURLBuilder)
     }
 
     /// The on-disk store, or a throwaway in-memory one when the launch
@@ -78,6 +83,7 @@ struct StreamInApp: App {
                 repository: repository,
                 providerCatalog: providerCatalog,
                 watchlist: watchlist,
+                watchlistModel: watchlistModel,
                 tmdbClient: tmdbClient
             )
             .environment(prefs)

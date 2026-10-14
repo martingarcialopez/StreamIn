@@ -13,6 +13,9 @@ import Watchlist
 import WatchlistFeature
 
 struct WatchlistTab: View {
+    /// Built once by `StreamInApp`, not here: this view is recreated every
+    /// time `RootView` redraws.
+    let model: WatchlistViewModel
     let watchlist: WatchlistStore
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
@@ -22,9 +25,7 @@ struct WatchlistTab: View {
 
     var body: some View {
         NavigationStack {
-            WatchlistView(
-                model: WatchlistViewModel(store: watchlist, imageURLBuilder: imageURLBuilder)
-            )
+            WatchlistView(model: model)
             .navigationDestination(for: Movie.self) { movie in
                 MovieDetailsDestination(
                     movie: movie,
