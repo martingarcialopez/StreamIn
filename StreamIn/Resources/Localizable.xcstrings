@@ -54,6 +54,78 @@
           }
         }
       }
+    },
+    "watchlistRemoveFailedMessage" : {
+      "comment" : "Alert message under “Couldn't remove” when removing a movie from the watchlist failed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's still in your watchlist. Try again in a moment."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue en tu watchlist. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
+    "watchlistRemoveFailedTitle" : {
+      "comment" : "Alert title when a movie couldn't be removed from the watchlist (the heart, or swipe to delete); the movie is back in the list. %@ is the movie title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't remove “%@”"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido quitar «%@»"
+          }
+        }
+      }
+    },
+    "watchlistSaveFailedMessage" : {
+      "comment" : "Alert message under “Couldn't save” when adding a movie to the watchlist failed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again in a moment."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
+    "watchlistSaveFailedTitle" : {
+      "comment" : "Alert title when a movie couldn't be added to the watchlist (the heart on a movie's page); the change was undone. %@ is the movie title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save “%@”"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido guardar «%@»"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

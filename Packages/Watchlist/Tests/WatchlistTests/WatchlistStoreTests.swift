@@ -153,7 +153,7 @@ import Domain
         await store.add(.movie(2))
 
         #expect(store.items.map(\.id.rawValue) == [1])
-        #expect(store.lastWriteError == .saveFailed)
+        #expect(store.writeFailure == WatchlistWriteFailure(change: .add, movie: .movie(2), error: .saveFailed))
     }
 
     @Test func failedRemovePutsTheMovieBackInItsPlace() async {
@@ -164,10 +164,22 @@ import Domain
         await store.remove(MovieID(2))
 
         #expect(store.items.map(\.id.rawValue) == [3, 2, 1])
-        #expect(store.lastWriteError == .saveFailed)
+        #expect(store.writeFailure == WatchlistWriteFailure(change: .remove, movie: .movie(2), error: .saveFailed))
     }
 
-    @Test func aSuccessfulWriteClearsTheLastError() async {
+    @Test func dismissingClearsTheFailure() async {
+        let repository = FakeWatchlistRepository()
+        await repository.set(saveError: .saveFailed)
+        let store = WatchlistStore(repository: repository)
+        await store.add(.movie(1))
+
+        store.dismissWriteFailure()
+
+        #expect(store.writeFailure == nil)
+    }
+
+    /// The alert stays up until it's dismissed, even if the retry works.
+    @Test func aSuccessfulWriteKeepsTheFailureForTheAlert() async {
         let repository = FakeWatchlistRepository()
         await repository.set(saveError: .saveFailed)
         let store = WatchlistStore(repository: repository)
@@ -176,8 +188,20 @@ import Domain
         await repository.set(saveError: nil)
         await store.add(.movie(1))
 
-        #expect(store.lastWriteError == nil)
+        #expect(store.writeFailure?.movie.id == MovieID(1))
         #expect(store.contains(MovieID(1)))
+    }
+
+    @Test func aNewerFailureReplacesTheOneOnScreen() async {
+        let repository = FakeWatchlistRepository(stored: [.item(1, at: 100)])
+        await repository.set(saveError: .saveFailed)
+        await repository.set(removeError: .saveFailed)
+        let store = WatchlistStore(repository: repository)
+
+        await store.add(.movie(2))
+        await store.remove(MovieID(1))
+
+        #expect(store.writeFailure == WatchlistWriteFailure(change: .remove, movie: .movie(1), error: .saveFailed))
     }
 
     /// The first save is slow; without the queue, the remove would reach the
@@ -213,7 +237,7 @@ import Domain
         await second.value
 
         #expect(store.items == [.item(1, at: 100)])
-        #expect(store.lastWriteError == .saveFailed)
+        #expect(store.writeFailure?.change == .add)
     }
 
     /// Add then remove, both failing: nothing was ever stored.
@@ -308,7 +332,8 @@ import Domain
         await store.refresh(.movie(1, title: "Detailed"))
 
         #expect(store.items == [.item(1, at: 100)])
-        #expect(store.lastWriteError == .saveFailed)
+        // A write the user didn't ask for isn't theirs to hear about.
+        #expect(store.writeFailure == nil)
     }
 }
 

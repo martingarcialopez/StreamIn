@@ -11,7 +11,7 @@ concurrency, and to be built with a state-of-the-art agentic workflow
 - Swift 6.2+, strict concurrency; iOS 26+, **iPhone and iPad**
 - SwiftUI + `@Observable` + `NavigationStack`
 - async/await throughout (no Combine in feature code)
-- SwiftData for local persistence (watchlist, Phase 3)
+- SwiftData for local persistence (the watchlist)
 - Swift Testing for unit tests, XCTest for UI tests
 
 ## Architecture
@@ -99,6 +99,7 @@ Settled — surface it explicitly before challenging one.
 - **SwiftData over Core Data, Swift Testing over XCTest, no Combine.** One SwiftData store (watchlist); search history was dropped from scope.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.
+- **Watchlist**: a `WatchlistItem` keeps the whole `Movie`, so Details opens complete from the list, even offline; Details' `refresh` keeps the snapshot current. One `WatchlistStore` is shared by Details' heart and the Watchlist tab: changes show at once, writes are queued in order, and a failed one is rolled back for that movie and reported as `writeFailure`, which `RootView` shows as one alert for any tab. Newest first, no sorting options. SwiftData stays in Persistence.
 - **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
 - **iPhone and iPad, nothing else**: `TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only, "Designed for iPhone/iPad" on Mac and Vision Pro disabled. iPad keeps all four orientations (required for multitasking) and uses the same adaptive layouts — App Store submission needs iPad screenshots too.
 

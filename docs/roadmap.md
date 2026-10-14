@@ -8,7 +8,7 @@ themselves live in GitHub: each phase is a milestone, each task an issue.
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
 This file doesn't repeat them.
 
-## Status (Oct 13, 2026)
+## Status (Oct 14, 2026)
 
 | Phase | What | State |
 |---|---|---|
@@ -20,7 +20,7 @@ This file doesn't repeat them.
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
 | — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | 🔄 #30–#32 and #34 merged; #35 next |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ✅ [#42](https://github.com/martingarcialopez/StreamIn/pull/42), [#39](https://github.com/martingarcialopez/StreamIn/pull/39), [#40](https://github.com/martingarcialopez/StreamIn/pull/40), [#43](https://github.com/martingarcialopez/StreamIn/pull/43), #35's PR |
 | 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 in review (redesigned Oct 13); #44 next |
 | 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned: #46–#49, one screen each |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
@@ -90,10 +90,10 @@ How to run two sessions: CLAUDE.md, "Parallel sessions".
 
 ---
 
-## Phase 3 — Watchlist
+## Phase 3 — Watchlist ✅
 
 **Goal:** save movies from Details with a heart, list them in the Watchlist tab,
-open Details from there. Today `WatchlistView` is a placeholder.
+open Details from there.
 
 **Architecture (decided Oct 12).** Features never see SwiftData:
 
@@ -118,6 +118,10 @@ open Details from there. Today `WatchlistView` is a placeholder.
 - **Composition root** builds the repository, falling back to in-memory if the store can't open.
   `STREAMIN_IN_MEMORY_WATCHLIST=1` forces a fresh store.
 - **Heart everywhere:** the Details toggle, the tab icon and the empty state.
+- **Failed writes are said once (decided Oct 14, in #35):** the store keeps the
+  latest failed add or remove as `writeFailure` until it's dismissed, and
+  `RootView` shows one alert for it, whichever tab the change came from. A failed
+  `refresh` isn't reported: the user didn't ask for it.
 
 **Issues**
 
