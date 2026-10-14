@@ -20,7 +20,8 @@ and the push.
    is clean, tell Martín "Nothing to commit — the working tree is clean." and stop.
 
 2. **Check the branch.** Run `git branch --show-current`. Committing to `main`
-   is never an option (a hook blocks it). If you're on `main`, pick a branch name
+   is never an option (the `.githooks/pre-commit` hook refuses it, and GitHub
+   rejects pushes to `main`). If you're on `main`, pick a branch name
    for the change — see **Branch names** — and include creating it in the prompt
    of step 5; don't ask separately.
 

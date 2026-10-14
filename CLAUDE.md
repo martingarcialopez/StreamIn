@@ -47,10 +47,10 @@ TMDBClient or SwiftData directly.**
 ## How we work
 
 - **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label. When writing an issue for claude[bot], make it fit in one run: it can't wait for CI, so several steps become one commit each in the same PR, never "after step 1 is green".
-- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…` for app housekeeping, `tooling/…` for the workflow and Claude setup) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. A hook blocks commits and pushes to `main`; branch protection requires CI and the review verdict.
+- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…` for app housekeeping, `tooling/…` for the workflow and Claude setup) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. Branch protection is the guard: no push reaches `main` without a PR, CI and the review verdict, admins included. `.githooks/pre-commit` (enabled by `scripts/setup.sh`) refuses commits on `main` early, in any checkout.
 - **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
-- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict (a commit status) gates the merge: any critical or high finding blocks it, medium passes in green with 🟠 in its text and is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict (a commit status) gates the merge: any critical or high finding blocks it, medium passes in green saying "merge at your discretion" and is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
 ### Parallel sessions: one worktree per change
@@ -66,6 +66,8 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
   - `/parallel <issue>` or `/parallel <task in plain words>` dispatches a session that's already in its worktree. A plain-words task is written up as an issue first.
   - `/parallel clean` removes the worktrees, branches and simulators of merged or closed PRs, after asking.
 - **Shared across worktrees:** memory and "don't ask again" approvals.
+- **Keep the control room current.** Hooks and settings load from the main checkout (`$CLAUDE_PROJECT_DIR` stays there after `EnterWorktree`), and so do skills unless the worktree's scoped copy is picked. A workflow fix applies only once it's merged *and* the main checkout is pulled. A `SessionStart` hook warns when it's off `main`, edited or behind `origin/main`. A hook that needs the session's own directory reads `cwd` from its input JSON.
+- **Shell style in a worktree session.** Claude Code refuses commands it can't prove stay inside the worktree, even ones that never run git: `$VAR` paths, loops, `$(…)`, heredocs into files, `cd … &&` chains. Run one plain command per call with literal paths, write files with the Write/Edit tools, and put anything longer in a script file run as `python3 -I <path>` or `bash <path>`.
 
 | Tool | What it's for |
 |---|---|
@@ -77,7 +79,7 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title (`tooling` 🔧 for the workflow, `chore` 🧹 for app housekeeping), at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` (its Swift and hygiene checks on every Swift change, its SwiftUI checks on view code): locally before every PR, and on GitHub for every PR |
 | `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |
-| Hooks (`.claude/settings.json`) | Block commits to `main`; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits |
+| Hooks (`.claude/settings.json`) | Warn at session start when the main checkout is stale; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits. Guards that GitHub or git already enforce don't get a Claude hook |
 | `xcode` MCP server (`.mcp.json`) | Xcode's `mcpbridge`: build, test, render previews, search Apple docs. Needs Xcode running with the project open |
 | Path rules (`.claude/rules/`) | Swift/SwiftUI guide, localization, secrets — loaded only for matching files |
 | GitHub CI (`ci.yml`) | macOS runner: builds the app and runs `StreamIn.xctestplan` (every package's tests) on each PR and push to `main`; per-package test results and line coverage in the job summary. Required to merge |

@@ -1,8 +1,14 @@
 # Gitignored files Claude Code copies into the worktrees it creates
-# (`claude -w`, /parallel). Only files that are also gitignored are copied.
+# (`claude -w`, /parallel, EnterWorktree). Only files that are also gitignored
+# are copied.
 
 # The TMDB key: the app doesn't build without it.
 Secrets.xcconfig
+
+# Generated from it by the build, but Xcode plans which files to compile before
+# the build writes it: without a copy, a fresh worktree's first build fails
+# with "cannot find 'GeneratedSecrets'" (.claude/rules/secrets.md).
+StreamIn/Secrets/GeneratedSecrets.swift
 
 # Martín's local permission approvals.
 .claude/settings.local.json

@@ -22,7 +22,7 @@ What every worktree session gets without this skill:
 - **Its own simulator:** `scripts/worktree-simulator.sh`.
 - **Queued builds:** `scripts/xcodebuild-locked.sh`.
 
-`gh` is at `/opt/homebrew/bin/gh`. Run this skill from the **main checkout**.
+Run this skill from the **main checkout**, and call `gh` by its plain name.
 
 The argument decides the mode:
 
