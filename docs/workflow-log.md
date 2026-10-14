@@ -12,6 +12,56 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — Fewer local guards: GitHub guards `main` (#66)
+
+**Why:** `guard-main-branch.sh` blocked every commit from `EnterWorktree`
+sessions. The sessions for #64 and #35 stopped at their commit, and Martín had
+to commit by hand. This was the hook's third false positive, after
+`push && gh pr edit --base main` (#6) and `switch -q -c` (#26). The cause:
+`$CLAUDE_PROJECT_DIR` stays at the main checkout after `EnterWorktree`, so the
+hook asked the main checkout (on `main`) for its branch. The session's
+directory is the `cwd` field of the hook input.
+
+**What the transcripts showed** (33 sessions):
+- **The hook added no safety.** Branch protection already rejects any push to
+  `main` without a PR, admins included. The hook only added false positives:
+  11 blocks.
+- **Claude Code's own worktree guard** refused 16 commands that it couldn't
+  prove stay in the worktree (`$VAR` paths, loops, heredocs, `$(…)`), most of
+  them not git at all. It's a Claude Code limit, not project config.
+- **Fresh worktrees failed their first build** twice: `.worktreeinclude` copied
+  the key but not `GeneratedSecrets.swift`.
+- **Every `gh` call raised a permission prompt.** The skills called
+  `/opt/homebrew/bin/gh` (from a memory that was out of date), which the
+  `Bash(gh pr view *)` allow rules never match.
+
+**What changed**
+- The Claude hook is gone. `.githooks/pre-commit` (enabled by `setup.sh`) checks
+  `git branch --show-current` where the commit actually runs: refused on `main`,
+  allowed on branches, tested in the main checkout and in worktrees.
+- `.worktreeinclude` copies `GeneratedSecrets.swift`.
+- The skills call plain `gh`. The allow list covers read-only `gh`
+  (issue/run view and list), `git fetch`, `git worktree list` and the
+  build/simulator scripts.
+- A `SessionStart` hook warns, and never blocks, when the main checkout is off
+  `main`, edited or behind `origin/main`. Hooks and settings load from there,
+  and skills do by default.
+  Today it's one commit behind, with a local `project.pbxproj` edit, so a
+  merged workflow fix wouldn't reach any session until it's pulled.
+- CLAUDE.md gets the shell style that gets past Claude Code's worktree guard.
+
+**Lesson:** when a server-side rule exists, don't mirror it with a local hook
+that pattern-matches shell text. A local check belongs where git runs (a git
+hook), and should warn rather than block unless it prevents real damage.
+
+**Still Martín's call** (not in this PR):
+- make the review verdict advisory
+- one review per PR instead of two
+- keep feature PRs out of the workflow log
+- plan mode only for issues with open questions
+
+---
+
 ## 2026-10-14 — The review verdict becomes a commit status
 
 **Why:** #59's review was clean and its verdict concluded ✅ on the head
