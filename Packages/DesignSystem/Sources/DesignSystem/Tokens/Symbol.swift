@@ -1,12 +1,11 @@
 public enum Symbol {
     public static let popcornFill = "popcorn.fill"
-    public static let bookmark = "bookmark"
-    public static let bookmarkFill = "bookmark.fill"
     public static let gear = "gear"
     public static let gearshape = "gearshape"
     public static let magnifyingglass = "magnifyingglass"
     public static let checkmark = "checkmark"
     public static let photo = "photo"
+    public static let exclamationmarkTriangle = "exclamationmark.triangle"
     public static let calendar = "calendar"
     public static let clock = "clock"
     public static let starFill = "star.fill"

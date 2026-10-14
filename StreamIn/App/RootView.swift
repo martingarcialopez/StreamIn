@@ -18,6 +18,7 @@ import ReferenceData
 import SettingsFeature
 import DesignSystem
 import Watchlist
+import WatchlistFeature
 
 struct RootView: View {
     let imageURLBuilder: ImageURLBuilder
@@ -25,6 +26,7 @@ struct RootView: View {
     let repository: MovieRepository
     let providerCatalog: ProviderCatalog
     let watchlist: WatchlistStore
+    let watchlistModel: WatchlistViewModel
     let tmdbClient: LiveTMDBClient
 
     @State private var showingSettings = false
@@ -50,16 +52,27 @@ struct RootView: View {
                 }
             }
             Tab {
-                WatchlistTab(showingSettings: $showingSettings)
+                WatchlistTab(
+                    model: watchlistModel,
+                    watchlist: watchlist,
+                    repository: repository,
+                    imageURLBuilder: imageURLBuilder,
+                    prefs: prefs,
+                    showingSettings: $showingSettings,
+                    showingStreamingServices: $showingStreamingServices
+                )
             } label: {
                 Label {
                     Text(.tabWatchlist)
                 } icon: {
-                    Image(systemName: Symbol.bookmark)
+                    Image(systemName: Symbol.heart)
                 }
             }
         }
         .tint(AppPalette.accent)
+        // A heart or a swipe whose write failed was undone; say so once,
+        // whichever tab it came from.
+        .watchlistWriteFailureAlert(watchlist)
         // The two sheets and `.fullScreenCover(showingOnboarding)` coexist
         // intentionally. They're coordinated by their bindings:
         //   - `showingOnboarding` is flipped exactly once per launch by the

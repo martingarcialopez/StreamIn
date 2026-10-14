@@ -29,9 +29,10 @@ public final class WatchlistStore {
     /// Newest first.
     public private(set) var items: [WatchlistItem] = []
     public private(set) var loadState: LoadState = .idle
-    /// The most recent write that failed and was rolled back. Cleared by the
-    /// next write that succeeds.
-    public private(set) var lastWriteError: WatchlistError?
+    /// The latest add or remove that failed and was rolled back, until the UI
+    /// calls `dismissWriteFailure()`. A newer failure replaces it; a later
+    /// successful write doesn't clear it, so an alert never vanishes mid-read.
+    public private(set) var writeFailure: WatchlistWriteFailure?
 
     private let repository: WatchlistRepository
     private let now: @Sendable () -> Date
@@ -94,16 +95,16 @@ public final class WatchlistStore {
         guard !contains(movie.id) else { return }
         let item = WatchlistItem(movie: movie, addedAt: now())
         show(item, for: item.id)
-        await persist(item, for: item.id) { [repository] () async throws(WatchlistError) in
+        await persist(item, for: item.id, reporting: (.add, movie)) { [repository] () async throws(WatchlistError) in
             try await repository.save(item)
         }
     }
 
     public func remove(_ id: MovieID) async {
         await load()
-        guard contains(id) else { return }
+        guard let current = items.first(where: { $0.id == id }) else { return }
         show(nil, for: id)
-        await persist(nil, for: id) { [repository] () async throws(WatchlistError) in
+        await persist(nil, for: id, reporting: (.remove, current.movie)) { [repository] () async throws(WatchlistError) in
             try await repository.remove(id)
         }
     }
@@ -126,14 +127,22 @@ public final class WatchlistStore {
               current.movie != movie else { return }
         let updated = WatchlistItem(movie: movie, addedAt: current.addedAt)
         show(updated, for: updated.id)
-        await persist(updated, for: updated.id) { [repository] () async throws(WatchlistError) in
+        // Not reported: the user didn't ask for this write, and on failure the
+        // earlier snapshot is still a good one.
+        await persist(updated, for: updated.id, reporting: nil) { [repository] () async throws(WatchlistError) in
             try await repository.save(updated)
         }
+    }
+
+    /// Called once the UI has shown `writeFailure`.
+    public func dismissWriteFailure() {
+        writeFailure = nil
     }
 
     // MARK: - Private
 
     /// Queues `write`, which makes the repository hold `state` for `id`.
+    /// A failure becomes `writeFailure` when `change` is given.
     ///
     /// On failure the screen goes back to what the repository is known to
     /// hold for `id` — unless a later write for the same movie is still
@@ -143,6 +152,7 @@ public final class WatchlistStore {
     private func persist(
         _ state: WatchlistItem?,
         for id: MovieID,
+        reporting change: (WatchlistWriteFailure.Change, Movie)?,
         _ write: @escaping @Sendable () async throws(WatchlistError) -> Void
     ) async {
         pendingWrites[id, default: 0] += 1
@@ -152,9 +162,10 @@ public final class WatchlistStore {
             do throws(WatchlistError) {
                 try await write()
                 confirmed[id] = state
-                lastWriteError = nil
             } catch {
-                lastWriteError = error
+                if case let (kind, movie)? = change {
+                    writeFailure = WatchlistWriteFailure(change: kind, movie: movie, error: error)
+                }
                 if pendingWrites[id] == 1 {
                     show(confirmed[id], for: id)
                 }

@@ -37,7 +37,7 @@ Requires Xcode 26 (built with 26.6) and an iOS 26.2 or later simulator.
 
 1. Clone the repo.
 2. Get a free TMDB API key at <https://developer.themoviedb.org/>.
-3. Create the local secrets files, then put your key in `Secrets.xcconfig` (both are gitignored):
+3. Create the local secrets files (both gitignored) and enable the repo's git hooks, then put your key in `Secrets.xcconfig`:
 
    ```bash
    scripts/setup.sh
@@ -194,8 +194,11 @@ of the project and lives in the repo:
   `new-package` (scaffold a package and register it in the Xcode project),
   `commit`, and `ship-phase` (review → local check → log → PR → CI). `localize`
   and `new-package` wrap tested scripts rather than prose instructions.
-- **Hooks** — block commits to `main`, protect generated and secret files,
-  regenerate string symbols after catalog edits, lint `project.pbxproj` after edits.
+- **Hooks** — protect generated and secret files, regenerate string symbols after
+  catalog edits, lint `project.pbxproj` after edits, and warn when the main
+  checkout that sessions load from is stale. Keeping `main` safe is left to
+  GitHub's branch protection, plus a small git `pre-commit` hook
+  ([`.githooks/`](.githooks)).
 - **A reviewer subagent** ([`ios-reviewer`](.claude/agents/ios-reviewer.md)) —
   read-only review against the project rules before every pull request.
 - **Xcode's MCP server** ([`.mcp.json`](.mcp.json)) — the agent builds, runs tests

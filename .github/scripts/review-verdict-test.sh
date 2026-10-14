@@ -9,15 +9,15 @@ dir="$(mktemp -d)"
 trap 'rm -r "$dir"' EXIT
 
 failures=0
-expect() { # name, file, override, conclusion, title fragment[, skip reason]
-  local out conclusion title
+expect() { # name, file, override, state, title fragment[, skip reason]
+  local out state title
   out=$("$script" "$dir/$2" "$3" "${6:-}")
-  conclusion=$(jq -r .conclusion <<<"$out")
+  state=$(jq -r .state <<<"$out")
   title=$(jq -r .title <<<"$out")
-  if [[ "$conclusion" == "$4" && "$title" == *"$5"* ]]; then
+  if [[ "$state" == "$4" && "$title" == *"$5"* ]]; then
     echo "ok   $1"
   else
-    echo "FAIL $1: got $conclusion / $title"
+    echo "FAIL $1: got $state / $title"
     failures=$((failures + 1))
   fi
 }
@@ -48,24 +48,45 @@ echo '{"new": [{"severity": "high", "title": "x"}]}' > "$dir/no-still-open.json"
 echo 'not json' > "$dir/garbage.json"
 
 expect "high blocks"                      high.json            false failure "fix before merging"
-expect "high with override is neutral"    high.json            true  neutral "overridden"
+expect "high with override passes"        high.json            true  success "overridden"
 expect "critical blocks"                  critical.json        false failure "1 critical"
 expect "a still-open high still blocks"   still-open-high.json false failure "fix before merging"
-expect "medium is neutral"                medium.json          false neutral "merge at your discretion"
-expect "override doesn't change medium"   medium.json          true  neutral "merge at your discretion"
+expect "medium passes, and says so"       medium.json          false success "merge at your discretion"
+expect "override doesn't change medium"   medium.json          true  success "merge at your discretion"
 expect "low only passes"                  low.json             false success "Ready to merge"
 expect "nothing passes"                   none.json            false success "no findings"
 expect "unknown severity fails"           bad-severity.json    false failure "didn't finish"
 expect "missing field fails"              no-still-open.json   false failure "didn't finish"
 expect "malformed JSON fails"             garbage.json         false failure "didn't finish"
 expect "missing file fails"               missing.json         false failure "didn't finish"
-expect "missing file is overridable"      missing.json         true  neutral "No finished review, overridden"
+expect "missing file is overridable"      missing.json         true  success "No finished review, overridden"
 expect "workflow change says so"          missing.json         false failure "can't review itself" workflow-change
-expect "workflow change is overridable"   missing.json         true  neutral "overridden"           workflow-change
+expect "workflow change is overridable"   missing.json         true  success "overridden"           workflow-change
 
-# The label path re-evaluates from the check's stored `text`.
-"$script" "$dir/high.json" false | jq -r .text > "$dir/stored.json"
-expect "stored verdict re-evaluates"      stored.json          true  neutral "overridden"
+# A status's description holds at most 140 characters, so long titles are cut.
+for case in "high.json false" "missing.json false" "missing.json false workflow-change" "none.json true"; do
+  read -r file override reason <<<"$case"
+  out=$("$script" "$dir/$file" "$override" "${reason:-}")
+  if jq -e '(.description | length) <= 140 and (.description | length) > 0' <<<"$out" >/dev/null; then
+    echo "ok   description fits: $case"
+  else
+    echo "FAIL description too long or empty: $case"
+    failures=$((failures + 1))
+  fi
+done
+
+# GitHub rejects a status whose description holds a 4-byte character (#69),
+# like the 🔴🟠🟡 severity dots in the title.
+for case in "high.json false" "high.json true" "critical.json false" "medium.json false" "low.json false" "none.json false" "missing.json true"; do
+  read -r file override <<<"$case"
+  out=$("$script" "$dir/$file" "$override")
+  if jq -e '(.description | explode | all(. < 65536)) and (.description | test("  ") | not)' <<<"$out" >/dev/null; then
+    echo "ok   description has no 4-byte characters: $case ($(jq -r .description <<<"$out"))"
+  else
+    echo "FAIL description holds a 4-byte character or a double space: $case ($(jq -r .description <<<"$out"))"
+    failures=$((failures + 1))
+  fi
+done
 
 if (( failures > 0 )); then
   echo "$failures failing"

@@ -20,19 +20,19 @@
       }
     },
     "watchlistEmptyDescription" : {
-      "comment" : "Description on the empty watchlist screen explaining how to add movies",
+      "comment" : "Description on the empty Watchlist screen, explaining how to save movies with the heart button on a movie's page",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save movies from search to find them here."
+            "value" : "Tap the heart on a movie to save it here."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Películas guardadas"
+            "value" : "Toca el corazón en una película para guardarla aquí."
           }
         }
       }
@@ -69,6 +69,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Watchlist"
+          }
+        }
+      }
+    },
+    "watchlistLoadFailedTitle" : {
+      "comment" : "Title on the Watchlist screen when the saved movies couldn't be read from the device",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load your watchlist"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido cargar tu watchlist"
+          }
+        }
+      }
+    },
+    "watchlistLoadFailedDescription" : {
+      "comment" : "Description under the title when the Watchlist couldn't be loaded; reassures that nothing was lost",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your saved movies are safe. Try again in a moment."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus películas guardadas siguen ahí. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
+    "watchlistRetry" : {
+      "comment" : "Button that tries loading the Watchlist again after it failed",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
           }
         }
       }
