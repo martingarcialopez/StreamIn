@@ -3,7 +3,8 @@ name: Review override
 # Adding or removing the `review-override` label re-evaluates the last
 # "ios-reviewer verdict" for the PR's current commit, without reviewing again:
 # with the label, critical or high findings (or a review that never finished)
-# become neutral, so the PR can merge. The next push removes the label
+# pass, so the PR can merge. The findings come from the verdict.json artifact
+# the review kept for this commit. The next push removes the label
 # (claude-code-review.yml).
 #
 # Its own workflow, so normal pushes don't list a skipped override job.
@@ -20,13 +21,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
+      statuses: write
+      actions: read
       pull-requests: read
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      CHECK_NAME: ios-reviewer verdict
+      STATUS_CONTEXT: ios-reviewer verdict
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,24 +38,32 @@ jobs:
 
       - name: Re-evaluate the verdict
         run: |
-          # The latest finished verdict for this commit: whether there is one,
-          # and the findings it stored (empty when the review never finished).
-          gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=$(jq -rn --arg n "$CHECK_NAME" '$n|@uri')" \
-            --jq '[.check_runs[] | select(.status == "completed")] | sort_by(.completed_at) | last
-                  | {found: (. != null), text: (if . == null then "" else (.output.text // "") end)}' \
-            > "$RUNNER_TEMP/last.json"
-          if [ "$(jq -r .found "$RUNNER_TEMP/last.json")" != "true" ]; then
-            echo "No finished review for this commit yet; the running review reads the label when it publishes."
+          # A review still running (or none yet) reads the label when it
+          # publishes, so there is nothing to re-evaluate.
+          STATE=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/status" \
+            --jq "[.statuses[] | select(.context == \"$STATUS_CONTEXT\")][0].state // \"none\"")
+          if [ "$STATE" = "none" ] || [ "$STATE" = "pending" ]; then
+            echo "No finished review for this commit yet ($STATE); the running review reads the label when it publishes."
             exit 0
           fi
-          jq -r .text "$RUNNER_TEMP/last.json" > "$RUNNER_TEMP/verdict.json"
+
+          # The findings the review kept for this commit. None means the review
+          # never finished, which the script turns into its "didn't finish" verdict.
+          : > "$RUNNER_TEMP/verdict.json"
+          ARTIFACT=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=ios-reviewer-verdict-$HEAD_SHA&per_page=100" \
+            --jq '[.artifacts[] | select(.expired | not)] | sort_by(.created_at) | last | .id // empty')
+          if [ -n "$ARTIFACT" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT/zip" > "$RUNNER_TEMP/verdict.zip"
+            unzip -p "$RUNNER_TEMP/verdict.zip" verdict.json > "$RUNNER_TEMP/verdict.json"
+          fi
 
           SKIP_REASON=""
           if gh pr diff "$PR_NUMBER" --name-only | grep -qx '.github/workflows/claude-code-review.yml'; then
             SKIP_REASON=workflow-change
           fi
           OVERRIDE=${{ github.event.action == 'labeled' }}
-          .github/scripts/review-verdict.sh "$RUNNER_TEMP/verdict.json" "$OVERRIDE" "$SKIP_REASON" \
-            | jq --arg name "$CHECK_NAME" --arg sha "$HEAD_SHA" \
-                '{name: $name, head_sha: $sha, status: "completed", conclusion, output: {title, summary, text}}' \
-            | gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.conclusion): \(.output.title)"'
+          .github/scripts/review-verdict.sh "$RUNNER_TEMP/verdict.json" "$OVERRIDE" "$SKIP_REASON" > "$RUNNER_TEMP/status.json"
+          jq -r .summary "$RUNNER_TEMP/status.json" >> "$GITHUB_STEP_SUMMARY"
+          jq --arg context "$STATUS_CONTEXT" --arg url "$RUN_URL" \
+              '{state, description, context: $context, target_url: $url}' "$RUNNER_TEMP/status.json" \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" --input - --jq '"\(.state): \(.description)"'

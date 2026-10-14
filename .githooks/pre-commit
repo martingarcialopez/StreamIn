@@ -1,0 +1,10 @@
+#!/bin/sh
+# Changes reach main through a PR. GitHub's branch protection is the real
+# guard (a push to main is rejected); this only catches the commit early, in
+# whichever checkout or worktree it's made. Enabled by scripts/setup.sh
+# (core.hooksPath). Bypass on purpose with `git commit --no-verify`.
+
+if [ "$(git branch --show-current)" = "main" ]; then
+    echo "No commits on main: changes reach it through a PR. Start a branch first: git switch -c <type>/<task>" >&2
+    exit 1
+fi

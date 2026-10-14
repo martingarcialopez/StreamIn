@@ -33,4 +33,5 @@ decides which files to compile before the Run Script runs. Without an existing
 `GeneratedSecrets.swift`, the first build fails with "cannot find
 'GeneratedSecrets'" (the second would pass). `scripts/setup.sh` creates
 `Secrets.xcconfig` from the template and a placeholder `GeneratedSecrets.swift`;
-README and CI both run it.
+README and CI both run it. **Worktrees** get both files from `.worktreeinclude`,
+which Claude Code copies into every worktree it creates.

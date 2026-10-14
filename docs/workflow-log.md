@@ -35,11 +35,96 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
   - failed refreshes stay silent
 
 **What broke**
-- **A fresh worktree's first app build fails.** The Run Script writes `GeneratedSecrets.swift` into a synchronized folder whose file list was planned before the file existed. The second build passes. Worth a fix in `/parallel` or the script.
+- **A fresh worktree's first app build fails.** The Run Script writes `GeneratedSecrets.swift` into a synchronized folder whose file list was planned before the file existed. The second build passes. Fixed in #66: `.worktreeinclude` copies the file.
 - **`localize` only knows package catalogs.** The alert's strings for the app catalog were added with a one-off script.
 - **Preview snapshots still catch the loading frame** after a rebuild. Two of six renders were blank, the same as in Phase 4.
 - **The simulator can't be driven.** Launching and screenshots work; taps and swipes don't. Heart → list, swipe, relaunch and Details-from-list are manual checks for Martín until the UI test (#8).
-- **The worktree guard refuses compound shell commands** (loops, `$VAR` paths, pipes into `gh`), so commands had to be split one per call.
+- **The worktree guard refuses compound shell commands** (loops, `$VAR` paths, pipes into `gh`), so commands had to be split one per call. CLAUDE.md now spells out the shell style that gets past it (#66).
+- **The commit was blocked** by `guard-main-branch.sh`, which read the main checkout's branch. #66 removed the hook, and this PR's commit went through once the main checkout was pulled.
+
+---
+
+## 2026-10-14 — Fewer local guards: GitHub guards `main` (#66)
+
+**Why:** `guard-main-branch.sh` blocked every commit from `EnterWorktree`
+sessions. The sessions for #64 and #35 stopped at their commit, and Martín had
+to commit by hand. This was the hook's third false positive, after
+`push && gh pr edit --base main` (#6) and `switch -q -c` (#26). The cause:
+`$CLAUDE_PROJECT_DIR` stays at the main checkout after `EnterWorktree`, so the
+hook asked the main checkout (on `main`) for its branch. The session's
+directory is the `cwd` field of the hook input.
+
+**What the transcripts showed** (33 sessions):
+- **The hook added no safety.** Branch protection already rejects any push to
+  `main` without a PR, admins included. The hook only added false positives:
+  11 blocks.
+- **Claude Code's own worktree guard** refused 16 commands that it couldn't
+  prove stay in the worktree (`$VAR` paths, loops, heredocs, `$(…)`), most of
+  them not git at all. It's a Claude Code limit, not project config.
+- **Fresh worktrees failed their first build** twice: `.worktreeinclude` copied
+  the key but not `GeneratedSecrets.swift`.
+- **Every `gh` call raised a permission prompt.** The skills called
+  `/opt/homebrew/bin/gh` (from a memory that was out of date), which the
+  `Bash(gh pr view *)` allow rules never match.
+
+**What changed**
+- The Claude hook is gone. `.githooks/pre-commit` (enabled by `setup.sh`) checks
+  `git branch --show-current` where the commit actually runs: refused on `main`,
+  allowed on branches, tested in the main checkout and in worktrees.
+- `.worktreeinclude` copies `GeneratedSecrets.swift`.
+- The skills call plain `gh`. The allow list covers read-only `gh`
+  (issue/run view and list), `git fetch`, `git worktree list` and the
+  build/simulator scripts.
+- A `SessionStart` hook warns, and never blocks, when the main checkout is off
+  `main`, edited or behind `origin/main`. Hooks and settings load from there,
+  and skills do by default.
+  Today it's one commit behind, with a local `project.pbxproj` edit, so a
+  merged workflow fix wouldn't reach any session until it's pulled.
+- CLAUDE.md gets the shell style that gets past Claude Code's worktree guard.
+
+**Lesson:** when a server-side rule exists, don't mirror it with a local hook
+that pattern-matches shell text. A local check belongs where git runs (a git
+hook), and should warn rather than block unless it prevents real damage.
+
+**Still Martín's call** (not in this PR):
+- make the review verdict advisory
+- one review per PR instead of two
+- keep feature PRs out of the workflow log
+- plan mode only for issues with open questions
+
+---
+
+## 2026-10-14 — The review verdict becomes a commit status
+
+**Why:** #59's review was clean and its verdict concluded ✅ on the head
+commit, but the merge box kept showing "ios-reviewer verdict — Expected" and
+the PR stayed blocked.
+
+**Root cause, from the API:**
+- The verdict was a check run created with `POST /check-runs`. GitHub, not the
+  workflow, picks the check suite it joins: the oldest github-actions suite on
+  the commit. That was CI's on #57 and the review's on #60.
+- #59 was opened as a draft and marked ready seconds later, so the review
+  workflow ran twice on one commit: a skipped run, then the real one.
+- GitHub keeps only the newest run per workflow and event on a commit. The
+  skipped run's suite, which held the verdict, was dropped from the PR and from
+  branch protection. GraphQL still listed it as required and successful.
+- Re-running the review or adding the override label landed in the same hidden
+  suite, so nothing on the PR could fix it.
+
+**Fix:** "ios-reviewer verdict" is now a commit status. Statuses don't belong to
+any suite, so no other run can hide them.
+- Medium findings pass in green and say "🟠 … merge at your discretion". A
+  status has no neutral; that's why the check was kept last time, and Martín
+  traded it for a gate that can't vanish.
+- The full summary is the review run's job summary, and the status links there.
+- `verdict.json` is kept as an artifact (30 days), so `review-override.yml` can
+  still re-evaluate without reviewing again.
+
+**Found while shipping it:** `guard-main-branch.sh` read the branch of
+`$CLAUDE_PROJECT_DIR`, the main checkout. With the main checkout now parked on
+`main`, it blocked every commit from a worktree session. It now reads the
+session's `cwd` from the hook input, and falls back to the project directory.
 
 ---
 
@@ -172,7 +257,8 @@ merging. Martín asked for a gate: high blocks, medium is his call, low passes.
   verdict") both show, and the names now say which is which.
 - **Kept as is:** GitHub files the API-created verdict under the "CI" group
   ("CI / ios-reviewer verdict"). Martín kept that over a commit status, because
-  only checks can show medium findings as neutral.
+  only checks can show medium findings as neutral. (Replaced by a status on 2026-10-14: see
+  that entry.)
 
 ---
 
