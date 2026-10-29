@@ -11,7 +11,7 @@ concurrency, and to be built with a state-of-the-art agentic workflow
 - Swift 6.2+, strict concurrency; iOS 26+, **iPhone and iPad**
 - SwiftUI + `@Observable` + `NavigationStack`
 - async/await throughout (no Combine in feature code)
-- SwiftData for local persistence (watchlist, Phase 3)
+- SwiftData for local persistence (the watchlist)
 - Swift Testing for unit tests, XCTest for UI tests
 
 ## Architecture
@@ -47,10 +47,10 @@ TMDBClient or SwiftData directly.**
 ## How we work
 
 - **Work starts from a GitHub issue.** Each roadmap phase is a milestone and its tasks are issues; [`docs/roadmap.md`](docs/roadmap.md) holds the direction, decisions and phase designs. Read it at the start of a session and update it when a phase ships. Start local work with `/start-issue <n>`; small, well-specified issues (`good-for-claude`) can go to claude[bot] with the `claude` label. When writing an issue for claude[bot], make it fit in one run: it can't wait for CI, so several steps become one commit each in the same PR, never "after step 1 is green".
-- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…`) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. Branch protection is the guard: no push reaches `main` without a PR, CI and the review verdict, admins included. `.githooks/pre-commit` (enabled by `scripts/setup.sh`) refuses commits on `main` early, in any checkout.
+- **One branch and one PR per issue or phase** (`feat/…`, `fix/…`, `chore/…` for app housekeeping, `tooling/…` for the workflow and Claude setup) into `main`, with `Closes #<n>` in the PR body. Martín reviews every PR on GitHub before merging. Branch protection is the guard: no push reaches `main` without a PR, CI and the review verdict, admins included. `.githooks/pre-commit` (enabled by `scripts/setup.sh`) refuses commits on `main` early, in any checkout.
 - **CI is the source of truth.** The `CI` workflow builds the app and runs every package's tests on a clean macOS runner for each PR. A PR is verified when CI is green, and the PR quotes the run. Local runs (Xcode MCP, previews, `xcodebuild`) are fast feedback while working; never quote them as verification.
 - **Check locally at the end of each task, not per edit**: build + tests of the packages touched, and render the previews of changed views. If something can't run, say so.
-- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict (a commit status) gates the merge: any critical or high finding blocks it, medium passes in green with 🟠 in its text and is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
+- **Before a PR**: the `ios-reviewer` subagent reviews the branch; `/ship-phase` runs review → local check → log → commit → PR → CI. On GitHub, `ios-reviewer` reviews every push to the PR, and its verdict (a commit status) gates the merge: any critical or high finding blocks it, medium passes in green saying "merge at your discretion" and is Martín's call, low or nothing passes. The `review-override` label lets a blocked PR merge, for that commit only.
 - **Log workflow changes** and what they improved in `docs/workflow-log.md`.
 
 ### Parallel sessions: one worktree per change
@@ -77,7 +77,7 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 | `parallel` skill | `/parallel <issue>` or `/parallel <task in plain words>` (written up as an issue first): start it in its own worktree session (own simulator, Xcode window, build lock), listed in `claude agents`; `/parallel clean` removes finished ones |
 | `ship-phase` skill | Finish a phase and open its PR (with `pr-screenshots` when a screen changed), then wait for CI (only when Martín asks) |
 | `pr-screenshots` skill | Before/after renders of the previews of every screen a branch changed or added, side by side at 180 px in the PR's Screenshots section. `scripts/publish-screenshots.sh` pushes the images to the orphan `pr-screenshots` branch (never merged, kept so merged PRs keep their pictures) and prints commit-pinned URLs |
-| `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title, at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
+| `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title (`tooling` 🔧 for the workflow, `chore` 🧹 for app housekeeping), at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` (its Swift and hygiene checks on every Swift change, its SwiftUI checks on view code): locally before every PR, and on GitHub for every PR |
 | `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |
 | Hooks (`.claude/settings.json`) | Warn at session start when the main checkout is stale; protect generated and secret files; regenerate string symbols after catalog edits; lint `project.pbxproj` after edits. Guards that GitHub or git already enforce don't get a Claude hook |
@@ -100,6 +100,7 @@ Settled — surface it explicitly before challenging one.
 - **SwiftData over Core Data, Swift Testing over XCTest, no Combine.** One SwiftData store (watchlist); search history was dropped from scope.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.
+- **Watchlist**: a `WatchlistItem` keeps the whole `Movie`, so Details opens complete from the list, even offline; Details' `refresh` keeps the snapshot current. One `WatchlistStore` is shared by Details' heart and the Watchlist tab: changes show at once, writes are queued in order, and a failed one is rolled back for that movie and reported as `writeFailure`, which `RootView` shows as one alert for any tab. Newest first, no sorting options. SwiftData stays in Persistence.
 - **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
 - **iPhone and iPad, nothing else**: `TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only, "Designed for iPhone/iPad" on Mac and Vision Pro disabled. iPad keeps all four orientations (required for multitasking) and uses the same adaptive layouts — App Store submission needs iPad screenshots too.
 

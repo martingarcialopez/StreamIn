@@ -8,6 +8,9 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | Phase | PR | Planned first | Reviewer findings fixed before PR | Verified before PR | Bugs found by Martín after hand-off | Review rounds |
 |---|---|---|---|---|---|---|
 | 2 — Caching, search fixes | [#1](https://github.com/martingarcialopez/StreamIn/pull/1) | Yes (plan mode) | — (no reviewer yet) | No — build and 65 tests verified a week later | 2 | 1 (iPad support) |
+| 3 — Watchlist data layer (#30) | [#42](https://github.com/martingarcialopez/StreamIn/pull/42) | Yes (plan mode, then issues) | 3 medium + 2 low of 5 | Yes — CI green; each fix mutation-checked | 0 | 0 |
+| 3 — Heart on Details (#34) | [#43](https://github.com/martingarcialopez/StreamIn/pull/43) | Yes (issue) | 2 low of 2 | Yes — CI, 3 previews, Martín's simulator checks | 0 (the placeholder tab read as one) | 0 |
+| 3 — Watchlist tab (#35) | #35's PR | Yes (plan mode; Martín added the write-failure alert) | 1 medium + 1 low of 2 | Yes — full test plan, 3 previews (light, dark, XXX Large), launch in es; swipe flows left to Martín | — | — |
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
 
 ---
@@ -45,6 +48,35 @@ Phase 2 bugs Martín found by hand were UI bugs.
 
 **Left for #8:** the UI test (search → details → providers) and the
 `ios-reviewer` check for preview fakes that `fatalError`.
+
+---
+
+## 2026-10-14 — Phase 3 ships: the Watchlist (#35)
+
+**What shipped:** five PRs.
+- #42: the data layer
+- #39 and #40: `MoviePoster` and the directors formatter, by claude[bot]
+- #43: the heart
+- #35's PR: the tab, plus one app-wide alert for failed writes
+
+**Measured, as Phase 2's entry asked:**
+- **Reviewer vs Martín:** `ios-reviewer` found 4 medium + 5 low across #42, #43 and #35, all fixed before each PR. The #35 medium was a real race: swipe offsets read after a `Task` hop could delete the wrong row. Martín found no code bugs after hand-off.
+- **Manual steps avoided:** both new packages were registered by `new-package`, and 6 strings went through `localize`.
+- **Review rounds:** none on #42 and #43; both merged as opened.
+
+**What worked**
+- **Plan approval as a design review.** The #35 plan listed "surface `lastWriteError`" under *Not doing*. Martín rejected the plan to pull it in, and one `AskUserQuestion` with two previews settled the scope:
+  - the alert is app-wide, shown at `RootView`
+  - the store keeps the failure until it's dismissed
+  - failed refreshes stay silent
+
+**What broke**
+- **A fresh worktree's first app build fails.** The Run Script writes `GeneratedSecrets.swift` into a synchronized folder whose file list was planned before the file existed. The second build passes. Fixed in #66: `.worktreeinclude` copies the file.
+- **`localize` only knows package catalogs.** The alert's strings for the app catalog were added with a one-off script.
+- **Preview snapshots still catch the loading frame** after a rebuild. Two of six renders were blank, the same as in Phase 4.
+- **The simulator can't be driven.** Launching and screenshots work; taps and swipes don't. Heart → list, swipe, relaunch and Details-from-list are manual checks for Martín until the UI test (#8).
+- **The worktree guard refuses compound shell commands** (loops, `$VAR` paths, pipes into `gh`), so commands had to be split one per call. CLAUDE.md now spells out the shell style that gets past it (#66).
+- **The commit was blocked** by `guard-main-branch.sh`, which read the main checkout's branch. #66 removed the hook, and this PR's commit went through once the main checkout was pulled.
 
 ---
 
@@ -186,6 +218,30 @@ dropped: setup became deterministic (the simulator is named after the worktree,
 and Xcode opens only when the session needs it, because every open copy of the
 project gets indexed). `claude rm` refusing to delete a worktree with
 uncommitted work turned out to be a useful safety net for cleanup.
+
+---
+
+## 2026-10-13 — Commit types: `tooling` for the workflow, `chore` for the app (#58)
+
+**Why:** every workflow PR went out as `🔧 chore(workflow)`, which mixed tooling
+with housekeeping in the app. Martín wanted the history to tell them apart.
+
+**What changed:**
+- `tooling` 🔧 for GitHub workflows, scripts and the Claude Code setup, with
+  scopes `ci` and `claude`.
+- `chore` 🧹 for app maintenance that changes no behavior (dependency bumps,
+  project settings, cleanup).
+- Branches follow: `tooling/…`, `chore/…`.
+
+**Choices:**
+- `tooling` is a custom type. Conventional Commits allows custom types, and
+  nothing here parses them. The standard `ci` and `build` wouldn't cover the
+  Claude setup.
+- 🔧 stays (gitmoji's "configuration") so the workflow history looks the same as
+  before.
+- 🧹 is the project's one addition to gitmoji, which has no maintenance emoji.
+- #57 was retitled before merging, so it's the first `tooling` commit on `main`.
+  Past commits weren't rewritten.
 
 ---
 
