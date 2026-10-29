@@ -20,13 +20,13 @@ One Swift Package per layer; boundaries are enforced at build time.
 
 | Package | Depends on | Holds |
 |---|---|---|
-| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError` |
+| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` (where to watch, shared by Details and Search) |
 | `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
 | `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
 | `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
 | `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
 | `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
-| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
+| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `ProviderLogoStrip`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
 | `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData, Watchlist) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
@@ -75,7 +75,8 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
 | `start-issue` skill | Start work on a GitHub issue: read it, plan, branch |
 | `parallel` skill | `/parallel <issue>` or `/parallel <task in plain words>` (written up as an issue first): start it in its own worktree session (own simulator, Xcode window, build lock), listed in `claude agents`; `/parallel clean` removes finished ones |
-| `ship-phase` skill | Finish a phase and open its PR, then wait for CI (only when Martín asks) |
+| `ship-phase` skill | Finish a phase and open its PR (with `pr-screenshots` when a screen changed), then wait for CI (only when Martín asks) |
+| `pr-screenshots` skill | Before/after renders of the previews of every screen a branch changed or added, side by side at 180 px in the PR's Screenshots section. `scripts/publish-screenshots.sh` pushes the images to the orphan `pr-screenshots` branch (never merged, kept so merged PRs keep their pictures) and prints commit-pinned URLs |
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title (`tooling` 🔧 for the workflow, `chore` 🧹 for app housekeeping), at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` (its Swift and hygiene checks on every Swift change, its SwiftUI checks on view code): locally before every PR, and on GitHub for every PR |
 | `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |

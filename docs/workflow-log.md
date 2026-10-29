@@ -23,6 +23,42 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-14 — Screenshots in the PR description (part of #8)
+
+**Why:** Martín asked for PRs that change a screen, or add one, to show it in
+the description. Reviewing a UI change meant checking the branch out, and the
+Phase 2 bugs Martín found by hand were UI bugs.
+
+**What changed**
+- **The `pr-screenshots` skill**, run by `ship-phase` after the PR opens:
+  - It picks the previews of the screens the branch changed or added.
+  - It renders them with `RenderPreview` on the branch, then on the merge base. Both use the same worktree and Xcode window, through `git switch --detach`.
+  - It writes a before/after table into the PR body between markers, so a re-run replaces it.
+- **Compact on purpose:**
+  - Before and after sit side by side, each image at 180 px.
+  - A new screen shows "new" in the before column.
+  - Past 3 screens, the rest fold into a `<details>` section.
+- **Hosting:** GitHub has no API to attach an image to a PR body, so
+  `scripts/publish-screenshots.sh` pushes the PNGs to an orphan
+  `pr-screenshots` branch, scaled to 800 px. It builds the commit with git plumbing on a temporary
+  index, so the checkout is never touched. It rebuilds on top when a parallel
+  session pushed first. The URLs are pinned to the commit.
+
+**What the build-out found**
+- **`RenderPreview` returns `previewSnapshotPath`:** a PNG on disk, 689×1500 for a
+  full screen. Without a file there would be nothing to publish.
+- A fresh worktree's first render failed with "cannot find `GeneratedSecrets`".
+  The second render passed. The skill says to retry.
+- Opening the project re-sorted `project.pbxproj` again (6 lines). The skill
+  restores it before switching commits.
+- macOS's bash 3.2 treats an empty array as unbound under `set -u`. That broke the
+  first publish, when the branch had no parent commit yet.
+
+**Left for #8:** the UI test (search → details → providers) and the
+`ios-reviewer` check for preview fakes that `fatalError`.
+
+---
+
 ## 2026-10-14 — Phase 3 ships: the Watchlist (#35)
 
 **What shipped:** five PRs.

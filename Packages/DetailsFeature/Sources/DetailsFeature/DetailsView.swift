@@ -408,40 +408,14 @@ private struct OtherServicesLegend: View {
         if let label, !providers.isEmpty {
             // As many logos as fit beside the title; the rest show as "+N".
             ViewThatFits(in: .horizontal) {
-                LogoStrip(providers: providers, maxLogos: 5, logoSize: logoSize, model: model)
-                LogoStrip(providers: providers, maxLogos: 3, logoSize: logoSize, model: model)
-                LogoStrip(providers: providers, maxLogos: 1, logoSize: logoSize, model: model)
+                ProviderLogoStrip(providers, maxLogos: 5, logoSize: logoSize, logoURL: model.providerLogoURL, name: \.name)
+                ProviderLogoStrip(providers, maxLogos: 3, logoSize: logoSize, logoURL: model.providerLogoURL, name: \.name)
+                ProviderLogoStrip(providers, maxLogos: 1, logoSize: logoSize, logoURL: model.providerLogoURL, name: \.name)
             }
             .padding(.horizontal, Spacing.tight)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(label))
             .accessibilityValue(providers.map(\.name).formatted(.list(type: .and)))
-        }
-    }
-}
-
-/// Up to `maxLogos` small logos, then "+N" for the rest.
-private struct LogoStrip: View {
-    let providers: [WatchProvider]
-    let maxLogos: Int
-    let logoSize: CGFloat
-    let model: DetailsViewModel
-
-    var body: some View {
-        HStack(spacing: Spacing.tight) {
-            ForEach(providers.prefix(maxLogos)) { provider in
-                ProviderLogo(
-                    url: model.providerLogoURL(for: provider),
-                    providerName: provider.name,
-                    size: logoSize,
-                    cornerRadius: Radius.small
-                )
-            }
-            if providers.count > maxLogos {
-                Text(verbatim: "+\(providers.count - maxLogos)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 }

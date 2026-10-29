@@ -8,7 +8,7 @@ themselves live in GitHub: each phase is a milestone, each task an issue.
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
 This file doesn't repeat them.
 
-## Status (Oct 14, 2026)
+## Status (Oct 29, 2026)
 
 | Phase | What | State |
 |---|---|---|
@@ -19,10 +19,12 @@ This file doesn't repeat them.
 | — | `commit` skill: gitmoji, co-author trailer, one-prompt commit + push | ✅ [#5](https://github.com/martingarcialopez/StreamIn/pull/5) |
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
-| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ✅ [#42](https://github.com/martingarcialopez/StreamIn/pull/42), [#39](https://github.com/martingarcialopez/StreamIn/pull/39), [#40](https://github.com/martingarcialopez/StreamIn/pull/40), [#43](https://github.com/martingarcialopez/StreamIn/pull/43), #35's PR |
-| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 in review (redesigned Oct 13); #44 next |
-| 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned: #46–#49, one screen each |
+| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 ✅ (`/parallel`, [#62](https://github.com/martingarcialopez/StreamIn/pull/62)); #8: screenshots in review ([#71](https://github.com/martingarcialopez/StreamIn/pull/71)), UI test left; #10 open |
+| — | PR review gate: `ios-reviewer` on every push, verdict as a commit status | ✅ [#52](https://github.com/martingarcialopez/StreamIn/pull/52), [#57](https://github.com/martingarcialopez/StreamIn/pull/57), [#64](https://github.com/martingarcialopez/StreamIn/pull/64), [#70](https://github.com/martingarcialopez/StreamIn/pull/70) |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ✅ [#42](https://github.com/martingarcialopez/StreamIn/pull/42), [#39](https://github.com/martingarcialopez/StreamIn/pull/39), [#40](https://github.com/martingarcialopez/StreamIn/pull/40), [#43](https://github.com/martingarcialopez/StreamIn/pull/43), [#68](https://github.com/martingarcialopez/StreamIn/pull/68) |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | ✅ [#41](https://github.com/martingarcialopez/StreamIn/pull/41), [#50](https://github.com/martingarcialopez/StreamIn/pull/50), [#55](https://github.com/martingarcialopez/StreamIn/pull/55) |
+| — | README as a portfolio front page, with the three verdicts | ✅ [#65](https://github.com/martingarcialopez/StreamIn/pull/65), [#74](https://github.com/martingarcialopez/StreamIn/pull/74) |
+| 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | next: #46–#49, one screen each, and #72 (rank services per search row) |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
 
 Cleanup outside the phases is tracked as [`tech-debt` issues](https://github.com/martingarcialopez/StreamIn/issues?q=is%3Aopen+label%3Atech-debt).
@@ -42,7 +44,9 @@ From the outside review of Oct 11. CI comes first because the others lean on it.
    Martín reviews last (#7).
 3. **A visual check before every PR** ([#8](https://github.com/martingarcialopez/StreamIn/issues/8)): render the previews of changed views with
    the Xcode MCP (`RenderPreview`), attach the screenshots to the PR, and add one
-   UI test for search → details → providers.
+   UI test for search → details → providers. Screenshots ✅: the `pr-screenshots`
+   skill puts before/after previews in the PR body (Oct 14). The UI test and the
+   preview-`fatalError` check remain.
 4. **Parallel agents in worktrees** ([#9](https://github.com/martingarcialopez/StreamIn/issues/9)): Phases 3 and 4 are mostly independent; run
    them in separate worktrees and sessions, each with its own PR.
 5. **Evals for the skills and `ios-reviewer`** ([#10](https://github.com/martingarcialopez/StreamIn/issues/10)): skill-creator's eval loop on
@@ -140,7 +144,7 @@ open Details from there.
 
 ---
 
-## Phase 4 — Details page redesign
+## Phase 4 — Details page redesign ✅
 
 **Goal:** the answer to "can I watch this?" comes first, clear at a glance, and nothing is said twice.
 
@@ -205,6 +209,27 @@ A pattern used by two screens moves to DesignSystem.
    - Reduce Motion, light and dark, small iPhones, no overlap with the logo or tab bar.
    - The credits footer (#44) lives here.
 2. #47 — Search results: the same language as Details, maybe a verdict hint per row.
+
+   **Decided (Oct 29, design Q&A):**
+   - **No verdict label per row.** A plain line of logos reads better in a list than an emoji and a
+     headline.
+   - **The logos are Details' answer, in Details' order:** your services at home, then free ones.
+     Without either, your services abroad, behind a small, still `SpinningGlobe` (only Details'
+     card spins it; one per row would be too busy). Up to 3 logos at
+     `LogoSize.small`, then "+N" (`ProviderLogoStrip`, promoted to DesignSystem from Details).
+   - **No logos:** a quiet caption, "Not on your services", or "Not streaming here" when no
+     subscription or free service carries it at home.
+   - **A failed row** says "Couldn't check availability"; pull to refresh retries it, and Details
+     still opens and loads on its own.
+   - **The system inset list stays,** on `AppPalette.background` pages with
+     `AppPalette.secondaryBackground` rows. Card rows (one rounded card per movie, bigger posters,
+     "2003 · ★ 7,1") were tried and dropped: the single list reads better. At accessibility text
+     sizes the poster moves above the title. VoiceOver reads each row as one element and names
+     every provider, even those behind "+N".
+   - **One derivation for both screens:** `WatchOptions` (Domain) reads an `AvailabilityBundle`
+     from the home region and your services. Rows fetch `availabilities(for:in:)`, the same TMDB
+     request and cache entry as before, so the abroad logos cost nothing and Details opens from the
+     cache.
 3. #48 — Watchlist tab, after #35: an inviting empty state, maybe "what can I watch tonight".
 4. #49 — Settings, the services picker and onboarding's reuse of it.
 
