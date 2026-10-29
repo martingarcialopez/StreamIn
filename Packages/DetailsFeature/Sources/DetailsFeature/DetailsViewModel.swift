@@ -109,6 +109,18 @@ public final class DetailsViewModel {
         return global.subscription.filter { subscribed.contains($0.provider.id) }
     }
 
+    /// The loaded availability read from the home region and the user's
+    /// services, the same reading the search results use. `nil` until it
+    /// loads; it ignores another region's regional providers by itself.
+    private var options: WatchOptions? {
+        guard let availability, let globalAvailability else { return nil }
+        return WatchOptions(
+            bundle: AvailabilityBundle(regional: availability, global: globalAvailability),
+            home: homeRegion,
+            subscribed: prefs.subscribedProviderIDs
+        )
+    }
+
     public var homeRegion: Region { prefs.region }
 
     /// "🇪🇸 Spain"
@@ -118,40 +130,30 @@ public final class DetailsViewModel {
 
     /// Free providers in the home region; empty until home availability loads.
     public var homeFreeProviders: [WatchProvider] {
-        homeAvailability?.free ?? []
+        options?.freeAtHome ?? []
     }
 
     /// Home-region subscription providers the user hasn't subscribed to and
     /// that aren't free, in TMDB's order; empty until home availability loads.
     public var homeSubscriptionsOthers: [WatchProvider] {
-        guard let home = homeAvailability else { return [] }
-        let excluded = Set((providersAvailableAtHome + homeFreeProviders).map(\.id))
-        return home.subscription.filter { !excluded.contains($0.id) }
+        options?.othersAtHome ?? []
     }
 
     /// The answer the "Where to watch" card leads with. Your services and
     /// free ones at home come first; only without them do your services
     /// abroad matter. Rent and buy aren't shown in v1.
     public var verdict: WhereToWatchVerdict {
-        guard homeAvailability != nil else {
+        guard homeAvailability != nil, let options else {
             return error.map(WhereToWatchVerdict.failed) ?? .loading
         }
-        if !watchNowProviders.isEmpty { return .watchNow }
+        if !options.watchNow.isEmpty { return .watchNow }
         guard hasAnySubscriptions else { return .chooseServices }
-        return hasProvidersElsewhere ? .abroad : .unavailable
-    }
-
-    /// Whether `providersAvailableElsewhere` has anything, without sorting
-    /// every region by its localized name: the view reads `verdict` often.
-    private var hasProvidersElsewhere: Bool {
-        let home = homeRegion
-        return subscribedAvailability.contains { entry in entry.regions.contains { $0 != home } }
+        return options.yoursAbroad.isEmpty ? .unavailable : .abroad
     }
 
     /// Your services that carry the film at home, then the free ones.
     public var watchNowProviders: [WatchProvider] {
-        var seen = Set<ProviderID>()
-        return (providersAvailableAtHome + homeFreeProviders).filter { seen.insert($0.id).inserted }
+        options?.watchNow ?? []
     }
 
     /// Free providers carry the verdict without any services picked; the
@@ -174,10 +176,7 @@ public final class DetailsViewModel {
     /// Subscribed providers that carry this film **in the user's home region**:
     /// the ones the user can watch on without a VPN.
     public var providersAvailableAtHome: [WatchProvider] {
-        let home = homeRegion
-        return subscribedAvailability
-            .filter { $0.regions.contains(home) }
-            .map(\.provider)
+        options?.yoursAtHome ?? []
     }
 
     /// Subscribed providers + the regions where they carry this film
@@ -185,11 +184,8 @@ public final class DetailsViewModel {
     /// popular VPN locations (`PopularRegions`). Providers whose only region
     /// IS home are excluded (they appear in `providersAvailableAtHome` instead).
     public var providersAvailableElsewhere: [ProviderRegionalAvailability] {
-        let home = homeRegion
-        return subscribedAvailability.compactMap { entry in
-            let others = PopularRegions.sorted(entry.regions.filter { $0 != home })
-            guard !others.isEmpty else { return nil }
-            return ProviderRegionalAvailability(provider: entry.provider, regions: others)
+        (options?.yoursAbroad ?? []).map { entry in
+            ProviderRegionalAvailability(provider: entry.provider, regions: PopularRegions.sorted(entry.regions))
         }
     }
 

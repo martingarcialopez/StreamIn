@@ -3,7 +3,8 @@ import SwiftUI
 /// A globe that really turns: the bundled world map wrapped around a sphere
 /// by `GlobeRenderer`. When it appears it's flicked eastward, slows down like
 /// a ball spinning on a table and comes to rest on Europe and Africa, like 🌍.
-/// Static under Reduce Motion.
+/// Static under Reduce Motion, or with `turns: 0` (e.g. in a list, where a
+/// globe per row would be too busy).
 public struct SpinningGlobe: View {
     public let diameter: CGFloat
     public let turns: Int
@@ -41,7 +42,7 @@ public struct SpinningGlobe: View {
         .frame(width: diameter, height: diameter)
         .accessibilityHidden(true)
         .task {
-            guard !reduceMotion else { return }
+            guard !reduceMotion, turns > 0 else { return }
             spinStart = .now
             try? await Task.sleep(for: .seconds(duration))
             spinStart = nil
