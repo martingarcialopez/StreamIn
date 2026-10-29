@@ -44,7 +44,9 @@ From the outside review of Oct 11. CI comes first because the others lean on it.
    Martín reviews last (#7).
 3. **A visual check before every PR** ([#8](https://github.com/martingarcialopez/StreamIn/issues/8)): render the previews of changed views with
    the Xcode MCP (`RenderPreview`), attach the screenshots to the PR, and add one
-   UI test for search → details → providers.
+   UI test for search → details → providers. Screenshots ✅: the `pr-screenshots`
+   skill puts before/after previews in the PR body (Oct 14). The UI test and the
+   preview-`fatalError` check remain.
 4. **Parallel agents in worktrees** ([#9](https://github.com/martingarcialopez/StreamIn/issues/9)): Phases 3 and 4 are mostly independent; run
    them in separate worktrees and sessions, each with its own PR.
 5. **Evals for the skills and `ios-reviewer`** ([#10](https://github.com/martingarcialopez/StreamIn/issues/10)): skill-creator's eval loop on
