@@ -55,24 +55,6 @@
         }
       }
     },
-    "searchNoStreamingInRegion" : {
-      "comment" : "Shown in a search result row when the movie has no streaming subscriptions in the user's region",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on streaming in your region"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No disponible en tu región"
-          }
-        }
-      }
-    },
     "searchPrompt" : {
       "comment" : "Placeholder text inside the search field",
       "extractionState" : "manual",
@@ -141,6 +123,114 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con datos de TMDB · Disponibilidad de JustWatch"
+          }
+        }
+      }
+    },
+    "searchRowNotOnYourServices" : {
+      "comment" : "Search result row, in place of provider logos: something streams the movie in the user's region, but none of the user's services",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not on your services"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No está en tus servicios"
+          }
+        }
+      }
+    },
+    "searchRowNotStreamingHere" : {
+      "comment" : "Search result row, in place of provider logos: no subscription or free service streams the movie in the user's region",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not streaming here"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede ver en streaming aquí"
+          }
+        }
+      }
+    },
+    "searchRowAvailabilityFailed" : {
+      "comment" : "Search result row, in place of provider logos: loading where to watch the movie failed (pull to refresh retries)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't check availability"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo comprobar la disponibilidad"
+          }
+        }
+      }
+    },
+    "searchRowCheckingAvailability" : {
+      "comment" : "VoiceOver, search result row: where to watch the movie is still loading",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking availability"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando disponibilidad"
+          }
+        }
+      }
+    },
+    "searchRowOnProviders" : {
+      "comment" : "VoiceOver, search result row: the user's services or free ones that stream the movie at home. %@ is a list of service names",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En %@"
+          }
+        }
+      }
+    },
+    "searchRowAbroadProviders" : {
+      "comment" : "VoiceOver, search result row: the user's services that stream the movie only in other regions. %@ is a list of service names",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On your services abroad: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con tus servicios en el extranjero: %@"
           }
         }
       }

@@ -32,7 +32,8 @@ struct SearchTab: View {
                 SearchResultsView(
                     model: SearchViewModel(
                         repository: repository,
-                        imageURLBuilder: imageURLBuilder
+                        imageURLBuilder: imageURLBuilder,
+                        prefs: prefs
                     ),
                     initialQuery: route.query
                 )

@@ -7,6 +7,7 @@
 
 import Foundation
 import Domain
+import Preferences
 
 @Observable
 @MainActor
@@ -14,12 +15,16 @@ public final class SearchViewModel {
 
     let repository: MovieRepository
     let imageURLBuilder: ImageURLBuilder
+    private let prefs: Preferences
 
     private(set) var results: [Movie] = []
-    /// Streaming availability per movie, populated as the parallel fan-out completes.
-    /// A missing key means "not yet fetched"; an empty `WatchAvailability` means
-    /// "fetched, but nothing available in this region."
-    private(set) var availability: [MovieID: WatchAvailability] = [:]
+    /// Streaming availability per movie (home region and every other one),
+    /// populated as the parallel fan-out completes. A missing key means "not
+    /// fetched yet" or, with the ID in `failedAvailability`, "failed".
+    private(set) var availability: [MovieID: AvailabilityBundle] = [:]
+    /// Rows whose availability request failed; the next `search` for the
+    /// same request retries them.
+    private(set) var failedAvailability: Set<MovieID> = []
     private(set) var error: MovieError?
     private(set) var isLoading = false
 
@@ -40,10 +45,12 @@ public final class SearchViewModel {
 
     public init(
         repository: MovieRepository,
-        imageURLBuilder: ImageURLBuilder
+        imageURLBuilder: ImageURLBuilder,
+        prefs: Preferences
     ) {
         self.repository = repository
         self.imageURLBuilder = imageURLBuilder
+        self.prefs = prefs
     }
 
     /// Searches `query` and fetches every result's streaming availability in
@@ -72,6 +79,7 @@ public final class SearchViewModel {
         error = nil
         results = []
         availability = [:]
+        failedAvailability = []
         loadedRequest = nil
         do {
             let page = try await repository.searchMovies(query: trimmed, page: 1)
@@ -89,9 +97,51 @@ public final class SearchViewModel {
             self.error = (error as? MovieError) ?? .unknown
             results = []
             availability = [:]
+            failedAvailability = []
             loadedRequest = nil
             isLoading = false
         }
+    }
+
+    /// What `movie`'s row shows, read live from the user's services so a
+    /// change in Settings updates the rows without refetching.
+    func rowProviders(for movie: Movie) -> SearchRowProviders {
+        guard let bundle = availability[movie.id] else {
+            return failedAvailability.contains(movie.id) ? .failed : .loading
+        }
+        let options = WatchOptions(
+            bundle: bundle,
+            home: bundle.regional.region,
+            subscribed: prefs.subscribedProviderIDs
+        )
+        if !options.watchNow.isEmpty { return .atHome(options.watchNow) }
+        if !options.yoursAbroad.isEmpty { return .abroad(options.yoursAbroad.map(\.provider)) }
+        return .none(options.streamsAtHome ? .notOnYourServices : .notStreamingHere)
+    }
+
+    /// "2010", or `nil` without a release date.
+    func releaseYear(for movie: Movie) -> String? {
+        movie.releaseDate?.formatted(.dateTime.year())
+    }
+
+    /// What VoiceOver reads for the whole row: "Inception, 2010, On Netflix
+    /// and Max". Every provider is named, including those behind "+N".
+    func accessibilityLabel(for movie: Movie) -> String {
+        let providers = switch rowProviders(for: movie) {
+        case .loading: String(localized: .searchRowCheckingAvailability)
+        case .failed: String(localized: .searchRowAvailabilityFailed)
+        case .atHome(let providers): String(localized: .searchRowOnProviders(Self.names(providers)))
+        case .abroad(let providers): String(localized: .searchRowAbroadProviders(Self.names(providers)))
+        case .none(.notOnYourServices): String(localized: .searchRowNotOnYourServices)
+        case .none(.notStreamingHere): String(localized: .searchRowNotStreamingHere)
+        }
+        return [movie.title, releaseYear(for: movie), providers]
+            .compactMap(\.self)
+            .joined(separator: ", ")
+    }
+
+    private static func names(_ providers: [WatchProvider]) -> String {
+        providers.map(\.name).formatted(.list(type: .and))
     }
 
     public func posterURL(for movie: Movie) -> URL? {
@@ -105,6 +155,7 @@ public final class SearchViewModel {
     private func reset() {
         results = []
         availability = [:]
+        failedAvailability = []
         error = nil
         isLoading = false
         loadedRequest = nil
@@ -115,14 +166,21 @@ public final class SearchViewModel {
     /// Each child task runs nonisolated (it's `@Sendable`), so the network calls
     /// proceed concurrently on the cooperative thread pool. Results are funneled
     /// back to the main actor through the `for await` loop, which serializes the
-    /// dictionary writes safely. A failed row keeps its "loading" placeholder and
-    /// is retried by the next `search` call for the same request.
+    /// dictionary writes safely. A failed row is marked in `failedAvailability`
+    /// and retried by the next `search` call for the same request; one the
+    /// fan-out never finished (cancelled) stays loading.
+    ///
+    /// `availabilities` is the same TMDB request and cache entry as the
+    /// home-only `availability`, so the rows' abroad logos cost nothing extra
+    /// and Details opens from the cache.
     private func fetchAvailability(for movies: [Movie], request: Request) async {
         let region = request.region
-        await withTaskGroup(of: (MovieID, WatchAvailability?).self) { group in
+        // Retried rows show loading again until their answer lands.
+        failedAvailability.subtract(movies.map(\.id))
+        await withTaskGroup(of: (MovieID, AvailabilityBundle?).self) { group in
             for movie in movies {
                 group.addTask { [repository] in
-                    (movie.id, try? await repository.availability(for: movie.id, in: region))
+                    (movie.id, try? await repository.availabilities(for: movie.id, in: region))
                 }
             }
             for await (id, value) in group {
@@ -131,6 +189,8 @@ public final class SearchViewModel {
                 guard loadedRequest == request else { break }
                 if let value {
                     availability[id] = value
+                } else if !Task.isCancelled {
+                    failedAvailability.insert(id)
                 }
             }
         }

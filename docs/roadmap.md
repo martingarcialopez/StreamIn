@@ -205,6 +205,27 @@ A pattern used by two screens moves to DesignSystem.
    - Reduce Motion, light and dark, small iPhones, no overlap with the logo or tab bar.
    - The credits footer (#44) lives here.
 2. #47 — Search results: the same language as Details, maybe a verdict hint per row.
+
+   **Decided (Oct 29, design Q&A):**
+   - **No verdict label per row.** A plain line of logos reads better in a list than an emoji and a
+     headline.
+   - **The logos are Details' answer, in Details' order:** your services at home, then free ones.
+     Without either, your services abroad, behind a small, still `SpinningGlobe` (only Details'
+     card spins it; one per row would be too busy). Up to 3 logos at
+     `LogoSize.small`, then "+N" (`ProviderLogoStrip`, promoted to DesignSystem from Details).
+   - **No logos:** a quiet caption, "Not on your services", or "Not streaming here" when no
+     subscription or free service carries it at home.
+   - **A failed row** says "Couldn't check availability"; pull to refresh retries it, and Details
+     still opens and loads on its own.
+   - **The system inset list stays,** on `AppPalette.background` pages with
+     `AppPalette.secondaryBackground` rows. Card rows (one rounded card per movie, bigger posters,
+     "2003 · ★ 7,1") were tried and dropped: the single list reads better. At accessibility text
+     sizes the poster moves above the title. VoiceOver reads each row as one element and names
+     every provider, even those behind "+N".
+   - **One derivation for both screens:** `WatchOptions` (Domain) reads an `AvailabilityBundle`
+     from the home region and your services. Rows fetch `availabilities(for:in:)`, the same TMDB
+     request and cache entry as before, so the abroad logos cost nothing and Details opens from the
+     cache.
 3. #48 — Watchlist tab, after #35: an inviting empty state, maybe "what can I watch tonight".
 4. #49 — Settings, the services picker and onboarding's reuse of it.
 
