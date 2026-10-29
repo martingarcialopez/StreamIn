@@ -35,11 +35,19 @@ def new_id(text: str, taken: set[str]) -> str:
             return candidate
 
 
-def insert_before_section_end(text: str, section: str, entry: str) -> str:
-    marker = f"/* End {section} section */"
-    if marker not in text:
+def insert_in_section(text: str, section: str, entry_id: str, entry: str) -> str:
+    """Insert `entry` into the section in ID order, as Xcode keeps it (otherwise Xcode re-sorts on its next save)."""
+    begin, end = f"/* Begin {section} section */\n", f"/* End {section} section */"
+    if begin not in text or end not in text:
         sys.exit(f"Section {section} not found in project.pbxproj")
-    return text.replace(marker, f"{entry}\n{marker}", 1)
+    section_start = text.index(begin) + len(begin)
+    section_end = text.index(end, section_start)
+    insert_at = section_end
+    for match in re.finditer(r"^\t\t(\w{24}) ", text[section_start:section_end], re.MULTILINE):
+        if match.group(1) > entry_id:
+            insert_at = section_start + match.start()
+            break
+    return text[:insert_at] + f"{entry}\n" + text[insert_at:]
 
 
 def object_block(text: str, object_id: str) -> tuple[int, int]:
@@ -103,13 +111,13 @@ def main() -> None:
     main_group = re.search(r"mainGroup = (\w{24});", text).group(1)
     app_target = find_app_target(text)
 
-    text = insert_before_section_end(
-        text, "PBXFileReference",
+    text = insert_in_section(
+        text, "PBXFileReference", file_ref,
         f'{ENTRY_INDENT}{file_ref} /* {name} */ = {{isa = PBXFileReference; lastKnownFileType = wrapper; '
         f'name = {name}; path = {relative_path}; sourceTree = "<group>"; }};')
     text = append_to_list(text, main_group, "children", f"{file_ref} /* {name} */")
-    text = insert_before_section_end(
-        text, "XCLocalSwiftPackageReference",
+    text = insert_in_section(
+        text, "XCLocalSwiftPackageReference", package_ref,
         f"{ENTRY_INDENT}{package_ref} /* {package_comment} */ = {{\n"
         f"{ENTRY_INDENT}\tisa = XCLocalSwiftPackageReference;\n"
         f"{ENTRY_INDENT}\trelativePath = {relative_path};\n"
@@ -118,15 +126,15 @@ def main() -> None:
 
     if not args.no_link:
         frameworks = frameworks_phase(text, app_target)
-        text = insert_before_section_end(
-            text, "XCSwiftPackageProductDependency",
+        text = insert_in_section(
+            text, "XCSwiftPackageProductDependency", product,
             f"{ENTRY_INDENT}{product} /* {name} */ = {{\n"
             f"{ENTRY_INDENT}\tisa = XCSwiftPackageProductDependency;\n"
             f"{ENTRY_INDENT}\tproductName = {name};\n"
             f"{ENTRY_INDENT}}};")
         text = append_to_list(text, app_target, "packageProductDependencies", f"{product} /* {name} */")
-        text = insert_before_section_end(
-            text, "PBXBuildFile",
+        text = insert_in_section(
+            text, "PBXBuildFile", build_file,
             f"{ENTRY_INDENT}{build_file} /* {name} in Frameworks */ = {{isa = PBXBuildFile; "
             f"productRef = {product} /* {name} */; }};")
         text = append_to_list(text, frameworks, "files", f"{build_file} /* {name} in Frameworks */")

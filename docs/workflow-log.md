@@ -15,6 +15,14 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-29 — `new-package` writes the project file the way Xcode does
+
+**What broke:** `add_local_package.py` appended its objects at the end of each section, but Xcode keeps sections sorted by ID. The next time Xcode saved the project, it moved the Persistence and Watchlist entries, which left an unexplained change to `project.pbxproj` in the main checkout.
+
+**Fix:** the script now inserts each object in ID order. A dry run on a copy of the project added two packages, and every section stayed sorted.
+
+---
+
 ## 2026-10-14 — Phase 3 ships: the Watchlist (#35)
 
 **What shipped:** five PRs.
