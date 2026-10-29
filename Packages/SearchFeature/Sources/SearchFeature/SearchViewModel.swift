@@ -114,9 +114,7 @@ public final class SearchViewModel {
             home: bundle.regional.region,
             subscribed: prefs.subscribedProviderIDs
         )
-        if !options.watchNow.isEmpty { return .atHome(options.watchNow) }
-        if !options.yoursAbroad.isEmpty { return .abroad(options.yoursAbroad.map(\.provider)) }
-        return .none(options.streamsAtHome ? .notOnYourServices : .notStreamingHere)
+        return .loaded(options.summary)
     }
 
     /// "2010", or `nil` without a release date.
@@ -130,10 +128,10 @@ public final class SearchViewModel {
         let providers = switch rowProviders(for: movie) {
         case .loading: String(localized: .searchRowCheckingAvailability)
         case .failed: String(localized: .searchRowAvailabilityFailed)
-        case .atHome(let providers): String(localized: .searchRowOnProviders(Self.names(providers)))
-        case .abroad(let providers): String(localized: .searchRowAbroadProviders(Self.names(providers)))
-        case .none(.notOnYourServices): String(localized: .searchRowNotOnYourServices)
-        case .none(.notStreamingHere): String(localized: .searchRowNotStreamingHere)
+        case .loaded(.atHome(let providers)): String(localized: .searchRowOnProviders(Self.names(providers)))
+        case .loaded(.abroad(let providers)): String(localized: .searchRowAbroadProviders(Self.names(providers)))
+        case .loaded(.notOnYourServices): String(localized: .searchRowNotOnYourServices)
+        case .loaded(.notStreamingHere): String(localized: .searchRowNotStreamingHere)
         }
         return [movie.title, releaseYear(for: movie), providers]
             .compactMap(\.self)

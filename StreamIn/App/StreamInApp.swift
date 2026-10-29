@@ -54,7 +54,12 @@ struct StreamInApp: App {
         self.providerCatalog = ProviderCatalog(repository: repository)
         let watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
         self.watchlist = watchlist
-        self.watchlistModel = WatchlistViewModel(store: watchlist, imageURLBuilder: imageURLBuilder)
+        self.watchlistModel = WatchlistViewModel(
+            store: watchlist,
+            repository: repository,
+            imageURLBuilder: imageURLBuilder,
+            prefs: prefs
+        )
     }
 
     /// The on-disk store, or a throwaway in-memory one when the launch

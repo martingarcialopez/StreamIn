@@ -231,6 +231,23 @@ A pattern used by two screens moves to DesignSystem.
      request and cache entry as before, so the abroad logos cost nothing and Details opens from the
      cache.
 3. #48 — Watchlist tab, after #35: an inviting empty state, maybe "what can I watch tonight".
+
+   **Decided (Oct 29, design Q&A):**
+   - **Each saved movie says where you can watch it now**, with Search's provider line, so the tab
+     answers "what can I watch tonight". `WatchOptions.summary` (Domain, `WatchSummary`) is the one
+     reading both lists share, and `ProviderLine` moved from Search to DesignSystem. The rows fetch
+     `availabilities(for:in:)`: the same request and cache entry as Search and Details. A movie saved
+     later gets its line, a region change refetches every row, and pull to refresh asks again for
+     all of them (the view model lives as long as the app; the 30-minute cache makes a quick
+     refresh free). The saved snapshot still opens Details offline.
+   - **Newest first** stays: no grouping by verdict (rows would jump between sections as
+     availability lands) and no sort menu.
+   - **The look matches Search:** an inset list on `AppPalette.background` with `secondaryBackground`
+     rows, the poster above the title at accessibility sizes, and one VoiceOver element per row that
+     names every provider. Swipe to delete stays.
+   - **The empty state:** a large heart in the accent color, a semibold "Nothing saved yet", and a
+     hint to tap the heart on a movie's page. No button. It scrolls at accessibility sizes, and the
+     load-failed state uses the same layout with Retry.
 4. #49 — Settings, the services picker and onboarding's reuse of it.
 
 ---

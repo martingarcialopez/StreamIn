@@ -158,7 +158,7 @@ struct SearchViewModelTests {
 
         await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
 
-        #expect(model.rowProviders(for: .fixture(1)) == .none(.notStreamingHere))
+        #expect(model.rowProviders(for: .fixture(1)) == .loaded(.notStreamingHere))
         #expect(model.rowProviders(for: .fixture(2)) == .failed)
     }
 
@@ -172,7 +172,7 @@ struct SearchViewModelTests {
         await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
 
         #expect(model.failedAvailability.isEmpty)
-        #expect(model.rowProviders(for: .fixture(1)) == .none(.notStreamingHere))
+        #expect(model.rowProviders(for: .fixture(1)) == .loaded(.notStreamingHere))
     }
 
     /// The new search fetches no rows (it fails), so only the reset in
@@ -228,13 +228,13 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
 
-        #expect(row == .atHome([.netflix, .rtvePlay]))
+        #expect(row == .loaded(.atHome([.netflix, .rtvePlay])))
     }
 
     @Test func freeAtHomeWithoutServices() async {
         let row = await rowProviders(.fixture(movie.id, free: [.rtvePlay]), subscribedTo: [])
 
-        #expect(row == .atHome([.rtvePlay]))
+        #expect(row == .loaded(.atHome([.rtvePlay])))
     }
 
     /// Like Details: your services abroad count only without anything of
@@ -248,7 +248,7 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
 
-        #expect(row == .atHome([.rtvePlay]))
+        #expect(row == .loaded(.atHome([.rtvePlay])))
     }
 
     @Test func yoursAbroadInTMDBOrder() async {
@@ -264,7 +264,7 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix, .primeVideo])
 
-        #expect(row == .abroad([.primeVideo, .netflix]))
+        #expect(row == .loaded(.abroad([.primeVideo, .netflix])))
     }
 
     @Test func notOnYourServicesWhenOthersStreamItHere() async {
@@ -276,7 +276,7 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
 
-        #expect(row == .none(.notOnYourServices))
+        #expect(row == .loaded(.notOnYourServices))
     }
 
     @Test func notStreamingHereWhenNothingCarriesIt() async {
@@ -287,7 +287,7 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
 
-        #expect(row == .none(.notStreamingHere))
+        #expect(row == .loaded(.notStreamingHere))
     }
 
     /// Subscriptions are read live: a change in Settings updates the rows
@@ -304,11 +304,11 @@ struct SearchRowProvidersTests {
         let prefs = makePrefs(subscribedTo: [.netflix])
         let model = SearchViewModel(repository: repo, imageURLBuilder: NullImageURLBuilder(), prefs: prefs)
         await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
-        #expect(model.rowProviders(for: movie) == .none(.notOnYourServices))
+        #expect(model.rowProviders(for: movie) == .loaded(.notOnYourServices))
 
         prefs.subscribedProviderIDs.insert(WatchProvider.filmin.id)
 
-        #expect(model.rowProviders(for: movie) == .atHome([.filmin]))
+        #expect(model.rowProviders(for: movie) == .loaded(.atHome([.filmin])))
         #expect(await repo.availabilityCalls[movie.id] == 1)
     }
 }

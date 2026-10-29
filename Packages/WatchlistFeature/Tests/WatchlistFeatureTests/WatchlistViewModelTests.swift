@@ -2,6 +2,7 @@ import Foundation
 import Testing
 import Domain
 import Watchlist
+import Preferences
 @testable import WatchlistFeature
 
 @MainActor
@@ -24,7 +25,7 @@ struct WatchlistViewModelTests {
     /// The heart on Details writes to the same store.
     @Test func aMovieSavedElsewhereShowsUpWithoutReloading() async {
         let store = WatchlistStore(repository: FakeWatchlistRepository(stored: [.item(1, at: 100)]))
-        let model = WatchlistViewModel(store: store, imageURLBuilder: StubImageURLBuilder())
+        let model = makeModel(store)
         await model.load()
 
         await store.add(.movie(2))
@@ -94,7 +95,7 @@ struct WatchlistViewModelTests {
     /// the removal runs must not change which movie goes.
     @Test func idsTakenBeforeTheListChangesRemoveThoseMovies() async {
         let store = WatchlistStore(repository: FakeWatchlistRepository(stored: [.item(1, at: 100), .item(2, at: 200)]))
-        let model = WatchlistViewModel(store: store, imageURLBuilder: StubImageURLBuilder())
+        let model = makeModel(store)
         await model.load()
 
         let ids = model.ids(atOffsets: IndexSet(integer: 1))
@@ -130,10 +131,186 @@ struct WatchlistViewModelTests {
         #expect(model.items.map(\.id.rawValue) == [1])
     }
 
+    // MARK: - Where to watch
+
+    @Test func rowsLoadUntilAvailabilityArrives() async {
+        let (model, _) = await loadedModel([1], movies: FakeMovieRepository(), prefs: makePrefs())
+
+        #expect(row(1, in: model) == .loading)
+    }
+
+    /// Details' answer, per row: yours and free at home, else yours abroad,
+    /// else why there's nothing.
+    @Test func eachRowShowsDetailsAnswer() async {
+        let movies = FakeMovieRepository(bundles: [
+            MovieID(1): { .fixture(MovieID(1), region: $0, free: [.rtvePlay], global: [.init(provider: .netflix, regions: [$0])]) },
+            MovieID(2): { .fixture(MovieID(2), region: $0, global: [.init(provider: .primeVideo, regions: [.france])]) },
+            MovieID(3): { .fixture(MovieID(3), region: $0, subscription: [.filmin]) },
+        ])
+        let (model, _) = await loadedModel([1, 2, 3, 4], movies: movies, prefs: makePrefs(subscribedTo: [.netflix, .primeVideo]))
+
+        await model.loadAvailability()
+
+        #expect(row(1, in: model) == .loaded(.atHome([.netflix, .rtvePlay])))
+        #expect(row(2, in: model) == .loaded(.abroad([.primeVideo])))
+        #expect(row(3, in: model) == .loaded(.notOnYourServices))
+        #expect(row(4, in: model) == .loaded(.notStreamingHere))
+    }
+
+    @Test func aFailedRowIsRetriedOnTheNextLoad() async {
+        let movies = FakeMovieRepository(failAvailabilityOnce: [MovieID(1)])
+        let (model, _) = await loadedModel([1, 2], movies: movies, prefs: makePrefs())
+
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .failed)
+        #expect(row(2, in: model) == .loaded(.notStreamingHere))
+
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.notStreamingHere))
+        #expect(await movies.availabilityCalls == [MovieID(1): 2, MovieID(2): 1])
+    }
+
+    /// A heart tapped on Details adds a row; only that one is fetched.
+    @Test func aMovieSavedLaterIsFetchedAlone() async {
+        let movies = FakeMovieRepository()
+        let (model, store) = await loadedModel([1], movies: movies, prefs: makePrefs())
+        await model.loadAvailability()
+        let before = model.availabilityTrigger
+
+        await store.add(.movie(2))
+        await model.loadAvailability()
+
+        #expect(model.availabilityTrigger != before)
+        #expect(row(2, in: model) == .loaded(.notStreamingHere))
+        #expect(await movies.availabilityCalls == [MovieID(1): 1, MovieID(2): 1])
+    }
+
+    @Test func aRegionChangeRefetchesEveryRow() async {
+        let movies = FakeMovieRepository(bundles: [
+            MovieID(1): { .fixture(MovieID(1), region: $0, free: $0 == .france ? [.rtvePlay] : []) },
+        ])
+        let prefs = makePrefs(region: .spain)
+        let (model, _) = await loadedModel([1], movies: movies, prefs: prefs)
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.notStreamingHere))
+        let before = model.availabilityTrigger
+
+        prefs.region = .france
+        // The old region's answer isn't shown as the new one's.
+        #expect(row(1, in: model) == .loading)
+        #expect(model.availabilityTrigger != before)
+
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.atHome([.rtvePlay])))
+        #expect(await movies.availabilityCalls == [MovieID(1): 2])
+    }
+
+    /// The model lives as long as the app, so pull to refresh asks again for
+    /// rows that already have an answer, keeping it until the new one lands.
+    @Test func refreshRefetchesLoadedRows() async {
+        let movies = FakeMovieRepository()
+        let (model, _) = await loadedModel([1], movies: movies, prefs: makePrefs())
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.notStreamingHere))
+
+        await movies.set(MovieID(1)) { .fixture(MovieID(1), region: $0, free: [.rtvePlay]) }
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.notStreamingHere))
+
+        await model.loadAvailability(refetchingLoaded: true)
+        #expect(row(1, in: model) == .loaded(.atHome([.rtvePlay])))
+        #expect(await movies.availabilityCalls == [MovieID(1): 2])
+    }
+
+    /// The old region's answer, landing after the new region's, isn't kept.
+    @Test func anAnswerForTheOldRegionIsDropped() async {
+        let movies = GatedMovieRepository(gatedRegion: .spain)
+        let prefs = makePrefs(region: .spain)
+        let (model, _) = await loadedModel([1], movies: movies, prefs: prefs)
+
+        let spainLoad = Task { await model.loadAvailability() }
+        await movies.waitForGatedRequest()
+        prefs.region = .france
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.atHome([.rtvePlay])))
+
+        await movies.release()
+        await spainLoad.value
+
+        #expect(row(1, in: model) == .loaded(.atHome([.rtvePlay])))
+    }
+
+    @Test func aSubscriptionChangeUpdatesRowsWithoutRefetching() async {
+        let movies = FakeMovieRepository(bundles: [
+            MovieID(1): { .fixture(MovieID(1), region: $0, subscription: [.filmin], global: [.init(provider: .filmin, regions: [$0])]) },
+        ])
+        let prefs = makePrefs()
+        let (model, _) = await loadedModel([1], movies: movies, prefs: prefs)
+        await model.loadAvailability()
+        #expect(row(1, in: model) == .loaded(.notOnYourServices))
+
+        prefs.subscribedProviderIDs = [WatchProvider.filmin.id]
+
+        #expect(row(1, in: model) == .loaded(.atHome([.filmin])))
+        #expect(await movies.availabilityCalls == [MovieID(1): 1])
+    }
+
+    @Test func voiceOverReadsTheRowAndNamesEveryProvider() async {
+        let providers: [WatchProvider] = [.netflix, .primeVideo, .hboMax, .disneyPlus, .filmin]
+        let movies = FakeMovieRepository(bundles: [
+            MovieID(1): { region in
+                .fixture(MovieID(1), region: region, global: providers.map { .init(provider: $0, regions: [region]) })
+            },
+        ])
+        let store = WatchlistStore(repository: FakeWatchlistRepository(stored: [
+            WatchlistItem(movie: .movie(1, releaseYear: 2010, directors: ["Christopher Nolan"]), addedAt: .at(100)),
+        ]))
+        let model = makeModel(store, movies: movies, prefs: makePrefs(subscribedTo: providers))
+        await model.load()
+        let item = model.items[0]
+        #expect(model.accessibilityLabel(for: item).hasSuffix("Checking availability"))
+
+        await model.loadAvailability()
+
+        let year = Date.year(2010).formatted(.dateTime.year())
+        let names = providers.map(\.name).formatted(.list(type: .and))
+        #expect(model.accessibilityLabel(for: item) == "Movie 1, \(year), Christopher Nolan, On \(names)")
+    }
+
     // MARK: - Helpers
 
     private func makeModel(_ repository: FakeWatchlistRepository) -> WatchlistViewModel {
-        WatchlistViewModel(store: WatchlistStore(repository: repository), imageURLBuilder: StubImageURLBuilder())
+        makeModel(WatchlistStore(repository: repository))
+    }
+
+    private func makeModel(
+        _ store: WatchlistStore,
+        movies: any MovieRepository = FakeMovieRepository(),
+        prefs: Preferences? = nil
+    ) -> WatchlistViewModel {
+        WatchlistViewModel(
+            store: store,
+            repository: movies,
+            imageURLBuilder: StubImageURLBuilder(),
+            prefs: prefs ?? makePrefs()
+        )
+    }
+
+    /// A loaded model whose watchlist holds `ids`, newest first.
+    private func loadedModel(
+        _ ids: [Int],
+        movies: any MovieRepository,
+        prefs: Preferences
+    ) async -> (WatchlistViewModel, WatchlistStore) {
+        let items = ids.enumerated().map { index, id in WatchlistItem.item(id, at: TimeInterval(1000 - index)) }
+        let store = WatchlistStore(repository: FakeWatchlistRepository(stored: items))
+        let model = makeModel(store, movies: movies, prefs: prefs)
+        await model.load()
+        return (model, store)
+    }
+
+    private func row(_ id: Int, in model: WatchlistViewModel) -> WatchlistRowProviders {
+        model.rowProviders(for: model.items.first { $0.id == MovieID(id) }!)
     }
 }
 
