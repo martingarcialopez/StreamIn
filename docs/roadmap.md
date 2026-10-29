@@ -8,7 +8,7 @@ themselves live in GitHub: each phase is a milestone, each task an issue.
 [docs/workflow-log.md](workflow-log.md) (what each workflow change improved).
 This file doesn't repeat them.
 
-## Status (Oct 14, 2026)
+## Status (Oct 29, 2026)
 
 | Phase | What | State |
 |---|---|---|
@@ -19,10 +19,12 @@ This file doesn't repeat them.
 | — | `commit` skill: gitmoji, co-author trailer, one-prompt commit + push | ✅ [#5](https://github.com/martingarcialopez/StreamIn/pull/5) |
 | — | Review follow-ups: Details error state, one logo per brand, translated languages only, README, roadmap in the repo | ✅ [#6](https://github.com/martingarcialopez/StreamIn/pull/6) |
 | — | macOS CI + issue-driven work (workflow upgrades 1–2) | ✅ [#7](https://github.com/martingarcialopez/StreamIn/pull/7) |
-| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 runs with Phases 3 + 4; #8, #10 open |
-| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ✅ [#42](https://github.com/martingarcialopez/StreamIn/pull/42), [#39](https://github.com/martingarcialopez/StreamIn/pull/39), [#40](https://github.com/martingarcialopez/StreamIn/pull/40), [#43](https://github.com/martingarcialopez/StreamIn/pull/43), #35's PR |
-| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | 🔄 #33 merged; #36 in review (redesigned Oct 13); #44 next |
-| 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | planned: #46–#49, one screen each |
+| — | [Workflow upgrades](https://github.com/martingarcialopez/StreamIn/milestone/1) 3–5 | 🔄 #9 ✅ (`/parallel`, [#62](https://github.com/martingarcialopez/StreamIn/pull/62)); #8: screenshots in review ([#71](https://github.com/martingarcialopez/StreamIn/pull/71)), UI test left; #10 open |
+| — | PR review gate: `ios-reviewer` on every push, verdict as a commit status | ✅ [#52](https://github.com/martingarcialopez/StreamIn/pull/52), [#57](https://github.com/martingarcialopez/StreamIn/pull/57), [#64](https://github.com/martingarcialopez/StreamIn/pull/64), [#70](https://github.com/martingarcialopez/StreamIn/pull/70) |
+| 3 | [Watchlist (Persistence + SwiftData)](https://github.com/martingarcialopez/StreamIn/milestone/2) | ✅ [#42](https://github.com/martingarcialopez/StreamIn/pull/42), [#39](https://github.com/martingarcialopez/StreamIn/pull/39), [#40](https://github.com/martingarcialopez/StreamIn/pull/40), [#43](https://github.com/martingarcialopez/StreamIn/pull/43), [#68](https://github.com/martingarcialopez/StreamIn/pull/68) |
+| 4 | [Details page redesign](https://github.com/martingarcialopez/StreamIn/milestone/3) | ✅ [#41](https://github.com/martingarcialopez/StreamIn/pull/41), [#50](https://github.com/martingarcialopez/StreamIn/pull/50), [#55](https://github.com/martingarcialopez/StreamIn/pull/55) |
+| — | README as a portfolio front page, with the three verdicts | ✅ [#65](https://github.com/martingarcialopez/StreamIn/pull/65), [#74](https://github.com/martingarcialopez/StreamIn/pull/74) |
+| 5 | [App design & UX](https://github.com/martingarcialopez/StreamIn/milestone/4) | next: #46–#49, one screen each, and #72 (rank services per search row) |
 | 6 | [App Store readiness + submission](https://github.com/martingarcialopez/StreamIn/milestone/5) | planned |
 
 Cleanup outside the phases is tracked as [`tech-debt` issues](https://github.com/martingarcialopez/StreamIn/issues?q=is%3Aopen+label%3Atech-debt).
@@ -140,7 +142,7 @@ open Details from there.
 
 ---
 
-## Phase 4 — Details page redesign
+## Phase 4 — Details page redesign ✅
 
 **Goal:** the answer to "can I watch this?" comes first, clear at a glance, and nothing is said twice.
 
