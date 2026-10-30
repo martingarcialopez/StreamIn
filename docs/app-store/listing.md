@@ -86,8 +86,8 @@ App Store Connect doesn't show this field for a first version, so this text may 
 | Field | Value |
 |---|---|
 | Primary category | Entertainment |
-| Secondary category | Utilities (proposed). StreamIn is a lookup tool people open before they watch, not something they watch in; Utilities is a smaller list than Entertainment, and it fits the "check before you watch" use. Leave it empty if a second category feels off-brand. |
-| Copyright | 2026 Martín García López (App Store Connect adds the ©) |
+| Secondary category | Utilities. StreamIn is a lookup tool people open before they watch, not something they watch in; Utilities is a smaller list than Entertainment, and it fits the "check before you watch" use. |
+| Copyright | 2026 Martín García (App Store Connect adds the ©) |
 | Support URL | https://martingarcialopez.github.io/StreamIn/support/ (es: …/StreamIn/es/support/) |
 | Privacy Policy URL | https://martingarcialopez.github.io/StreamIn/privacy/ (es: …/StreamIn/es/privacy/) |
 | Marketing URL | None |
@@ -146,11 +146,10 @@ settings).
 
 ## Review notes
 
-App Review notes are a single field, in English. **To do before submitting:** fill in the three
-_[title]_ placeholders with titles checked in the app that week, with the region set to United
-States and the three services below. Availability changes every day, so pick them close to
-submission. Phase 4's examples (LOTR, Peter Pan 2003, Peter Pan 1953) were checked for Spain, not
-the US.
+App Review notes are a single field, in English. The three titles were checked against TMDB on
+Oct 30, 2026, for the United States with the three services below, using the app's verdict rules.
+Each is a studio's own release (Netflix, Apple) or a long-standing deal, so they should hold, but
+**re-check them in the app the week of submission**: availability changes daily.
 
 > StreamIn needs no account or login; everything works right away.
 >
@@ -165,9 +164,12 @@ the US.
 > or Watchlist tab.
 >
 > Each movie's page leads with one verdict. To see each one, search and open:
-> 1. "Watch now" (one of your services, or a free one, has it in your region): _[title]_
+> 1. "Watch now" (one of your services, or a free one, has it in your region): Glass Onion: A
+>    Knives Out Mystery (2022), on Netflix.
 > 2. "On your services abroad" (not in your region, but your services carry it in other
->    countries; tap a service row to see every country): _[title]_
-> 3. "Go read a book" (not on your services, here or abroad): _[title]_
+>    countries; tap a service row to see every country): Spirited Away (2002), on Netflix outside
+>    the United States.
+> 3. "Go read a book" (not on your services, here or abroad): Greyhound (2020), an Apple TV
+>    original.
 >
 > The Watchlist tab lists movies saved with the heart on a movie's page.
