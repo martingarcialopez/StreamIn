@@ -1,0 +1,53 @@
+{
+  "screens": [
+    {
+      "sheet": "Bienvenida",
+      "description": "Primer arranque: eliges los servicios que pagas.",
+      "files": ["OnboardingView.swift"]
+    },
+    {
+      "sheet": "Inicio",
+      "description": "Pestaña Buscar, antes de escribir nada: la tragaperras y el buscador.",
+      "files": ["LandingView.swift", "LandingViewModel.swift", "SlotMachine.swift"]
+    },
+    {
+      "sheet": "Resultados",
+      "description": "Lista de películas tras buscar, con dónde ver cada una.",
+      "files": ["SearchBar.swift", "SearchResultsView.swift", "SearchRowProviders.swift", "SearchViewModel.swift"]
+    },
+    {
+      "sheet": "Película",
+      "description": "Ficha de una película: dónde verla, aquí y fuera, y el corazón para guardarla.",
+      "files": ["DetailsView.swift", "DetailsViewModel.swift", "WatchlistToggleButton.swift"]
+    },
+    {
+      "sheet": "Mi lista",
+      "description": "Pestaña con las películas guardadas.",
+      "files": ["WatchlistView.swift", "WatchlistDirectorsFormatter.swift", "WatchlistRowProviders.swift", "WatchlistViewModel.swift", "WatchlistWriteFailureAlert.swift"]
+    },
+    {
+      "sheet": "Ajustes",
+      "description": "Engranaje arriba a la derecha: región, idioma y tus servicios.",
+      "files": ["SettingsView.swift", "StreamingServicesSheet.swift"]
+    },
+    {
+      "sheet": "Servicios",
+      "description": "Ajustes → Servicios de streaming: la lista completa para elegir.",
+      "files": ["StreamingServicesView.swift"]
+    },
+    {
+      "sheet": "Errores",
+      "description": "Mensajes de error que puede mostrar cualquier pantalla (sin conexión, servidor caído…).",
+      "files": ["Domain.swift"]
+    },
+    {
+      "sheet": "General",
+      "description": "Barra de pestañas, nombre de la app bajo el icono y etiquetas de VoiceOver.",
+      "files": ["RootView.swift", "SettingsToolbar.swift"],
+      "keys": ["CFBundleDisplayName"]
+    }
+  ],
+  "skipKeys": {
+    "CFBundleName": "iOS shows CFBundleDisplayName; this one is never on screen."
+  }
+}
