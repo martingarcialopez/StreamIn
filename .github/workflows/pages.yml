@@ -1,0 +1,46 @@
+name: Pages
+
+# Publishes site/ (the privacy policy and support pages the App Store listing
+# links to) to GitHub Pages: https://martingarcialopez.github.io/StreamIn/.
+# Only site/ is uploaded, never docs/ or the rest of the repository. Needs
+# Settings → Pages → Source set to "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+# One deployment at a time: a running deploy finishes; a newer push replaces any
+# run still waiting.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
