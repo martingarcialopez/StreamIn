@@ -132,10 +132,34 @@ import Domain
         #expect(options.summary == .abroad([prime]))
     }
 
-    @Test func summaryIsNotOnYourServicesWhenOthersCarryItAtHome() {
-        let options = WatchOptions(bundle: bundle(subscription: [disney]), home: .spain, subscribed: [ProviderID(8)])
+    @Test func summaryIsOthersAtHomeWhenOnlyOthersCarryItAtHome() {
+        let options = WatchOptions(
+            bundle: bundle(subscription: [disney, prime]),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
 
-        #expect(options.summary == .notOnYourServices)
+        #expect(options.summary == .othersAtHome([disney, prime]))
+    }
+
+    /// Yours abroad beat the others at home.
+    @Test func summaryIsAbroadEvenWhenOthersCarryItAtHome() {
+        let options = WatchOptions(
+            bundle: bundle(
+                subscription: [disney],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]
+            ),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.summary == .abroad([netflix]))
+    }
+
+    @Test func summaryIsOthersAtHomeWithoutServices() {
+        let options = WatchOptions(bundle: bundle(subscription: [disney]), home: .spain, subscribed: [])
+
+        #expect(options.summary == .othersAtHome([disney]))
     }
 
     @Test func summaryIsNotStreamingHereWhenNothingCarriesItAtHome() {

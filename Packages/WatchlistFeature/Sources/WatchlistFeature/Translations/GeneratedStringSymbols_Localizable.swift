@@ -100,15 +100,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Watchlist row, in place of provider logos: something streams the movie in the user's region, but none of the user's services
-     
-     Localized string for key “watchlistRowNotOnYourServices” in table “Localizable.xcstrings”.
-     */
-    static var watchlistRowNotOnYourServices: LocalizedStringResource {
-        LocalizedStringResource("watchlistRowNotOnYourServices", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Watchlist row, in place of provider logos: no subscription or free service streams the movie in the user's region
      
      Localized string for key “watchlistRowNotStreamingHere” in table “Localizable.xcstrings”.
@@ -118,12 +109,30 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Watchlist row: caption before dimmed logos of services that stream the movie in the user's region but aren't the user's
+     
+     Localized string for key “watchlistRowNotYours” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRowNotYours: LocalizedStringResource {
+        LocalizedStringResource("watchlistRowNotYours", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      VoiceOver, Watchlist row: the user's services or free ones that stream the movie at home. %@ is a list of service names
      
      Localized string for key “watchlistRowOnProviders” in table “Localizable.xcstrings”.
      */
     static func watchlistRowOnProviders(_ arg1: String) -> LocalizedStringResource {
         LocalizedStringResource("watchlistRowOnProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver, watchlist row: services that stream the movie in the user's region but aren't the user's. %@ is a list of service names
+     
+     Localized string for key “watchlistRowOthersProviders” in table “Localizable.xcstrings”.
+     */
+    static func watchlistRowOthersProviders(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("watchlistRowOthersProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

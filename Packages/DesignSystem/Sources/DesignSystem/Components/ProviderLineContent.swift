@@ -6,6 +6,9 @@ public enum ProviderLineContent<Provider: Identifiable>: Equatable {
     case loading
     /// Up to three logos and "+N"; `abroad` puts a still globe before them.
     case logos([Provider], abroad: Bool)
+    /// Services that aren't the user's: `label`, from the caller's String
+    /// Catalog, then up to three dimmed logos and "+N".
+    case others([Provider], label: LocalizedStringResource)
     /// A quiet line of text, from the caller's String Catalog.
     case caption(LocalizedStringResource)
 
@@ -17,6 +20,8 @@ public enum ProviderLineContent<Provider: Identifiable>: Equatable {
             true
         case let (.logos(lhsProviders, lhsAbroad), .logos(rhsProviders, rhsAbroad)):
             lhsAbroad == rhsAbroad && lhsProviders.map(\.id) == rhsProviders.map(\.id)
+        case let (.others(lhsProviders, lhsLabel), .others(rhsProviders, rhsLabel)):
+            lhsLabel.key == rhsLabel.key && lhsProviders.map(\.id) == rhsProviders.map(\.id)
         case let (.caption(lhsText), .caption(rhsText)):
             lhsText.key == rhsText.key
         default:

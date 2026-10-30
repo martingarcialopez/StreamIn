@@ -109,24 +109,6 @@
         }
       }
     },
-    "searchRowNotOnYourServices" : {
-      "comment" : "Search result row, in place of provider logos: something streams the movie in the user's region, but none of the user's services",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on your services"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No está en tus servicios"
-          }
-        }
-      }
-    },
     "searchRowNotStreamingHere" : {
       "comment" : "Search result row, in place of provider logos: no subscription or free service streams the movie in the user's region",
       "extractionState" : "manual",
@@ -321,6 +303,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Girar"
+          }
+        }
+      }
+    },
+    "searchRowNotYours" : {
+      "comment" : "Search result row: caption before dimmed logos of services that stream the movie in the user's region but aren't the user's",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yours:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No los tienes:"
+          }
+        }
+      }
+    },
+    "searchRowOthersProviders" : {
+      "comment" : "VoiceOver, search result row: services that stream the movie in the user's region but aren't the user's. %@ is a list of service names",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not on your services, on %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No está en tus servicios, está en %@"
           }
         }
       }

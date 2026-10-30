@@ -130,7 +130,7 @@ public final class SearchViewModel {
         case .failed: String(localized: .searchRowAvailabilityFailed)
         case .loaded(.atHome(let providers)): String(localized: .searchRowOnProviders(Self.names(providers)))
         case .loaded(.abroad(let providers)): String(localized: .searchRowAbroadProviders(Self.names(providers)))
-        case .loaded(.notOnYourServices): String(localized: .searchRowNotOnYourServices)
+        case .loaded(.othersAtHome(let providers)): String(localized: .searchRowOthersProviders(Self.names(providers)))
         case .loaded(.notStreamingHere): String(localized: .searchRowNotStreamingHere)
         }
         return [movie.title, releaseYear(for: movie), providers]

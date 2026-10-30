@@ -267,7 +267,7 @@ struct SearchRowProvidersTests {
         #expect(row == .loaded(.abroad([.primeVideo, .netflix])))
     }
 
-    @Test func notOnYourServicesWhenOthersStreamItHere() async {
+    @Test func otherServicesWhenOnlyOthersStreamItHere() async {
         let bundle = AvailabilityBundle.fixture(
             movie.id,
             subscription: [.filmin],
@@ -276,7 +276,7 @@ struct SearchRowProvidersTests {
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
 
-        #expect(row == .loaded(.notOnYourServices))
+        #expect(row == .loaded(.othersAtHome([.filmin])))
     }
 
     @Test func notStreamingHereWhenNothingCarriesIt() async {
@@ -304,7 +304,7 @@ struct SearchRowProvidersTests {
         let prefs = makePrefs(subscribedTo: [.netflix])
         let model = SearchViewModel(repository: repo, imageURLBuilder: NullImageURLBuilder(), prefs: prefs)
         await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
-        #expect(model.rowProviders(for: movie) == .loaded(.notOnYourServices))
+        #expect(model.rowProviders(for: movie) == .loaded(.othersAtHome([.filmin])))
 
         prefs.subscribedProviderIDs.insert(WatchProvider.filmin.id)
 
@@ -354,5 +354,22 @@ struct SearchRowDisplayTests {
         )
 
         #expect(model.releaseYear(for: .fixture(1)) == nil)
+    }
+
+    @Test func accessibilityLabelSaysOtherServicesArentYours() async {
+        let movie = Movie.fixture(1)
+        let repo = FakeMovieRepository(
+            results: [movie],
+            bundles: [movie.id: .fixture(movie.id, subscription: [.filmin, .disneyPlus])]
+        )
+        let model = SearchViewModel(
+            repository: repo,
+            imageURLBuilder: NullImageURLBuilder(),
+            prefs: makePrefs(subscribedTo: [.netflix])
+        )
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+
+        let names = [WatchProvider.filmin, .disneyPlus].map(\.name).formatted(.list(type: .and))
+        #expect(model.accessibilityLabel(for: movie).hasSuffix("Not on your services, on \(names)"))
     }
 }
