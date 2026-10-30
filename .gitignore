@@ -17,6 +17,10 @@ xcuserdata/
 .swiftpm/
 Package.resolved
 
+# Translation review tool's venv (scripts/translations.sh creates it)
+scripts/translations/.venv/
+__pycache__/
+
 # Secrets — never commit
 Secrets.xcconfig
 StreamIn/Secrets/GeneratedSecrets.swift

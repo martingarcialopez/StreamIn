@@ -17,6 +17,45 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-10-30 — Translation review in a spreadsheet (#87)
+
+**What shipped:** `scripts/translations.sh export` writes every on-screen string
+to an `.xlsx`, one sheet per screen, where a reviewer who isn't a developer
+edits the English and Spanish copy in place; `import` writes the edits back to
+the String Catalogs.
+`scripts/translator-preview.sh` opens the app in the simulator in one language
+next to the sheet.
+
+**Workflow pieces used**
+- **Two questions before the plan:** a workbook rather than a web page or CSVs,
+  and the simulator on Martín's Mac rather than TestFlight. Then the plan in the
+  conversation and an issue written from it.
+- **Screens come from the code:** a key goes to the screen of the Swift file that
+  uses its symbol, so only `screens.json` (file → screen) is maintained by hand,
+  and a new view missing from it fails the export.
+
+**What the checks caught**
+- **Six keys no Swift file uses** (`settingsSubscriptionsMajor` and five more):
+  left out of the workbook, listed by the export.
+- **A dry run on the real catalogs** refused a `%2$lld` turned into `%2$@` and
+  wrote nothing; the real import changed only the value lines.
+- **Domain's committed symbols were stale:** today's `xcstringstool` adds
+  `nonisolated` to one line. Any import touching Domain regenerates it; harmless.
+- **The Spanish errors use "usted"** while the rest of the app uses "tú": the
+  first thing for the reviewer to fix.
+- **`ios-reviewer`, 1 medium:** a plural key would have been flattened by an
+  import, losing its forms. Plural keys are now left out and refused. **4 low**
+  fixed too: `%d` no longer passes for `%lld`, catalogs are all written before
+  symbols regenerate, a new pin rebuilds the venv, and the doc has a Spanish part.
+- **Martín, after the first export:** no "proposal" columns. The reviewer edits
+  the English and Spanish cells in place; hidden copies of the exported text
+  keep the change and staleness checks working.
+- **The preview script, run for real:** the first launch showed "Disponibles en
+  Francia", since the default region comes from the simulator's locale. It now
+  passes `-AppleLocale` with the language, so es opens in Spain and en in the US.
+
+---
+
 ## 2026-10-30 — The Watchlist tab answers "what can I watch tonight" (#48)
 
 **What shipped:** each saved movie shows Search's provider line. The derivation

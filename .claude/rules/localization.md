@@ -55,6 +55,13 @@ persists the choice for the next launch.
 The binding is deferred: nothing changes until the user taps an alert button, so
 the picker briefly snaps back to the old value — accepted for data correctness.
 
+## Translation review
+
+A reviewer edits copy in a spreadsheet, not in the catalogs:
+`scripts/translations.sh export` / `import` (see `docs/translations.md`). A new
+view that shows strings goes into `scripts/translations/screens.json`, or the
+export fails.
+
 ## Supported languages
 
 The picker (`Language.allKnown` in Domain) must only offer languages that every
