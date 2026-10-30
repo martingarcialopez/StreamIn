@@ -32,17 +32,16 @@ public struct WatchlistView: View {
                 NavigationLink(value: item.movie) {
                     WatchlistRow(item: item, model: model)
                 }
-                .listRowBackground(AppPalette.secondaryBackground)
             }
             .onDelete { offsets in
                 // Offsets to IDs now, before the Task lets the list change.
                 let ids = model.ids(atOffsets: offsets)
                 Task { await model.remove(ids) }
             }
+            .cinemaRow()
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(AppPalette.background)
+        // `WatchlistTab` puts the screen on the cinema background.
         // Asks again for every row: answers can change while the app stays
         // in memory, and failed rows get retried.
         .refreshable { await model.loadAvailability(refetchingLoaded: true) }
@@ -209,13 +208,12 @@ private struct WatchlistRow: View {
 
 // MARK: - Preview
 
+// The app is dark only, and `previewWatchlist` puts each preview on the
+// cinema background as `WatchlistTab` does. Render with the canvas's Dark
+// variant for the navigation bar to follow.
+
 #Preview("Empty") {
     previewWatchlist("empty", PreviewWatchlistRepository())
-}
-
-#Preview("Empty, dark") {
-    previewWatchlist("empty-dark", PreviewWatchlistRepository())
-        .preferredColorScheme(.dark)
 }
 
 #Preview("Empty, accessibility size") {
@@ -227,11 +225,6 @@ private struct WatchlistRow: View {
     previewWatchlist("filled", PreviewWatchlistRepository(items: PreviewWatchlistRepository.sample))
 }
 
-#Preview("Filled, dark") {
-    previewWatchlist("filled-dark", PreviewWatchlistRepository(items: PreviewWatchlistRepository.sample))
-        .preferredColorScheme(.dark)
-}
-
 #Preview("Filled, accessibility size") {
     previewWatchlist("filled-large", PreviewWatchlistRepository(items: PreviewWatchlistRepository.sample))
         .dynamicTypeSize(.accessibility3)
@@ -239,11 +232,6 @@ private struct WatchlistRow: View {
 
 #Preview("Load failed") {
     previewWatchlist("failed", PreviewWatchlistRepository(loadError: .loadFailed))
-}
-
-#Preview("Load failed, dark") {
-    previewWatchlist("failed-dark", PreviewWatchlistRepository(loadError: .loadFailed))
-        .preferredColorScheme(.dark)
 }
 
 /// From Spain, subscribed to Netflix, Prime Video, HBO Max and Disney+. Each
@@ -262,6 +250,7 @@ private func previewWatchlist(_ name: String, _ repository: PreviewWatchlistRepo
                 prefs: prefs
             )
         )
+        .cinemaBackground()
     }
 }
 
@@ -350,6 +339,8 @@ private struct PreviewMovieRepository: MovieRepository {
     func searchMovies(query: String, page: Int) async throws -> SearchPage {
         SearchPage(query: query, page: page, totalPages: 1, totalResults: 0, results: [])
     }
+
+    func trendingMovies() async throws -> [Movie] { [] }
 
     func movie(id: MovieID) async throws -> Movie {
         throw MovieError.notFound

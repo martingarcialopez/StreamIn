@@ -334,6 +334,9 @@ public protocol MovieRepository: Sendable {
     /// Full movie detail (richer than what `searchMovies` returns).
     func movie(id: MovieID) async throws -> Movie
 
+    /// This week's trending movies, most popular first (one page).
+    func trendingMovies() async throws -> [Movie]
+
     /// Streaming / rent / buy availability for a given region.
     /// Used by the search list, where only the regional view is needed.
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability

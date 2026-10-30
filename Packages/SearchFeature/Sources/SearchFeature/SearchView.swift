@@ -2,9 +2,9 @@
 //  SearchView.swift
 //  SearchFeature
 //
-//  Root view of the Search tab. Hosts `LandingView` — a centered logo + name
-//  + custom search bar — and calls back to the App-level NavigationStack when
-//  the user submits a query so it can push `SearchResultsView`.
+//  Root view of the Search tab. Hosts `LandingView` — the slot machine, name
+//  and custom search bar — and calls back to the App-level NavigationStack
+//  when the user submits a query so it can push `SearchResultsView`.
 //
 //  The active search experience (`.searchable()`, results list, etc.) lives
 //  in `SearchResultsView`, not here. This view is intentionally thin.
@@ -15,14 +15,16 @@ import SwiftUI
 public struct SearchView: View {
 
     @State private var searchText = ""
+    private let landing: LandingViewModel
     private let onSearch: (String) -> Void
 
-    public init(onSearch: @escaping (String) -> Void) {
+    public init(landing: LandingViewModel, onSearch: @escaping (String) -> Void) {
+        self.landing = landing
         self.onSearch = onSearch
     }
 
     public var body: some View {
-        LandingView(searchText: $searchText, onSubmit: submit)
+        LandingView(model: landing, searchText: $searchText, onSubmit: submit)
             .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -47,7 +49,7 @@ public struct SearchView: View {
     @Previewable @State var path = NavigationPath()
 
     NavigationStack(path: $path) {
-        SearchView(onSearch: { query in
+        SearchView(landing: .preview(), onSearch: { query in
             path.append(SearchResultsRoute(query: query))
         })
         .navigationDestination(for: SearchResultsRoute.self) { route in

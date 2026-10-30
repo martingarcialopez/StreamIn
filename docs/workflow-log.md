@@ -12,6 +12,100 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 3 — Heart on Details (#34) | [#43](https://github.com/martingarcialopez/StreamIn/pull/43) | Yes (issue) | 2 low of 2 | Yes — CI, 3 previews, Martín's simulator checks | 0 (the placeholder tab read as one) | 0 |
 | 3 — Watchlist tab (#35) | #35's PR | Yes (plan mode; Martín added the write-failure alert) | 1 medium + 1 low of 2 | Yes — full test plan, 3 previews (light, dark, XXX Large), launch in es; swipe flows left to Martín | — | — |
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
+| 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
+| 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
+
+---
+
+## 2026-10-30 — The Watchlist tab answers "what can I watch tonight" (#48)
+
+**What shipped:** each saved movie shows Search's provider line. The derivation
+moved to Domain (`WatchSummary`) and the line to DesignSystem (`ProviderLine`), so
+two features share them without importing each other. The tab also got a new
+empty state and the look of Search.
+
+**Workflow pieces used**
+- **A one-round design Q&A**: four questions, each with a recommended option.
+  Martín took all four. The plan followed in plan mode.
+- **`ios-reviewer` before the PR.**
+- **Merging an open PR's branch:** #85 (the cinema theme) was still open. Its PR
+  body carried a "merge note for #48" listing what this branch would need, and
+  every item on it was right: `trendingMovies()` in the new fakes, `.cinemaRow()`,
+  `AbroadMark` in the shared line, and three small conflicts.
+
+**What the checks caught**
+- **`ios-reviewer`, 1 medium:** the view model lives as long as the app, so rows
+  that loaded once never refreshed. Pull to refresh now asks again for every
+  row.
+- **`ios-reviewer`, 1 low:** no test covered an old region's answer landing after
+  the new region's. A gated fake now holds that request back. The test was
+  mutation-checked: it fails with the guard removed.
+- **Previews:** the first snapshot of every Watchlist preview was blank, because
+  `.task` hadn't loaded the store yet. A second render was always complete, as
+  `pr-screenshots` already says.
+
+**What got in the way**
+- An inline SF Symbol can't go through generated string symbols: `%@` takes a
+  `String`. The empty state's hint names the heart in words instead.
+- In this worktree session, a heredoc piped into `python3 -I -` was refused;
+  the same edit went through with the Edit tool.
+
+---
+
+## 2026-10-30 — Phase 5 starts: the landing page (#46)
+
+**What shipped:** the slot machine landing page, trending movies through Domain and
+TMDBClient, and an app-wide dark "cinema" look in DesignSystem.
+
+**Workflow pieces used**
+- **Design Q&As** with `AskUserQuestion`, previews attached, in three rounds:
+  - the first direction (a halo, a popcorn mark with a globe badge)
+  - the slot machine
+  - its slot-machine cues
+- **Then about a dozen rounds on Martín's simulator screenshots.** Each one was
+  checked on dedicated `StreamIn issue-46 SE` and `iPad` simulators with
+  `simctl` screenshots, in en and es.
+- **Screen recordings for motion.** `simctl io recordVideo`, then a small
+  AVFoundation script pulled frames every 0.25 s and tiled them into one image
+  (no ffmpeg on the Mac). Static previews can't judge an animation.
+- **`/parallel` mid-session:** a background session drafted the Phase 6 issues
+  while this one kept designing.
+
+**What the checks caught**
+- **The recording caught a bug no preview could show.** A `visualEffect` drum read
+  the layout's final position mid-animation, so the reels went blank while they
+  spun. The fix: an `Animatable` drum.
+- **Screenshots caught a geometry bug that a test had "passed".** The barrel outline
+  grew ears at its corners, because a cylinder's visible edge sits at about 72°,
+  not 90°. The test checked the window against the wrong edge.
+- **Repeated launches cleared a false alarm.** Prime Video landed three times out
+  of three. Four more launches showed four different results, so it was chance.
+- **The self-review before shipping found a real bug:** a cancelled first load
+  left the reels on placeholders for the whole session. There's now a test for it.
+
+**What Martín found by hand:** taste, which no tool checks. That covered the
+first direction, a lever and glass that didn't fit, the barrel shape, and the
+knob, three times. On his screenshots Claude found the seam under Details'
+backdrop (the new spotlight against the backdrop's fade), the cool greys on the
+warm page, and the repeated Settings headers.
+
+**What got in the way**
+- In a worktree session, Claude Code refuses heredocs, `cd … &&` chains and
+  `git -C` into another worktree. Writing files with the tools and running scripts
+  with `python3 -I` worked.
+- `RenderPreview` failed now and then on `SearchResultsView` with a design-time
+  thunk error (`__designTimeSelection`). A retry rendered it.
+- The canvas's default light appearance overrides `.preferredColorScheme(.dark)`
+  for navigation chrome, so dark-only screens need the Dark variant to preview
+  faithfully.
+
+---
+
+## 2026-10-29 — `new-package` writes the project file the way Xcode does
+
+**What broke:** `add_local_package.py` appended its objects at the end of each section, but Xcode keeps sections sorted by ID. The next time Xcode saved the project, it moved the Persistence and Watchlist entries, which left an unexplained change to `project.pbxproj` in the main checkout.
+
+**Fix:** the script now inserts each object in ID order. A dry run on a copy of the project added two packages, and every section stayed sorted.
 
 ---
 

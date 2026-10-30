@@ -33,7 +33,8 @@ public struct SearchResultsView: View {
 
     public var body: some View {
         SearchContent(model: model, onRetry: retry, onRefresh: search)
-            .navigationTitle(Text(.searchTitle))
+            // The search on screen, so the back stack reads as "the results for…".
+            .navigationTitle(Text(verbatim: submittedQuery))
             .searchable(text: $searchText, prompt: Text(.searchPrompt))
             .onSubmit(of: .search) {
                 if let query = SearchView.sanitize(searchText) {
@@ -80,11 +81,10 @@ private struct SearchContent: View {
             NavigationLink(value: movie) {
                 SearchResultRow(movie: movie, model: model)
             }
-            .listRowBackground(AppPalette.secondaryBackground)
+            .cinemaRow()
         }
         .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(AppPalette.background)
+        .cinemaBackground()
         // The same search again: keeps the results and retries the rows
         // whose availability failed.
         .refreshable { await onRefresh() }
@@ -295,6 +295,10 @@ private struct PreviewMovieRepository: MovieRepository {
 
     func movie(id: MovieID) async throws -> Movie {
         try Self.row(id).movie
+    }
+
+    func trendingMovies() async throws -> [Movie] {
+        fatalError("not used in preview")
     }
 
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {

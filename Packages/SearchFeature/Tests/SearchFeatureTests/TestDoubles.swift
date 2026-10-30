@@ -10,20 +10,26 @@ actor FakeMovieRepository: MovieRepository {
     /// Movies whose next availability request fails, once.
     private var failAvailabilityOnce: Set<MovieID>
     private let bundles: [MovieID: AvailabilityBundle]
+    private let trending: Result<[Movie], MovieError>
+    private let providers: [WatchProvider]
 
     private(set) var searchCalls = 0
     private(set) var availabilityCalls: [MovieID: Int] = [:]
 
     init(
-        results: [Movie],
+        results: [Movie] = [],
         searchError: MovieError? = nil,
         failAvailabilityOnce: Set<MovieID> = [],
-        bundles: [MovieID: AvailabilityBundle] = [:]
+        bundles: [MovieID: AvailabilityBundle] = [:],
+        trending: Result<[Movie], MovieError> = .success([]),
+        providers: [WatchProvider] = []
     ) {
         self.searchResults = results
         self.searchError = searchError
         self.failAvailabilityOnce = failAvailabilityOnce
         self.bundles = bundles
+        self.trending = trending
+        self.providers = providers
     }
 
     func setSearchError(_ error: MovieError?) {
@@ -51,9 +57,11 @@ actor FakeMovieRepository: MovieRepository {
     }
 
     func movie(id: MovieID) async throws -> Movie { throw MovieError.unknown }
+    func trendingMovies() async throws -> [Movie] { try trending.get() }
     /// The view model fetches the whole bundle instead.
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.unknown }
-    func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+    /// The same list worldwide and in every region.
+    func allProviders(in region: Region?) async throws -> [WatchProvider] { providers }
 }
 
 struct NullImageURLBuilder: ImageURLBuilder {

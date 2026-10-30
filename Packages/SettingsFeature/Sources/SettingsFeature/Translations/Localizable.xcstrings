@@ -37,24 +37,6 @@
         }
       }
     },
-    "settingsLanguageHeader": {
-      "comment": "Section header above the language picker",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Language"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lenguaje"
-          }
-        }
-      }
-    },
     "settingsLanguagePicker": {
       "comment": "Label for the language picker control",
       "extractionState": "manual",
@@ -87,24 +69,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Determina qué servicios de streaming se presentan para cada película"
-          }
-        }
-      }
-    },
-    "settingsRegionHeader": {
-      "comment": "Section header above the region picker",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Region"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Región"
           }
         }
       }

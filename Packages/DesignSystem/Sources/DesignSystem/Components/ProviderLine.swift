@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A list row's answer to "where can I watch it?": up to three small logos
-/// and "+N" (abroad ones behind a still globe), a caption, or a spinner while
+/// and "+N" (abroad ones behind `AbroadMark`), a caption, or a spinner while
 /// it loads. Holds the logos' height in every state, so rows don't jump as
 /// availability lands. Search results and the Watchlist share it.
 public struct ProviderLine<Provider: Identifiable>: View {
@@ -30,8 +30,7 @@ public struct ProviderLine<Provider: Identifiable>: View {
             case .logos(let providers, let abroad):
                 HStack(spacing: Spacing.default) {
                     if abroad {
-                        // Still: only Details' card spins it.
-                        SpinningGlobe(diameter: logoSize, turns: 0)
+                        AbroadMark(size: logoSize)
                     }
                     ProviderLogoStrip(providers, maxLogos: 3, logoSize: logoSize, logoURL: logoURL, name: name)
                 }
@@ -61,4 +60,5 @@ public struct ProviderLine<Provider: Identifiable>: View {
         line(.caption("Not on your services"))
     }
     .padding()
+    .cinemaBackground()
 }

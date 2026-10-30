@@ -77,6 +77,10 @@ public final class LiveTMDBClient: TMDBClient {
         )
     }
 
+    public func trendingMovies() async throws -> TMDBSearchResponse {
+        try await get(path: "/trending/movie/week", query: ["language": language])
+    }
+
     public func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse {
         try await get(path: "/movie/\(movieID)/watch/providers", query: [:])
     }

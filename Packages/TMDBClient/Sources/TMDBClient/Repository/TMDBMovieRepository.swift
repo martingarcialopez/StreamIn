@@ -56,6 +56,13 @@ public struct TMDBMovieRepository: MovieRepository {
         )
     }
 
+    public func trendingMovies() async throws -> [Movie] {
+        let response = try await mapErrors {
+            try await client.trendingMovies()
+        }
+        return response.results.map(map(dto:))
+    }
+
     public func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
         let response = try await mapErrors {
             try await client.watchProviders(movieID: id.rawValue)

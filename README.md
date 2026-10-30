@@ -240,8 +240,8 @@ one UI test for search → details → providers.
 - `STREAMIN_IN_MEMORY_WATCHLIST=1` starts with an empty, throwaway watchlist.
 
 The packages are iOS-only, so `swift test` doesn't run them on macOS. A build
-step turns `Secrets.xcconfig` into `StreamIn/Secrets/GeneratedSecrets.swift`;
-after changing the key, clean the build folder (⇧⌘K).
+step turns `Secrets.xcconfig` into `StreamIn/Secrets/GeneratedSecrets.swift`
+on every build, so after changing the key just build again.
 
 **Layout**
 

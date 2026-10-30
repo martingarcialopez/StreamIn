@@ -26,7 +26,7 @@ One Swift Package per layer; boundaries are enforced at build time.
 | `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
 | `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
 | `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
-| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `ProviderLogo`, `ProviderLogoStrip`, `ProviderLine`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
+| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `CinemaBackground` (`.cinemaBackground()` on every screen, `.cinemaRow()` on list rows), `ProviderLogo`, `ProviderLogoStrip`, `ProviderLine`, `AbroadMark`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
 | `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData, Watchlist) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 
@@ -102,6 +102,7 @@ Settled — surface it explicitly before challenging one.
 - **Caching and reference data** — see the next section.
 - **Watchlist**: a `WatchlistItem` keeps the whole `Movie`, so Details opens complete from the list, even offline; Details' `refresh` keeps the snapshot current. One `WatchlistStore` is shared by Details' heart and the Watchlist tab: changes show at once, writes are queued in order, and a failed one is rolled back for that movie and reported as `writeFailure`, which `RootView` shows as one alert for any tab. Newest first, no sorting options. SwiftData stays in Persistence.
 - **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
+- **Dark only, on a "cinema" background**: `INFOPLIST_KEY_UIUserInterfaceStyle = Dark` and `.preferredColorScheme(.dark)` at the root. Every screen applies DesignSystem's `.cinemaBackground()` (warm near-black `AppPalette.background` plus a faint accent spotlight), so there is no light mode to check.
 - **iPhone and iPad, nothing else**: `TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only, "Designed for iPhone/iPad" on Mac and Vision Pro disabled. iPad keeps all four orientations (required for multitasking) and uses the same adaptive layouts — App Store submission needs iPad screenshots too.
 
 ## Caching and reference data
@@ -109,7 +110,7 @@ Settled — surface it explicitly before challenging one.
 Three mechanisms, one per kind of data:
 
 - **Provider reference data** — `ProviderCatalog` (`ReferenceData`), a `@MainActor @Observable` class rather than an actor, so views read it synchronously and render complete on their first frame. `RootView` loads it at launch (worldwide + home region) and on region change; screens may call `load(region:)` too — a no-op for loaded scopes that shares in-flight requests. No expiry.
-- **Response caching** — `CachingMovieRepository` (`TMDBClient`) wraps `TMDBMovieRepository`, backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language) and movie detail (id + language) last the session; availability (id + region) expires after 30 min and is shared between `availability(for:in:)` and `availabilities(for:in:)`. Failures are never cached.
+- **Response caching** — `CachingMovieRepository` (`TMDBClient`) wraps `TMDBMovieRepository`, backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language), movie detail (id + language) and trending movies (language) last the session; availability (id + region) expires after 30 min and is shared between `availability(for:in:)` and `availabilities(for:in:)`. Failures are never cached.
 - **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`): `AsyncImage` always starts on its placeholder, so `ProviderLogo` uses `RemoteImage`, which renders synchronously from memory. `RootView` prefetches subscribed providers' logos.
 
 `LiveTMDBClient` keeps `urlCache = nil`, so all caching is app-level and testable. Launch with `STREAMIN_DISABLE_CACHE=1` (scheme → Run → Environment Variables) to put every request on the wire for Proxyman.

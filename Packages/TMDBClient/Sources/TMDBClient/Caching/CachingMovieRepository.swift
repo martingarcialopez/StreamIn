@@ -12,6 +12,7 @@
 //  |-----------------------------|-----------------------------|------------|
 //  | `searchMovies`              | query + page + language     | session    |
 //  | `movie(id:)`                | movie + language            | session    |
+//  | `trendingMovies()`          | language                    | session    |
 //  | `availability(ies)(for:in:)`| movie + region              | 30 minutes |
 //  | `allProviders(in:)`         | not cached here — `ProviderCatalog` holds it |
 //
@@ -50,6 +51,8 @@ public struct CachingMovieRepository: MovieRepository {
     private let currentLanguage: @Sendable () -> String
     private let searchCache: MemoryCache<SearchKey, SearchPage>
     private let movieCache: MemoryCache<MovieKey, Movie>
+    /// Keyed by language.
+    private let trendingCache: MemoryCache<String, [Movie]>
     private let availabilityCache: MemoryCache<AvailabilityKey, AvailabilityBundle>
 
     /// - Parameters:
@@ -67,6 +70,7 @@ public struct CachingMovieRepository: MovieRepository {
         self.currentLanguage = currentLanguage
         self.searchCache = MemoryCache()
         self.movieCache = MemoryCache()
+        self.trendingCache = MemoryCache()
         self.availabilityCache = MemoryCache(timeToLive: availabilityTimeToLive)
     }
 
@@ -83,6 +87,12 @@ public struct CachingMovieRepository: MovieRepository {
         let key = MovieKey(id: id, language: currentLanguage())
         return try await movieCache.value(for: key) { [upstream] in
             try await upstream.movie(id: id)
+        }
+    }
+
+    public func trendingMovies() async throws -> [Movie] {
+        try await trendingCache.value(for: currentLanguage()) { [upstream] in
+            try await upstream.trendingMovies()
         }
     }
 
