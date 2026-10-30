@@ -324,8 +324,7 @@ A pattern used by two screens moves to DesignSystem.
   their logo and a link; a line in onboarding.
 - **`PrivacyInfo.xcprivacy`:** UserDefaults reason `CA92.1`, no tracking, no data
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
-- **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (steps in
-  CLAUDE.md, "TODO: onboarding trigger").
+- ✅ **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (#49).
 - **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
   contrast in light and dark.
 - **README:** refresh the status section and add screenshots or a demo GIF.

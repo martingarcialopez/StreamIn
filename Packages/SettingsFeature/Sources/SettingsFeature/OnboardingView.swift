@@ -7,11 +7,8 @@
 //  select used from Settings) with a welcome header pinned at the top of
 //  the safe area and a single "Done" toolbar button.
 //
-//  Triggering rule lives in the App target's `RootView` — see
-//  `StreamInApp.swift`. During the test phase the rule is "show whenever
-//  the user has no subscriptions"; once shipping, swap it for a
-//  first-launch flag persisted in `Preferences`. See CLAUDE.md "TODO:
-//  onboarding trigger" for the migration.
+//  Shown once: the App target's `RootView` presents it until
+//  `Preferences.hasCompletedOnboarding` is set, which Done does.
 //
 
 import SwiftUI
@@ -52,7 +49,11 @@ public struct OnboardingView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(.onboardingDone) { dismiss() }
+                    // Enabled with nothing picked: services can be added later.
+                    Button(.onboardingDone) {
+                        prefs.hasCompletedOnboarding = true
+                        dismiss()
+                    }
                 }
             }
             .task(id: prefs.region) {

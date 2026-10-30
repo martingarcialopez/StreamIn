@@ -37,6 +37,12 @@ public final class Preferences {
         didSet { persistSubscribedProviders() }
     }
 
+    /// Set once the user leaves onboarding, with or without picking services,
+    /// so it shows on the first launch only.
+    public var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: Self.hasCompletedOnboardingKey) }
+    }
+
     /// A value type snapshot of both axes. Use this as the `id:` argument of
     /// `.task(id:)` in any view that needs to re-fire a query when either
     /// setting changes.
@@ -56,6 +62,7 @@ public final class Preferences {
     private static let regionKey               = "settings.region.code"
     private static let languageKey             = "settings.language.code"
     private static let subscribedProvidersKey  = "settings.subscribedProviders.ids"
+    private static let hasCompletedOnboardingKey = "settings.hasCompletedOnboarding"
 
     public init(
         defaultRegion: Region = .currentLocale,
@@ -81,6 +88,7 @@ public final class Preferences {
         }
 
         self.subscribedProviderIDs = Self.loadSubscribedProviders(from: defaults)
+        self.hasCompletedOnboarding = defaults.bool(forKey: Self.hasCompletedOnboardingKey)
     }
 
     // MARK: - Subscribed providers persistence

@@ -118,6 +118,8 @@ Three mechanisms, one per kind of data:
 
 **Watchlist storage** — `StreamInApp` opens the SwiftData store through `WatchlistPersistence.makeRepository`; if it can't, that launch keeps the watchlist in memory and logs why, rather than crashing. `RootView` loads `WatchlistStore` at launch. Launch with `STREAMIN_IN_MEMORY_WATCHLIST=1` to start with an empty, throwaway watchlist.
 
+**Onboarding** shows on the first launch only: `RootView` presents it until `Preferences.hasCompletedOnboarding` (UserDefaults `settings.hasCompletedOnboarding`) is set by its Done button, which stays enabled with no services picked. Launch with `-settings.hasCompletedOnboarding NO` to see it again.
+
 `SearchViewModel` remembers the request behind the results on screen: the results screen's `.task` re-fires whenever it reappears (e.g. Details popped), and a repeated request keeps the results, only retrying rows whose availability never arrived.
 
 ## Testing
@@ -126,16 +128,6 @@ Three mechanisms, one per kind of data:
 - `StreamIn.xctestplan` (the shared `StreamIn` scheme's test plan) runs every package's tests in one build — ⌘U in Xcode, and what CI runs: `xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'`. A new package's test target must be added to the test plan.
 - The packages are iOS-only, so `swift test` doesn't run them on macOS. One package alone, from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
 - Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`, and one UI test for search → details → providers. The app-level test targets still hold Xcode's templates.
-
-## TODO: onboarding trigger (Phase 6)
-
-Onboarding is presented whenever `prefs.subscribedProviderIDs.isEmpty` — handy while testing, wrong for release. Before shipping:
-
-1. Add `hasCompletedOnboarding: Bool` to `Preferences` (UserDefaults key `settings.hasCompletedOnboarding`, default `false`).
-2. In `RootView`'s launch `.task`, trigger on `!prefs.hasCompletedOnboarding`.
-3. Set it from `OnboardingView`'s Done (and any Skip) button. Done stays enabled with zero services picked.
-
-To see onboarding today, launch with `-settings.subscribedProviders.ids none`.
 
 ## Non-goals
 

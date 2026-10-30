@@ -73,3 +73,40 @@ import Domain
         #expect(prefs.language == .englishUS)
     }
 }
+
+@MainActor
+@Suite struct OnboardingFlagTests {
+
+    private func makeDefaults() -> UserDefaults {
+        let suite = "PreferencesTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
+    }
+
+    @Test func falseByDefault() {
+        #expect(Preferences(defaults: makeDefaults()).hasCompletedOnboarding == false)
+    }
+
+    @Test func roundTripPersistsAcrossInstances() {
+        let defaults = makeDefaults()
+        Preferences(defaults: defaults).hasCompletedOnboarding = true
+
+        #expect(Preferences(defaults: defaults).hasCompletedOnboarding)
+    }
+
+    /// Skipping onboarding with no services picked must still count as done,
+    /// and picking services must not mark it done on its own.
+    @Test func independentOfSubscriptions() {
+        let defaults = makeDefaults()
+        let prefs = Preferences(defaults: defaults)
+        prefs.subscribedProviderIDs = [ProviderID(8)]
+        #expect(Preferences(defaults: defaults).hasCompletedOnboarding == false)
+
+        prefs.subscribedProviderIDs = []
+        prefs.hasCompletedOnboarding = true
+        let reloaded = Preferences(defaults: defaults)
+        #expect(reloaded.hasCompletedOnboarding)
+        #expect(reloaded.subscribedProviderIDs.isEmpty)
+    }
+}
