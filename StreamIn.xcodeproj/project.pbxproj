@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		354FB40B4F6C466B963DC9B8 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = B8CECB5AA23445E981B96C90 /* Preferences */; };
+		44ED7FFDCBCB992D1C74ADF7 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = DC93CACC0BDC108B3942B3B5 /* Persistence */; };
 		5B20C7EC2FA4C510006066E7 /* DetailsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5B20C7EB2FA4C510006066E7 /* DetailsFeature */; };
 		5B2B3D662FC079D100C8C204 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 5B2B3D652FC079D100C8C204 /* DesignSystem */; };
 		5B63F2B32FA126C8002AB748 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 5B63F2B22FA126C8002AB748 /* CLAUDE.md */; };
@@ -17,7 +18,6 @@
 		5BF57B5C2FAB9D7900BF5F39 /* WatchlistFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF57B5B2FAB9D7900BF5F39 /* WatchlistFeature */; };
 		5BF89A042FA123FF005E8AF1 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A032FA123FF005E8AF1 /* Domain */; };
 		5BF89A072FA12411005E8AF1 /* TMDBClient in Frameworks */ = {isa = PBXBuildFile; productRef = 5BF89A062FA12411005E8AF1 /* TMDBClient */; };
-		44ED7FFDCBCB992D1C74ADF7 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = DC93CACC0BDC108B3942B3B5 /* Persistence */; };
 		992E035565562A3AB93FD783 /* Watchlist in Frameworks */ = {isa = PBXBuildFile; productRef = D64C978B073996C8B3302DD4 /* Watchlist */; };
 /* End PBXBuildFile section */
 
@@ -54,9 +54,9 @@
 		5BF57B562FAB9CD100BF5F39 /* SettingsFeature */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SettingsFeature; path = Packages/SettingsFeature; sourceTree = "<group>"; };
 		5BF6C52F16A8BFB26CAF1FC8 /* settings.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = settings.json; sourceTree = "<group>"; };
 		5BF89A012FA123DB005E8AF1 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
+		68806381A0271AF19D9FEA45 /* Watchlist */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Watchlist; path = Packages/Watchlist; sourceTree = "<group>"; };
 		A99EFD0F0E8E44AF8ECC29A1 /* Preferences */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Preferences; path = Packages/Preferences; sourceTree = "<group>"; };
 		D2C66CD8381CCDA70C64DD90 /* Persistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Persistence; path = Packages/Persistence; sourceTree = "<group>"; };
-		68806381A0271AF19D9FEA45 /* Watchlist */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Watchlist; path = Packages/Watchlist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -869,13 +869,13 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Preferences;
 		};
-		DC93CACC0BDC108B3942B3B5 /* Persistence */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Persistence;
-		};
 		D64C978B073996C8B3302DD4 /* Watchlist */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Watchlist;
+		};
+		DC93CACC0BDC108B3942B3B5 /* Persistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Persistence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
