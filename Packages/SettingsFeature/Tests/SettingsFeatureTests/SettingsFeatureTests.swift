@@ -203,3 +203,27 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(!model.isInitialLoad)
     }
 }
+
+@Suite struct AboutTests {
+
+    @Test func versionReadsMarketingVersionAndBuild() {
+        let version = AppVersion(infoDictionary: [
+            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleVersion": "1"
+        ])
+        #expect(version == AppVersion(version: "1.0.0", build: "1"))
+    }
+
+    @Test func missingVersionKeysShowADash() {
+        #expect(AppVersion(infoDictionary: nil) == AppVersion(version: "–", build: "–"))
+    }
+
+    @Test func privacyPolicyFollowsTheInterfaceLanguage() {
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "es_ES")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/es/privacy/")
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "en_US")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/privacy/")
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "fr_FR")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/privacy/")
+    }
+}

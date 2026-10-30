@@ -19,6 +19,15 @@ private nonisolated let resourceBundleDescription = LocalizedStringResource.Bund
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 nonisolated extension LocalizedStringResource {
     /**
+     Onboarding: one quiet credit line at the end of the services list. Same copy as the landing page's credits.
+     
+     Localized string for key “onboardingCredits” in table “Localizable.xcstrings”.
+     */
+    static var onboardingCredits: LocalizedStringResource {
+        LocalizedStringResource("onboardingCredits", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Toolbar button that dismisses the onboarding sheet
      
      Localized string for key “onboardingDone” in table “Localizable.xcstrings”.
@@ -70,6 +79,51 @@ nonisolated extension LocalizedStringResource {
      */
     static var providerRowSubscribedAccessibility: LocalizedStringResource {
         LocalizedStringResource("providerRowSubscribedAccessibility", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings: header of the last section, with credits, the privacy policy and the app version.
+     
+     Localized string for key “settingsAboutHeader” in table “Localizable.xcstrings”.
+     */
+    static var settingsAboutHeader: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutHeader", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: credit for the watch-provider data; opens justwatch.com.
+     
+     Localized string for key “settingsAboutJustWatch” in table “Localizable.xcstrings”.
+     */
+    static var settingsAboutJustWatch: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutJustWatch", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: link to StreamIn's privacy policy web page.
+     
+     Localized string for key “settingsAboutPrivacy” in table “Localizable.xcstrings”.
+     */
+    static var settingsAboutPrivacy: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutPrivacy", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: TMDB's required attribution, under their logo; opens themoviedb.org. Wording set by TMDB's terms.
+     
+     Localized string for key “settingsAboutTMDB” in table “Localizable.xcstrings”.
+     */
+    static var settingsAboutTMDB: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutTMDB", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: the app version, then the build number in parentheses, e.g. Version 1.0.0 (1).
+     
+     Localized string for key “settingsAboutVersion” in table “Localizable.xcstrings”.
+     */
+    static func settingsAboutVersion(_ arg1: String, _ arg2: String) -> LocalizedStringResource {
+        LocalizedStringResource("settingsAboutVersion", defaultValue: "\(arg1)\(arg2)", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

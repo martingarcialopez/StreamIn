@@ -21,4 +21,6 @@ public enum Symbol {
     public static let heartFill = "heart.fill"
     public static let chevronLeft = "chevron.left"
     public static let chevronRight = "chevron.right"
+    public static let arrowUpRight = "arrow.up.right"
+    public static let checkmarkCircleFill = "checkmark.circle.fill"
 }

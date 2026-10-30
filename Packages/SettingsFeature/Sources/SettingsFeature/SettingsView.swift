@@ -51,6 +51,8 @@ public struct SettingsView: View {
                 imageURLBuilder: imageURLBuilder
             )
             .cinemaRow()
+            AboutSection()
+                .cinemaRow()
         }
         .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
@@ -289,7 +291,9 @@ private struct ProviderIcon: View {
             catalog: ProviderCatalog(repository: PreviewMovieRepository()),
             imageURLBuilder: PreviewImageURLBuilder()
         )
+        .cinemaBackground()
     }
+    .preferredColorScheme(.dark)
 }
 
 private struct PreviewMovieRepository: MovieRepository {

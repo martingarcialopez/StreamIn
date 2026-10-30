@@ -630,6 +630,114 @@
           }
         }
       }
+    },
+    "settingsAboutHeader": {
+      "comment": "Settings: header of the last section, with credits, the privacy policy and the app version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de"
+          }
+        }
+      }
+    },
+    "settingsAboutTMDB": {
+      "comment": "Settings → About: TMDB's required attribution, under their logo; opens themoviedb.org. Wording set by TMDB's terms.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This product uses the TMDB API but is not endorsed or certified by TMDB."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica."
+          }
+        }
+      }
+    },
+    "settingsAboutJustWatch": {
+      "comment": "Settings → About: credit for the watch-provider data; opens justwatch.com.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streaming availability data provided by JustWatch."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos de disponibilidad en streaming proporcionados por JustWatch."
+          }
+        }
+      }
+    },
+    "settingsAboutPrivacy": {
+      "comment": "Settings → About: link to StreamIn's privacy policy web page.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidad"
+          }
+        }
+      }
+    },
+    "settingsAboutVersion": {
+      "comment": "Settings → About: the app version, then the build number in parentheses, e.g. Version 1.0.0 (1).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "onboardingCredits": {
+      "comment": "Onboarding: one quiet credit line at the end of the services list. Same copy as the landing page's credits.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Powered by TMDB · Availability by JustWatch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con datos de TMDB · Disponibilidad de JustWatch"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

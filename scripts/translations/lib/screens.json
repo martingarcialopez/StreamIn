@@ -27,8 +27,8 @@
     },
     {
       "sheet": "Ajustes",
-      "description": "Engranaje arriba a la derecha: región, idioma y tus servicios.",
-      "files": ["SettingsView.swift", "StreamingServicesSheet.swift"]
+      "description": "Engranaje arriba a la derecha: región, idioma, tus servicios y «Acerca de».",
+      "files": ["SettingsView.swift", "StreamingServicesSheet.swift", "AboutSection.swift"]
     },
     {
       "sheet": "Servicios",
