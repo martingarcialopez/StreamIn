@@ -72,7 +72,7 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 | Tool | What it's for |
 |---|---|
 | `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
-| Translation review (`scripts/translations.sh`, `scripts/translator-preview.sh`) | Every on-screen string to an `.xlsx`, one sheet per screen, where a reviewer edits the en + es copy in place; `import` writes the edits back (placeholders checked, stale rows skipped). The preview script opens the app in the simulator in one language. Loop in [`docs/translations.md`](docs/translations.md) |
+| Translation review (`scripts/translations.sh`, `scripts/translator-preview.sh`) | Every on-screen string to `scripts/streamin-translations.numbers` (`.xlsx` without Numbers), one sheet per screen, where a reviewer edits the en + es copy in place; `import` writes the edits back (placeholders checked, stale rows skipped). `translator-preview.sh <en|es>` opens the app in the simulator with that workbook's edits patched into a copy of the build (built on the first run only), catalogs untouched. Loop in [`docs/translations.md`](docs/translations.md) |
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
 | `start-issue` skill | Start work on a GitHub issue: read it, plan, branch |
 | `parallel` skill | `/parallel <issue>` or `/parallel <task in plain words>` (written up as an issue first): start it in its own worktree session (own simulator, Xcode window, build lock), listed in `claude agents`; `/parallel clean` removes finished ones |

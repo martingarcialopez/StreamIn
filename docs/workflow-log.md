@@ -20,11 +20,11 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 ## 2026-10-30 — Translation review in a spreadsheet (#87)
 
 **What shipped:** `scripts/translations.sh export` writes every on-screen string
-to an `.xlsx`, one sheet per screen, where a reviewer who isn't a developer
-edits the English and Spanish copy in place; `import` writes the edits back to
-the String Catalogs.
-`scripts/translator-preview.sh` opens the app in the simulator in one language
-next to the sheet.
+to a Numbers workbook, one sheet per screen, where a reviewer who isn't a
+developer edits the English and Spanish copy in place; `import` writes the edits
+back to the String Catalogs. `scripts/translator-preview.sh` opens the app in the
+simulator in one language, with the workbook's edits, before anything is
+imported.
 
 **Workflow pieces used**
 - **Two questions before the plan:** a workbook rather than a web page or CSVs,
@@ -50,6 +50,19 @@ next to the sheet.
 - **Martín, after the first export:** no "proposal" columns. The reviewer edits
   the English and Spanish cells in place; hidden copies of the exported text
   keep the change and staleness checks working.
+- **Martín, trying it in Numbers:** Numbers can't save `.xlsx`, so each round
+  meant a copy and an export by hand. The workbook is now
+  `scripts/streamin-translations.numbers`, converted by Numbers through
+  AppleScript. `translator-preview.sh` always reads it and patches the edits into
+  a copy of the built app's compiled strings: a few seconds per try, with unsaved
+  edits included and the catalogs left alone. It builds only on the first run
+  (`--build` forces one).
+- **An AppleScript sandbox trap:** `POSIX file <variable>` inside a
+  `tell application "Numbers"` block is resolved by sandboxed Numbers, which then
+  can't open a file it hasn't seen. Built outside the block, osascript hands over
+  access. It looked like a temp folder or hidden folder problem at first; the
+  guard that waits for the guide sheet turned a silent empty `.numbers` into an
+  error.
 - **The preview script, run for real:** the first launch showed "Disponibles en
   Francia", since the default region comes from the simulator's locale. It now
   passes `-AppleLocale` with the language, so es opens in Spain and en in the US.

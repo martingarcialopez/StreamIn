@@ -4,6 +4,7 @@ Run with scripts/translations.sh test (CI does, before the app build).
 """
 
 import json
+import plistlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -250,6 +251,30 @@ class TranslationsTests(unittest.TestCase):
         report = self.run_import()
         self.assertEqual(len(report.warnings), 1)
         self.assertIn("¿Mejor «Ajustes»?", report.notes[0])
+
+    # MARK: Preview
+
+    def test_preview_writes_edits_into_the_apps_compiled_strings_only(self):
+        app = self.repo / "StreamIn.app"
+        package_strings = app / "List_List.bundle" / "es.lproj" / "Localizable.strings"
+        app_strings = app / "es.lproj" / "Localizable.strings"
+        for path, strings in ((package_strings, {"listTitle": "Mi lista", "listCount": "%lld películas de %@"}),
+                              (app_strings, {"Settings": "Ajustes"})):
+            path.parent.mkdir(parents=True)
+            path.write_bytes(plistlib.dumps(strings, fmt=plistlib.FMT_BINARY))
+        self.export()
+        self.propose("listTitle", es="Guardadas")
+        self.propose("Settings", es="Configuración")
+        self.propose("listCount", es="%@ películas")
+        catalog_before = self.package_catalog.read_text(encoding="utf-8")
+
+        report = t.preview_workbook(self.repo, self.workbook, app)
+
+        self.assertEqual(plistlib.loads(package_strings.read_bytes()),
+                         {"listTitle": "Guardadas", "listCount": "%lld películas de %@"})
+        self.assertEqual(plistlib.loads(app_strings.read_bytes()), {"Settings": "Configuración"})
+        self.assertEqual(len(report.errors), 1)
+        self.assertEqual(self.package_catalog.read_text(encoding="utf-8"), catalog_before)
 
     # MARK: Helpers
 

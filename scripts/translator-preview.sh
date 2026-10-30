@@ -1,67 +1,80 @@
 #!/usr/bin/env bash
 # Opens StreamIn in the simulator in one language, for the translation review.
 #
-#   scripts/translator-preview.sh <en|es> [--onboarding] [--no-build]
+#   scripts/translator-preview.sh <en|es> [--onboarding] [--build]
 #
-# Builds the app (through xcodebuild-locked.sh, so it queues behind other
-# sessions' builds), boots this checkout's simulator, opens the Simulator app
-# and launches StreamIn with its UI and TMDB content in that language — the
-# same pair the in-app language picker sets, for this launch only.
+# The app shows the edits in scripts/streamin-translations.numbers, saved or
+# still on screen in Numbers, without touching the String Catalogs: they go
+# into a copy of the built app (translations.sh preview). The workbook comes
+# from `scripts/translations.sh export`.
+#
+# The app is built only on the first run (through xcodebuild-locked.sh, so it
+# queues behind other sessions' builds); later runs reuse that build. The copy
+# is installed on this checkout's simulator and launched with its UI and TMDB
+# content in that language, for this launch only.
 #
 #   --onboarding  start from the first-launch onboarding (no services picked)
-#   --no-build    relaunch the last build, e.g. to switch language quickly
-#
-# After `scripts/translations.sh import`, run it again to see the new copy.
+#   --build       build again, after the code or the catalogs changed
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
 
-usage() { echo "Usage: $0 <en|es> [--onboarding] [--no-build]" >&2; exit 64; }
+usage() { echo "Usage: $0 <en|es> [--onboarding] [--build]" >&2; exit 64; }
 
-case "${1:-}" in
-  en) ui=en; locale=en_US; content=en-US ;;
-  es) ui=es; locale=es_ES; content=es-ES ;;
-  *) usage ;;
-esac
-shift
-
+language=""
 onboarding=false
-build=true
+force_build=false
 for arg in "$@"; do
   case "$arg" in
+    en|es) language=$arg ;;
     --onboarding) onboarding=true ;;
-    --no-build) build=false ;;
+    --build) force_build=true ;;
     *) usage ;;
   esac
 done
+case "$language" in
+  en) locale=en_US; content=en-US ;;
+  es) locale=es_ES; content=es-ES ;;
+  *) usage ;;
+esac
+
+cd "$(dirname "$0")/.."
+
+workbook=scripts/streamin-translations.numbers
+if [[ ! -f "$workbook" ]]; then
+  echo "Error: no $workbook. Create it with: scripts/translations.sh export" >&2
+  exit 1
+fi
 
 derived=build/translator-preview
 app="$derived/Build/Products/Debug-iphonesimulator/StreamIn.app"
 simulator=$(scripts/worktree-simulator.sh)
 
-if $build; then
+if $force_build || [[ ! -d "$app" ]]; then
   echo "Building StreamIn for \"$simulator\"…" >&2
   scripts/xcodebuild-locked.sh build -quiet \
     -project StreamIn.xcodeproj -scheme StreamIn -configuration Debug \
     -derivedDataPath "$derived" \
     -destination "platform=iOS Simulator,name=$simulator,OS=latest"
-elif [[ ! -d "$app" ]]; then
-  echo "No build at $app yet; run without --no-build first." >&2
-  exit 1
 fi
+
+installed="$derived/Preview/StreamIn.app"
+rm -rf "$installed"
+mkdir -p "$(dirname "$installed")"
+cp -R "$app" "$installed"
+scripts/translations.sh preview "$installed" "$workbook"
 
 xcrun simctl boot "$simulator" 2>/dev/null || true
 open -a Simulator
 xcrun simctl bootstatus "$simulator" -b >/dev/null
-xcrun simctl install "$simulator" "$app"
+xcrun simctl install "$simulator" "$installed"
 
-bundle_id=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$app/Info.plist")
+bundle_id=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$installed/Info.plist")
 # The locale's region is the default Region until one is picked in Settings.
-launch_args=(-AppleLanguages "($ui)" -AppleLocale "$locale" -settings.language.code "$content")
+launch_args=(-AppleLanguages "($language)" -AppleLocale "$locale" -settings.language.code "$content")
 # Onboarding shows while no service is picked (until Phase 6's
 # hasCompletedOnboarding flag replaces that trigger).
 if $onboarding; then
   launch_args+=(-settings.subscribedProviders.ids none)
 fi
 xcrun simctl launch --terminate-running-process "$simulator" "$bundle_id" "${launch_args[@]}" >/dev/null
-echo "StreamIn is open in \"$simulator\", in $ui."
+echo "StreamIn is open in \"$simulator\", in $language, with the edits in $workbook."
