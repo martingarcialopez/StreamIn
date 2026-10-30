@@ -24,6 +24,9 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
     func movie(id: MovieID) async throws -> Movie {
         throw MovieError.unknown
     }
+    func trendingMovies() async throws -> [Movie] {
+        throw MovieError.unknown
+    }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
         throw MovieError.unknown
     }

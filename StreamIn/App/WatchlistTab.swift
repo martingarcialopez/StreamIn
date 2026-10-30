@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Domain
+import DesignSystem
 import Preferences
 import Watchlist
 import WatchlistFeature
@@ -26,6 +27,7 @@ struct WatchlistTab: View {
     var body: some View {
         NavigationStack {
             WatchlistView(model: model)
+            .cinemaBackground()
             .navigationDestination(for: Movie.self) { movie in
                 MovieDetailsDestination(
                     movie: movie,

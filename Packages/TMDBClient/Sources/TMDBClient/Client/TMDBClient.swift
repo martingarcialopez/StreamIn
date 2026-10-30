@@ -11,6 +11,8 @@ import Foundation
 public protocol TMDBClient: Sendable {
     func searchMovies(query: String, page: Int) async throws -> TMDBSearchResponse
     func movieDetails(id: Int) async throws -> TMDBMovieDetailDTO
+    /// `/trending/movie/week`: same paged shape as search.
+    func trendingMovies() async throws -> TMDBSearchResponse
     func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse
     /// `/watch/providers/movie?watch_region=XX` if `watchRegion != nil`,
     /// `/watch/providers/movie` otherwise (every provider globally).

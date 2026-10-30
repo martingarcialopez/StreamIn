@@ -91,15 +91,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Section header above the language picker
-     
-     Localized string for key “settingsLanguageHeader” in table “Localizable.xcstrings”.
-     */
-    static var settingsLanguageHeader: LocalizedStringResource {
-        LocalizedStringResource("settingsLanguageHeader", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Label for the language picker control
      
      Localized string for key “settingsLanguagePicker” in table “Localizable.xcstrings”.
@@ -196,15 +187,6 @@ nonisolated extension LocalizedStringResource {
      */
     static var settingsRegionFooter: LocalizedStringResource {
         LocalizedStringResource("settingsRegionFooter", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Section header above the region picker
-     
-     Localized string for key “settingsRegionHeader” in table “Localizable.xcstrings”.
-     */
-    static var settingsRegionHeader: LocalizedStringResource {
-        LocalizedStringResource("settingsRegionHeader", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

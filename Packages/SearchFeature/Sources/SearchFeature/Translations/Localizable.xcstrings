@@ -91,24 +91,6 @@
         }
       }
     },
-    "searchTitle" : {
-      "comment" : "Navigation bar title for the Search screen; \"StreamIn\" is the app brand name",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "StreamIn"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "StreamIn"
-          }
-        }
-      }
-    },
     "searchLandingCredits" : {
       "comment" : "Footer at the bottom of the search landing page crediting the data sources: TMDB (movie data) and JustWatch (where-to-watch data). Keep the brand names as they are.",
       "extractionState" : "manual",
@@ -231,6 +213,114 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con tus servicios en el extranjero: %@"
+          }
+        }
+      }
+    },
+    "searchLandingTagline" : {
+      "comment" : "Tagline under the app name on the search landing page, saying what the app does",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find where any movie streams"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descubre dónde ver cualquier película"
+          }
+        }
+      }
+    },
+    "searchLandingSlotAnyMovie" : {
+      "comment" : "VoiceOver name for the landing page's movie reel when trending movies couldn't load and it shows film icons instead of posters",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A movie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una película"
+          }
+        }
+      }
+    },
+    "searchLandingSlotAnyService" : {
+      "comment" : "VoiceOver name for the landing page's service reel when provider logos couldn't load and it shows TV icons instead",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A streaming service"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una plataforma"
+          }
+        }
+      }
+    },
+    "searchLandingSlotLabel" : {
+      "comment" : "VoiceOver label of the landing page's slot machine: the movie, streaming service and country its three reels stopped on. %1$@ movie title, %2$@ service name, %3$@ country name",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, on %2$@, in %3$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, en %2$@, en %3$@"
+          }
+        }
+      }
+    },
+    "searchLandingSlotHint" : {
+      "comment" : "VoiceOver hint of the landing page's slot machine: activating it spins the reels again",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spins again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a girar"
+          }
+        }
+      }
+    },
+    "searchLandingSlotInputLabel" : {
+      "comment" : "Voice Control name of the landing page's slot machine, the word users say to spin it (its spoken label changes with every spin)",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spin"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Girar"
           }
         }
       }

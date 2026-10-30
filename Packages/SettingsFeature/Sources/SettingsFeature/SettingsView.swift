@@ -42,12 +42,15 @@ public struct SettingsView: View {
     public var body: some View {
         Form {
             RegionSection(prefs: prefs)
+                .cinemaRow()
             LanguageSection(prefs: prefs)
+                .cinemaRow()
             StreamingServicesSection(
                 prefs: prefs,
                 model: streamingServicesModel,
                 imageURLBuilder: imageURLBuilder
             )
+            .cinemaRow()
         }
         .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
@@ -84,8 +87,6 @@ private struct RegionSection: View {
             } label: {
                 Text(.settingsRegionPicker)
             }
-        } header: {
-            Text(.settingsRegionHeader)
         } footer: {
             Text(.settingsRegionFooter)
         }
@@ -111,8 +112,6 @@ private struct LanguageSection: View {
             } label: {
                 Text(.settingsLanguagePicker)
             }
-        } header: {
-            Text(.settingsLanguageHeader)
         } footer: {
             Text(.settingsLanguageFooter)
         }
@@ -298,6 +297,9 @@ private struct PreviewMovieRepository: MovieRepository {
         fatalError("not used in preview")
     }
     func movie(id: MovieID) async throws -> Movie {
+        fatalError("not used in preview")
+    }
+    func trendingMovies() async throws -> [Movie] {
         fatalError("not used in preview")
     }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {

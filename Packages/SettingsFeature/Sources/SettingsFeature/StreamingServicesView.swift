@@ -147,9 +147,15 @@ struct StreamingServicesView: View {
     var body: some View {
         List {
             YourSubscriptionsSection(model: model, imageURLBuilder: imageURLBuilder)
+                .cinemaRow()
             WorldwideToggleSection(model: model)
+                .cinemaRow()
             AvailableProvidersSection(model: model, imageURLBuilder: imageURLBuilder, region: prefs.region)
+                .cinemaRow()
         }
+        // Here rather than at each call site: the list is pushed from
+        // Settings and shown in the services sheet and in Onboarding.
+        .cinemaBackground()
         .navigationTitle(Text(title))
         .toolbarTitleDisplayMode(.inline)
         .searchable(

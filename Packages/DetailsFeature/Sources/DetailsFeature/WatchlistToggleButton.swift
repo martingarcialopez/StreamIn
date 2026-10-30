@@ -95,6 +95,7 @@ private actor PreviewWatchlistRepository: WatchlistRepository {
 private struct NoMovieRepository: MovieRepository {
     func searchMovies(query: String, page: Int) async throws -> SearchPage { throw MovieError.notFound }
     func movie(id: MovieID) async throws -> Movie { throw MovieError.notFound }
+    func trendingMovies() async throws -> [Movie] { [] }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.notFound }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle { throw MovieError.notFound }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }

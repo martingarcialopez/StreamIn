@@ -18,6 +18,7 @@ struct SearchTab: View {
     let imageURLBuilder: ImageURLBuilder
     let prefs: Preferences
     let watchlist: WatchlistStore
+    let landingModel: LandingViewModel
     @Binding var showingSettings: Bool
     @Binding var showingStreamingServices: Bool
 
@@ -25,7 +26,7 @@ struct SearchTab: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            SearchView(onSearch: { query in
+            SearchView(landing: landingModel, onSearch: { query in
                 path.append(SearchResultsRoute(query: query))
             })
             .navigationDestination(for: SearchResultsRoute.self) { route in

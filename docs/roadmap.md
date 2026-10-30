@@ -193,7 +193,7 @@ the answer: one verdict, an emoji plus a tinted headline.
 each starting with a short design Q&A, then previews and the simulator (iPhone and iPad, en and es).
 
 **Reuse the Phase 4 language where it fits:**
-- `AppPalette.background` pages
+- `cinemaBackground()` pages (the app is dark-only since #46)
 - tinted cards with legends on the border
 - app-icon `ProviderLogo`s
 - emoji + semibold headlines
@@ -204,18 +204,83 @@ A pattern used by two screens moves to DesignSystem.
 **Issues**
 
 1. #46 — Landing page and its animation.
-   - The conic-gradient halo is stashed as `landing-halo-wip` (12 s rotation, blur 28, opacity 0.7):
-     restore and refine it, or redo it.
-   - Reduce Motion, light and dark, small iPhones, no overlap with the logo or tab bar.
-   - The credits footer (#44) lives here.
+
+   **Decided (Oct 29–30, design Q&As and iterations on the simulator):**
+   - **A slot machine is the hero,** in place of a logo. Its three reels say what the app does: a
+     movie, a service, a country.
+     - They spin when the page first appears and stop left to right (1.4 / 1.9 / 2.4 s, ease-out)
+       on a winning line marked by two accent pointers, with a light haptic tick per reel.
+     - Tap the machine to spin again; a spin never lands on the combination already showing.
+     - VoiceOver reads it as one button: "Dune, on Netflix, in Spain", hint "Spins again".
+     - Reduce Motion: the reels jump to their stop and the lever stays still.
+   - **A clean rectangle whose reels turn like drums:**
+     - A plain rounded card with straight separators, a soft fade top and bottom, and an accent
+       border.
+     - Only the vertical turns (`DrumPlacement`): symbols sit 45° apart around each reel's drum,
+       so as they roll away from the line they bunch up, squash, fade and vanish round the back.
+       Nothing narrows or leans sideways.
+     - Every symbol sits on the same square Liquid Glass tile. Posters and logos fill theirs inside
+       a thin glass rim, and flags and glyphs sit large in the centre, so all three reels carry
+       the same weight.
+     - `Drum` is an `Animatable` view that draws only the few symbols near the line at each frame
+       of the spin.
+   - **A lever in outline, made of the machine's own materials:**
+     - A slim track with the machine's background and accent border.
+     - A knob built like the tiles: an accent disc filling a Liquid Glass one inside the same
+       3 pt rim.
+     - It's an overlay beside the machine, so the machine stays centred.
+     - Every spin pulls the knob down, and the reels start as it reaches the bottom, with a heavy
+       haptic thump, then it springs back. Tap it, or drag the knob down past 60 %, to spin.
+   - **Real posters, a generic mix:**
+     - The movie reel is this week's TMDB trending movies, up to 12. This needed a new
+       `MovieRepository.trendingMovies()`, cached per language for the session.
+     - The service reel is a fixed list of well-known services from the worldwide
+       `ProviderCatalog`.
+     - The country reel is 14 flags.
+     - The same mix for everyone, shuffled each launch.
+     - Offline, a reel falls back to SF Symbol glyphs; the page never shows an error.
+   - **A dark app on a "cinema" background,** for every screen: `AppPalette.background` became a
+     warm near-black, and `cinemaBackground()` (DesignSystem) adds a faint accent spotlight from
+     the top. StreamIn is dark-only (`UIUserInterfaceStyle = Dark`, `.preferredColorScheme(.dark)`
+     at the root).
+     - Cards and rows share one warm dark grey, `AppPalette.secondaryBackground`; list and form
+       rows take it through `cinemaRow()` instead of the system's cooler grey.
+     - Details turns the spotlight off (`cinemaBackground(spotlight: false)`): its backdrop is the
+       light at the top, and the two met in a hard line.
+     - Small fixes found on the way: the results screen is titled with its query instead of
+       "StreamIn", and Settings lost the section headers that repeated their only row.
+   - **A promise under the name:** "Find where any movie streams" ("Descubre dónde ver cualquier
+     película").
+   - **The halo behind the search bar** (restored from the `landing-halo-wip` stash): a warm conic
+     gradient at 45 %, so the machine stays the brightest thing on the page. One turn every 12 s
+     at 30 fps; still under Reduce Motion.
+   - **Credits pinned at the bottom** (#44), a section gap above the floating tab bar; the keyboard
+     covers them.
+   - **Layout:** a little above centre, scrolling only when it doesn't fit, at most 560 pt wide.
+     The reels' row height follows Dynamic Type up to 86 pt, so the machine and its lever still
+     fit an iPhone SE.
+   - **Tried and dropped:**
+     - The popcorn mark with a `SpinningGlobe` badge on a light page: read as placeholder art.
+     - Plain strips scrolling up and down: didn't read as a slot machine.
+     - Glass reel windows with drum shading and a metal rod lever: didn't fit the clean look, and
+       the lever pushed the machine off centre.
+     - A barrel in perspective, with the outline and separators bowing like `( | | )`: lost the
+       clean rectangle.
+     - A hand-shaded 3D marble for the knob, and then a small dot in a glass disc: the first was
+       the only skeuomorphic object on the page, the second too timid.
+     - Also considered: a win flash and chasing marquee lights.
+     - Two lessons on the way. A `visualEffect` drum read the layout's final position
+       mid-animation, so the reels went blank while spinning. And seen from close up, a cylinder's
+       edge is where the line of sight grazes it (about 72°), not 90°; drawn to 90°, the barrel's
+       outline grew "ears".
 2. #47 — Search results: the same language as Details, maybe a verdict hint per row.
 
    **Decided (Oct 29, design Q&A):**
    - **No verdict label per row.** A plain line of logos reads better in a list than an emoji and a
      headline.
    - **The logos are Details' answer, in Details' order:** your services at home, then free ones.
-     Without either, your services abroad, behind a small, still `SpinningGlobe` (only Details'
-     card spins it; one per row would be too busy). Up to 3 logos at
+     Without either, your services abroad, behind an `AbroadMark` (a flat accent globe on a
+     logo-sized tile, since #46; the 3D `SpinningGlobe` stays for Details' card). Up to 3 logos at
      `LogoSize.small`, then "+N" (`ProviderLogoStrip`, promoted to DesignSystem from Details).
    - **No logos:** a quiet caption, "Not on your services", or "Not streaming here" when no
      subscription or free service carries it at home.

@@ -8,6 +8,7 @@ import Domain
 final class StubTMDBClient: TMDBClient, @unchecked Sendable {
     var searchResult: Result<TMDBSearchResponse, Error> = .failure(MovieError.unknown)
     var movieDetailsResult: Result<TMDBMovieDetailDTO, Error> = .failure(MovieError.unknown)
+    var trendingResult: Result<TMDBSearchResponse, Error> = .failure(MovieError.unknown)
     var watchProvidersResult: Result<TMDBWatchProvidersResponse, Error> = .failure(MovieError.unknown)
     var providerListResult: Result<TMDBProviderListResponse, Error> = .failure(MovieError.unknown)
 
@@ -26,6 +27,9 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
     func movieDetails(id: Int) async throws -> TMDBMovieDetailDTO {
         movieDetailsLastID = id
         return try movieDetailsResult.get()
+    }
+    func trendingMovies() async throws -> TMDBSearchResponse {
+        try trendingResult.get()
     }
     func watchProviders(movieID: Int) async throws -> TMDBWatchProvidersResponse {
         watchProvidersLastMovieID = movieID
