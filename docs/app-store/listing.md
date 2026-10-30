@@ -121,12 +121,25 @@ and R-rated ones. StreamIn makes none of this content itself.
 
 ## App Privacy
 
-**Data Not Collected.** StreamIn has no accounts, analytics, ads or crash reporting. Region,
-language, services and the watchlist are stored only on the device (`UserDefaults` and SwiftData,
-no iCloud). Searches and movie lookups go to TMDB, which answers them in real time; the requests
-carry no identifier of the user or device, and the developer receives nothing. This matches the
-privacy manifest: `NSPrivacyTracking` false, no collected data types, and `UserDefaults` declared
-with reason `CA92.1` (the app's own settings).
+**Data collected: Search History only.** The titles a user searches for are sent to TMDB, a third
+party. Apple counts data sent to a third-party server as collected even when the developer never
+receives it, so it is declared. A later version will also keep recent searches on the device; that
+stays on the device and changes nothing here as long as TMDB remains the only recipient.
+
+| Question | Answer |
+|---|---|
+| Data type | Search History |
+| Linked to the user's identity | No (no accounts; requests carry no user, device or advertising identifier) |
+| Used for tracking | No |
+| Purpose | App Functionality (answering the search) |
+
+Everything else is **Not Collected**. StreamIn has no accounts, analytics, ads or crash reporting.
+Region, language, services and the watchlist are stored only on the device (`UserDefaults` and
+SwiftData, no iCloud); region and language travel with each TMDB request but are not a collected
+data type of their own here (they are not location, and identify no one). This matches the privacy
+manifest: `NSPrivacyTracking` false, `NSPrivacyCollectedDataTypeSearchHistory` (not linked, not
+tracking, app functionality), and `UserDefaults` declared with reason `CA92.1` (the app's own
+settings).
 
 **Export compliance:** the only encryption is the system's HTTPS, which is exempt;
 `ITSAppUsesNonExemptEncryption = NO` is in the app's Info.plist, so App Store Connect doesn't ask.
@@ -143,7 +156,8 @@ the US.
 >
 > Data: movie information and streaming availability come from the public TMDB API
 > (api.themoviedb.org); TMDB's availability data is provided by JustWatch. The app sends no user or
-> device identifiers and collects no data.
+> device identifiers. The only data that leaves the device is the title searched for, sent to TMDB
+> and declared as Search History (not linked to the user, not used for tracking).
 >
 > On first launch, a welcome screen asks for the streaming services you pay for. For the examples
 > below, pick Netflix, Amazon Prime Video and Disney Plus, then tap Done. The region follows the device's
