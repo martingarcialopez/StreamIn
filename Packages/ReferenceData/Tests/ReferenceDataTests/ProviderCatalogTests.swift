@@ -20,6 +20,7 @@ private actor FakeProviderRepository: MovieRepository {
 
     func searchMovies(query: String, page: Int) async throws -> SearchPage { throw MovieError.unknown }
     func movie(id: MovieID) async throws -> Movie { throw MovieError.unknown }
+    func trendingMovies() async throws -> [Movie] { throw MovieError.unknown }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.unknown }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle { throw MovieError.unknown }
 

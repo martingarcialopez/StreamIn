@@ -6,9 +6,10 @@
 //
 //  Composition root. This file holds the `@main` App entry point and
 //  constructs the long-lived dependencies (TMDB client, repository, provider
-//  catalog, image URL builder, Preferences, watchlist, and the Watchlist tab's
-//  model, which lives as long as the tab does). Concrete implementations are
-//  wired up here exactly once and passed down as protocol-typed references.
+//  catalog, image URL builder, Preferences, watchlist, and the models of the
+//  Search landing page and the Watchlist tab, which live as long as their
+//  tabs do). Concrete implementations are wired up here exactly once and
+//  passed down as protocol-typed references.
 //
 //  All UI lives in `RootView` / the per-tab files — this file stays UI-free
 //  on purpose.
@@ -22,6 +23,7 @@ import Preferences
 import ReferenceData
 import Persistence
 import Watchlist
+import SearchFeature
 import WatchlistFeature
 
 private let logger = Logger(subsystem: "StreamIn", category: "watchlist")
@@ -36,6 +38,7 @@ struct StreamInApp: App {
     private let providerCatalog: ProviderCatalog
     private let watchlist: WatchlistStore
     private let watchlistModel: WatchlistViewModel
+    private let landingModel: LandingViewModel
 
     init() {
         let client = LiveTMDBClient(
@@ -55,6 +58,12 @@ struct StreamInApp: App {
         let watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
         self.watchlist = watchlist
         self.watchlistModel = WatchlistViewModel(store: watchlist, imageURLBuilder: imageURLBuilder)
+        self.landingModel = LandingViewModel(
+            repository: repository,
+            catalog: providerCatalog,
+            prefs: prefs,
+            imageURLBuilder: imageURLBuilder
+        )
     }
 
     /// The on-disk store, or a throwaway in-memory one when the launch
@@ -84,6 +93,7 @@ struct StreamInApp: App {
                 providerCatalog: providerCatalog,
                 watchlist: watchlist,
                 watchlistModel: watchlistModel,
+                landingModel: landingModel,
                 tmdbClient: tmdbClient
             )
             .environment(prefs)

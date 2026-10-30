@@ -214,3 +214,26 @@ import Domain
         #expect(movie.directors.isEmpty)
     }
 }
+
+@Suite struct TrendingMappingTests {
+
+    @Test func resultsKeepTheirOrderAndPosters() async throws {
+        let stub = StubTMDBClient()
+        stub.trendingResult = .success(Fixtures.searchResponse(results: [
+            Fixtures.movieDTO(id: 2, posterPath: "/two.jpg"), Fixtures.movieDTO(id: 1, posterPath: nil)
+        ]))
+        let movies = try await TMDBMovieRepository(client: stub).trendingMovies()
+
+        #expect(movies.map(\.id) == [MovieID(2), MovieID(1)])
+        #expect(movies.map(\.posterPath) == [ImagePath("/two.jpg"), nil])
+    }
+
+    @Test func transportErrorsAreMapped() async {
+        let stub = StubTMDBClient()
+        stub.trendingResult = .failure(URLError(.notConnectedToInternet))
+
+        await #expect(throws: MovieError.offline) {
+            try await TMDBMovieRepository(client: stub).trendingMovies()
+        }
+    }
+}

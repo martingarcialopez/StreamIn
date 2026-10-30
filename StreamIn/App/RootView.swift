@@ -15,6 +15,7 @@ import Domain
 import TMDBClient
 import Preferences
 import ReferenceData
+import SearchFeature
 import SettingsFeature
 import DesignSystem
 import Watchlist
@@ -27,6 +28,7 @@ struct RootView: View {
     let providerCatalog: ProviderCatalog
     let watchlist: WatchlistStore
     let watchlistModel: WatchlistViewModel
+    let landingModel: LandingViewModel
     let tmdbClient: LiveTMDBClient
 
     @State private var showingSettings = false
@@ -41,6 +43,7 @@ struct RootView: View {
                     imageURLBuilder: imageURLBuilder,
                     prefs: prefs,
                     watchlist: watchlist,
+                    landingModel: landingModel,
                     showingSettings: $showingSettings,
                     showingStreamingServices: $showingStreamingServices
                 )
@@ -70,6 +73,8 @@ struct RootView: View {
             }
         }
         .tint(AppPalette.accent)
+        // StreamIn is always dark: every screen sits on the cinema background.
+        .preferredColorScheme(.dark)
         // A heart or a swipe whose write failed was undone; say so once,
         // whichever tab it came from.
         .watchlistWriteFailureAlert(watchlist)
@@ -91,6 +96,7 @@ struct RootView: View {
                     catalog: providerCatalog,
                     imageURLBuilder: imageURLBuilder
                 )
+                .cinemaBackground()
             }
         }
         .sheet(isPresented: $showingStreamingServices) {

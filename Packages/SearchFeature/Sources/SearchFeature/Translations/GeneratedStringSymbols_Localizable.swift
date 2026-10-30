@@ -55,6 +55,60 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     VoiceOver name for the landing page's movie reel when trending movies couldn't load and it shows film icons instead of posters
+     
+     Localized string for key “searchLandingSlotAnyMovie” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingSlotAnyMovie: LocalizedStringResource {
+        LocalizedStringResource("searchLandingSlotAnyMovie", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver name for the landing page's service reel when provider logos couldn't load and it shows TV icons instead
+     
+     Localized string for key “searchLandingSlotAnyService” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingSlotAnyService: LocalizedStringResource {
+        LocalizedStringResource("searchLandingSlotAnyService", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver hint of the landing page's slot machine: activating it spins the reels again
+     
+     Localized string for key “searchLandingSlotHint” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingSlotHint: LocalizedStringResource {
+        LocalizedStringResource("searchLandingSlotHint", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Voice Control name of the landing page's slot machine, the word users say to spin it (its spoken label changes with every spin)
+     
+     Localized string for key “searchLandingSlotInputLabel” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingSlotInputLabel: LocalizedStringResource {
+        LocalizedStringResource("searchLandingSlotInputLabel", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver label of the landing page's slot machine: the movie, streaming service and country its three reels stopped on. %1$@ movie title, %2$@ service name, %3$@ country name
+     
+     Localized string for key “searchLandingSlotLabel” in table “Localizable.xcstrings”.
+     */
+    static func searchLandingSlotLabel(_ arg1: String, _ arg2: String, _ arg3: String) -> LocalizedStringResource {
+        LocalizedStringResource("searchLandingSlotLabel", defaultValue: "\(arg1)\(arg2)\(arg3)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Tagline under the app name on the search landing page, saying what the app does
+     
+     Localized string for key “searchLandingTagline” in table “Localizable.xcstrings”.
+     */
+    static var searchLandingTagline: LocalizedStringResource {
+        LocalizedStringResource("searchLandingTagline", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Placeholder text inside the search field
      
      Localized string for key “searchPrompt” in table “Localizable.xcstrings”.
@@ -124,14 +178,5 @@ nonisolated extension LocalizedStringResource {
      */
     static func searchRowOnProviders(_ arg1: String) -> LocalizedStringResource {
         LocalizedStringResource("searchRowOnProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Navigation bar title for the Search screen; "StreamIn" is the app brand name
-     
-     Localized string for key “searchTitle” in table “Localizable.xcstrings”.
-     */
-    static var searchTitle: LocalizedStringResource {
-        LocalizedStringResource("searchTitle", table: "Localizable", bundle: resourceBundleDescription)
     }
 }

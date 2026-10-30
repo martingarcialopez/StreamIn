@@ -36,6 +36,7 @@ public struct WatchlistView: View {
                 let ids = model.ids(atOffsets: offsets)
                 Task { await model.remove(ids) }
             }
+            .cinemaRow()
         }
         .overlay {
             WatchlistStatus(model: model)

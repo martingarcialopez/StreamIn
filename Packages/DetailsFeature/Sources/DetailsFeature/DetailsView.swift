@@ -92,8 +92,9 @@ public struct DetailsView: View {
             isPastBackdrop = isPast
         }
         .scrollEdgeEffectHidden(!isPastBackdrop, for: .top)
-        // Same page color as Search, so pushing Details doesn't flash white.
-        .background(AppPalette.background)
+        // The app's page, without the spotlight: the backdrop is the light at
+        // the top here, and fades into the plain page colour.
+        .cinemaBackground(spotlight: false)
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -753,6 +754,9 @@ private struct PreviewMovieRepository: MovieRepository {
     }
     func movie(id: MovieID) async throws -> Movie {
         Self.inception
+    }
+    func trendingMovies() async throws -> [Movie] {
+        [Self.inception]
     }
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
         try await availabilities(for: id, in: region).regional

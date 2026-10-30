@@ -12,6 +12,56 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 3 — Heart on Details (#34) | [#43](https://github.com/martingarcialopez/StreamIn/pull/43) | Yes (issue) | 2 low of 2 | Yes — CI, 3 previews, Martín's simulator checks | 0 (the placeholder tab read as one) | 0 |
 | 3 — Watchlist tab (#35) | #35's PR | Yes (plan mode; Martín added the write-failure alert) | 1 medium + 1 low of 2 | Yes — full test plan, 3 previews (light, dark, XXX Large), launch in es; swipe flows left to Martín | — | — |
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
+| 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
+
+---
+
+## 2026-10-30 — Phase 5 starts: the landing page (#46)
+
+**What shipped:** the slot machine landing page, trending movies through Domain and
+TMDBClient, and an app-wide dark "cinema" look in DesignSystem.
+
+**Workflow pieces used**
+- **Design Q&As** with `AskUserQuestion`, previews attached, in three rounds:
+  - the first direction (a halo, a popcorn mark with a globe badge)
+  - the slot machine
+  - its slot-machine cues
+- **Then about a dozen rounds on Martín's simulator screenshots.** Each one was
+  checked on dedicated `StreamIn issue-46 SE` and `iPad` simulators with
+  `simctl` screenshots, in en and es.
+- **Screen recordings for motion.** `simctl io recordVideo`, then a small
+  AVFoundation script pulled frames every 0.25 s and tiled them into one image
+  (no ffmpeg on the Mac). Static previews can't judge an animation.
+- **`/parallel` mid-session:** a background session drafted the Phase 6 issues
+  while this one kept designing.
+
+**What the checks caught**
+- **The recording caught a bug no preview could show.** A `visualEffect` drum read
+  the layout's final position mid-animation, so the reels went blank while they
+  spun. The fix: an `Animatable` drum.
+- **Screenshots caught a geometry bug that a test had "passed".** The barrel outline
+  grew ears at its corners, because a cylinder's visible edge sits at about 72°,
+  not 90°. The test checked the window against the wrong edge.
+- **Repeated launches cleared a false alarm.** Prime Video landed three times out
+  of three. Four more launches showed four different results, so it was chance.
+- **The self-review before shipping found a real bug:** a cancelled first load
+  left the reels on placeholders for the whole session. There's now a test for it.
+
+**What Martín found by hand:** taste, which no tool checks. That covered the
+first direction, a lever and glass that didn't fit, the barrel shape, and the
+knob, three times. On his screenshots Claude found the seam under Details'
+backdrop (the new spotlight against the backdrop's fade), the cool greys on the
+warm page, and the repeated Settings headers.
+
+**What got in the way**
+- In a worktree session, Claude Code refuses heredocs, `cd … &&` chains and
+  `git -C` into another worktree. Writing files with the tools and running scripts
+  with `python3 -I` worked.
+- `RenderPreview` failed now and then on `SearchResultsView` with a design-time
+  thunk error (`__designTimeSelection`). A retry rendered it.
+- The canvas's default light appearance overrides `.preferredColorScheme(.dark)`
+  for navigation chrome, so dark-only screens need the Dark variant to preview
+  faithfully.
 
 ---
 

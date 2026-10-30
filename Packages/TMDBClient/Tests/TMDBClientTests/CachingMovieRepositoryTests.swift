@@ -10,6 +10,7 @@ import Domain
 private actor RecordingMovieRepository: MovieRepository {
     private(set) var searchCalls = 0
     private(set) var movieCalls = 0
+    private(set) var trendingCalls = 0
     private(set) var availabilitiesCalls = 0
     private(set) var allProvidersCalls = 0
     private var shouldFailNextSearch = false
@@ -28,6 +29,11 @@ private actor RecordingMovieRepository: MovieRepository {
     func movie(id: MovieID) async throws -> Movie {
         movieCalls += 1
         return .fixture(id: id.rawValue)
+    }
+
+    func trendingMovies() async throws -> [Movie] {
+        trendingCalls += 1
+        return [.fixture(id: 1), .fixture(id: 2)]
     }
 
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
@@ -132,6 +138,20 @@ struct CachingMovieRepositoryTests {
 
         #expect(await upstream.searchCalls == 2)
         #expect(await upstream.movieCalls == 2)
+    }
+
+    @Test func trendingIsCachedPerLanguage() async throws {
+        let upstream = RecordingMovieRepository()
+        let language = LanguageSetting()
+        let repo = makeRepository(upstream: upstream, language: language)
+
+        _ = try await repo.trendingMovies()
+        _ = try await repo.trendingMovies()
+        #expect(await upstream.trendingCalls == 1)
+
+        language.set("es-ES")
+        _ = try await repo.trendingMovies()
+        #expect(await upstream.trendingCalls == 2)
     }
 
     @Test func failedSearchIsRetried() async throws {
