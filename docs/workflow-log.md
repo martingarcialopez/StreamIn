@@ -19,10 +19,10 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ## 2026-10-30 — Translation review in a spreadsheet (#87)
 
-**What shipped:** `scripts/translations.sh export` writes every on-screen string
+**What shipped:** `scripts/translations/translations.sh export` writes every on-screen string
 to a Numbers workbook, one sheet per screen, where a reviewer who isn't a
 developer edits the English and Spanish copy in place; `import` writes the edits
-back to the String Catalogs. `scripts/translator-preview.sh` opens the app in the
+back to the String Catalogs. `scripts/translations/translator-preview.sh` opens the app in the
 simulator in one language, with the workbook's edits, before anything is
 imported.
 
@@ -52,7 +52,7 @@ imported.
   keep the change and staleness checks working.
 - **Martín, trying it in Numbers:** Numbers can't save `.xlsx`, so each round
   meant a copy and an export by hand. The workbook is now
-  `scripts/streamin-translations.numbers`, converted by Numbers through
+  `scripts/translations/streamin-translations.numbers`, converted by Numbers through
   AppleScript. `translator-preview.sh` always reads it and patches the edits into
   a copy of the built app's compiled strings: a few seconds per try, with unsaved
   edits included and the catalogs left alone. It builds only on the first run

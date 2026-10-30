@@ -18,9 +18,9 @@ xcuserdata/
 Package.resolved
 
 # Translation review: the tool's venv, the reviewer's workbook and Numbers'
-# conversion folders (scripts/translations.sh creates them)
-scripts/translations/.venv/
-scripts/streamin-translations.*
+# conversion folders (scripts/translations/translations.sh creates them)
+scripts/translations/**/.venv/
+scripts/translations/streamin-translations.*
 translations-tmp-*/
 __pycache__/
 

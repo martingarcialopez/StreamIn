@@ -5,15 +5,26 @@ and Spanish, and edits the copy in a spreadsheet, trying each change in the app
 in the simulator as they go. One command then writes their edits back to the
 String Catalogs.
 
+Everything lives in `scripts/translations/`:
+
+```
+scripts/translations/
+├── translations.sh                — export, import, preview, test
+├── translator-preview.sh          — the app in the simulator, with the workbook's edits
+├── streamin-translations.numbers  — the workbook (gitignored, made by export)
+└── lib/                           — translations.py and its tests, screens.json,
+                                     numbers.applescript, requirements.txt, the venv
+```
+
 ## The loop
 
 1. **Export** the workbook:
 
    ```bash
-   scripts/translations.sh export
+   scripts/translations/translations.sh export
    ```
 
-   It writes `scripts/streamin-translations.numbers` (gitignored), next to the
+   It writes `scripts/translations/streamin-translations.numbers` (gitignored), next to the
    preview script. Without Numbers it writes an `.xlsx`; `--out` picks another
    path. An existing workbook is never replaced, since it may hold a review in
    progress: import it first, or pass `--force`. The first run creates the tool's
@@ -28,11 +39,11 @@ String Catalogs.
 3. **Try the edits in the app** as often as they like:
 
    ```bash
-   scripts/translator-preview.sh es
+   scripts/translations/translator-preview.sh es
    ```
 
    The app opens in the simulator in that language with the edits in
-   `scripts/streamin-translations.numbers`: saved ones, or what's on screen if
+   `scripts/translations/streamin-translations.numbers`: saved ones, or what's on screen if
    the workbook is open in Numbers. Without the workbook it stops with an error.
    The catalogs aren't touched. The edits go into a copy of the built app's
    compiled strings, so a run takes a few seconds. The app is built only on the
@@ -44,14 +55,14 @@ String Catalogs.
 4. **Import** when the review is done. Check first, then write:
 
    ```bash
-   scripts/translations.sh import --dry-run
+   scripts/translations/translations.sh import --dry-run
    ```
 
    ```bash
-   scripts/translations.sh import
+   scripts/translations/translations.sh import
    ```
 
-   Both read `scripts/streamin-translations.numbers` unless given another
+   Both read `scripts/translations/streamin-translations.numbers` unless given another
    workbook. The report lists the changes, the rows to look at again and the
    reviewer's notes. Open a PR like any other copy change, then delete the
    workbook (or export a fresh one with `--force`). `translator-preview.sh es
@@ -78,7 +89,7 @@ A cell counts as edited when it differs from its hidden original.
 ## Numbers
 
 Numbers can't save in `.xlsx`, so the tool reads and writes `.numbers` through
-Numbers itself (`scripts/translations/numbers.applescript`): `.xlsx` → `.numbers`
+Numbers itself (`scripts/translations/lib/numbers.applescript`): `.xlsx` → `.numbers`
 on export, `.numbers` → `.xlsx` on import and preview, in a `translations-tmp-…`
 folder next to the workbook that's removed afterwards. A workbook open in Numbers
 stays open. Numbers adds an "Export Summary" sheet to the `.xlsx`; the import
@@ -86,7 +97,7 @@ skips any sheet without a key column.
 
 ## Sheets are screens
 
-`scripts/translations/screens.json` lists each screen (one sheet) and the Swift
+`scripts/translations/lib/screens.json` lists each screen (one sheet) and the Swift
 files that show its strings. Every key goes to the screen of the first file that
 uses its symbol, in source order. Keys that no file uses are left out and listed
 by the export. A new view that shows strings but isn't in `screens.json` makes the
@@ -101,13 +112,13 @@ español; si está bien, déjalo como está. «Notas» es para dudas y comentari
 Para ver tus cambios en la app, sin necesidad de guardar (`en` para inglés):
 
 ```bash
-scripts/translator-preview.sh es
+scripts/translations/translator-preview.sh es
 ```
 
 ## Tests
 
 ```bash
-scripts/translations.sh test
+scripts/translations/translations.sh test
 ```
 
 They run in CI before the app build: export, edit, import and preview on a tiny

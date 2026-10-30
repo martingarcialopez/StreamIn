@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # Translation review: the app's strings to a spreadsheet and back.
 #
-#   scripts/translations.sh export [--force]      # scripts/streamin-translations.numbers
-#   scripts/translations.sh import [--dry-run]
-#   scripts/translations.sh preview <StreamIn.app>  # what translator-preview.sh runs
-#   scripts/translations.sh test
+#   scripts/translations/translations.sh export [--force]   # streamin-translations.numbers, next to this script
+#   scripts/translations/translations.sh import [--dry-run]
+#   scripts/translations/translations.sh preview <StreamIn.app>   # what translator-preview.sh runs
+#   scripts/translations/translations.sh test
 #
-# Runs scripts/translations/translations.py in its own venv, created on first
+# Runs lib/translations.py in its own venv (lib/.venv), created on first
 # use with the pinned openpyxl (requirements.txt); `export --help` and
 # `import --help` list the other options. docs/translations.md has the whole
 # loop, from export to seeing the new copy in the simulator.
 
 set -euo pipefail
 
-dir="$(cd "$(dirname "$0")/translations" && pwd)"
+dir="$(cd "$(dirname "$0")/lib" && pwd)"
 venv="$dir/.venv"
 
 # The venv keeps a copy of the requirements it was built from, so a new pin

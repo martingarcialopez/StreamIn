@@ -1,6 +1,6 @@
 """Tests for translations.py: export → edit cells → import or preview, on a tiny repo.
 
-Run with scripts/translations.sh test (CI does, before the app build).
+Run with scripts/translations/translations.sh test (CI does, before the app build).
 """
 
 import json

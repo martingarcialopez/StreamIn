@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Opens StreamIn in the simulator in one language, for the translation review.
 #
-#   scripts/translator-preview.sh <en|es> [--onboarding] [--build]
+#   scripts/translations/translator-preview.sh <en|es> [--onboarding] [--build]
 #
-# The app shows the edits in scripts/streamin-translations.numbers, saved or
-# still on screen in Numbers, without touching the String Catalogs: they go
-# into a copy of the built app (translations.sh preview). The workbook comes
-# from `scripts/translations.sh export`.
+# The app shows the edits in streamin-translations.numbers, next to this
+# script, saved or still on screen in Numbers, without touching the String
+# Catalogs: they go into a copy of the built app (translations.sh preview). The
+# workbook comes from `scripts/translations/translations.sh export`.
 #
 # The app is built only on the first run (through xcodebuild-locked.sh, so it
 # queues behind other sessions' builds); later runs reuse that build. The copy
@@ -37,11 +37,11 @@ case "$language" in
   *) usage ;;
 esac
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
-workbook=scripts/streamin-translations.numbers
+workbook=scripts/translations/streamin-translations.numbers
 if [[ ! -f "$workbook" ]]; then
-  echo "Error: no $workbook. Create it with: scripts/translations.sh export" >&2
+  echo "Error: no $workbook. Create it with: scripts/translations/translations.sh export" >&2
   exit 1
 fi
 
@@ -61,7 +61,7 @@ installed="$derived/Preview/StreamIn.app"
 rm -rf "$installed"
 mkdir -p "$(dirname "$installed")"
 cp -R "$app" "$installed"
-scripts/translations.sh preview "$installed" "$workbook"
+scripts/translations/translations.sh preview "$installed" "$workbook"
 
 xcrun simctl boot "$simulator" 2>/dev/null || true
 open -a Simulator

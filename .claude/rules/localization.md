@@ -58,8 +58,8 @@ the picker briefly snaps back to the old value — accepted for data correctness
 ## Translation review
 
 A reviewer edits copy in a spreadsheet, not in the catalogs:
-`scripts/translations.sh export` / `import` (see `docs/translations.md`). A new
-view that shows strings goes into `scripts/translations/screens.json`, or the
+`scripts/translations/translations.sh export` / `import` (see `docs/translations.md`). A new
+view that shows strings goes into `scripts/translations/lib/screens.json`, or the
 export fails.
 
 ## Supported languages

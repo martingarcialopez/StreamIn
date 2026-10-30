@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Translation review: String Catalogs ⇄ one spreadsheet, a sheet per screen.
 
-Usage (through scripts/translations.sh, which provides openpyxl):
+Usage (through scripts/translations/translations.sh, which provides openpyxl):
   translations.sh export [--out <workbook.numbers|.xlsx>] [--force]
   translations.sh import [<workbook.numbers|.xlsx>] [--dry-run]
   translations.sh preview <StreamIn.app> [<workbook.numbers|.xlsx>]
 
-The workbook defaults to scripts/streamin-translations.numbers (.xlsx without
+The workbook defaults to scripts/translations/streamin-translations.numbers (.xlsx without
 Numbers). preview is what translator-preview.sh runs to show the edits in the
 simulator before they're imported.
 
@@ -34,7 +34,8 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
+TOOL = REPO / "scripts" / "translations"
 SCREENS = Path(__file__).resolve().with_name("screens.json")
 NUMBERS_SCRIPT = Path(__file__).resolve().with_name("numbers.applescript")
 NUMBERS_APP = Path("/Applications/Numbers.app")
@@ -314,7 +315,7 @@ def _write_guide(sheet, screens: dict, languages: list) -> None:
         ("«Contexto» dice dónde aparece el texto y qué significa. Botones, pestañas y títulos tienen poco sitio: mejor cortos.", None),
         ("La app trata al usuario de tú.", None),
         ("Para ver tus cambios en la app, aunque no hayas guardado, ejecuta en la terminal, desde la carpeta del proyecto:", None),
-        ("    scripts/translator-preview.sh es     (o en, para inglés)", None),
+        ("    scripts/translations/translator-preview.sh es     (o en, para inglés)", None),
         ("", None),
         ("Pantallas", "heading"),
     ]
@@ -526,7 +527,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     extension = ".numbers" if NUMBERS_APP.exists() else ".xlsx"
-    default_workbook = REPO / "scripts" / f"{WORKBOOK_NAME}{extension}"
+    default_workbook = TOOL / f"{WORKBOOK_NAME}{extension}"
     workbook_help = f"a .numbers or .xlsx workbook (default: {default_workbook.relative_to(REPO)})"
     export_parser = commands.add_parser("export", help="Write the review workbook")
     export_parser.add_argument("--out", type=Path, default=default_workbook, help=workbook_help)
