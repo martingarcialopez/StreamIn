@@ -95,6 +95,66 @@ import Domain
         #expect(!options.streamsAtHome)
     }
 
+    // MARK: - Summary
+
+    @Test func summaryIsWatchNowWhenYoursOrFreeCarryItAtHome() {
+        let options = WatchOptions(
+            bundle: bundle(
+                free: [rtve],
+                global: [
+                    ProviderRegionalAvailability(provider: netflix, regions: [.spain]),
+                    ProviderRegionalAvailability(provider: prime, regions: [.france]),
+                ]
+            ),
+            home: .spain,
+            subscribed: [ProviderID(8), ProviderID(9)]
+        )
+
+        #expect(options.summary == .atHome([netflix, rtve]))
+    }
+
+    @Test func summaryIsFreeAtHomeWithoutServices() {
+        let options = WatchOptions(bundle: bundle(free: [rtve]), home: .spain, subscribed: [])
+
+        #expect(options.summary == .atHome([rtve]))
+    }
+
+    @Test func summaryIsAbroadWhenOnlyYourServicesElsewhereCarryIt() {
+        let options = WatchOptions(
+            bundle: bundle(
+                subscription: [disney],
+                global: [ProviderRegionalAvailability(provider: prime, regions: [.france])]
+            ),
+            home: .spain,
+            subscribed: [ProviderID(9)]
+        )
+
+        #expect(options.summary == .abroad([prime]))
+    }
+
+    @Test func summaryIsNotOnYourServicesWhenOthersCarryItAtHome() {
+        let options = WatchOptions(bundle: bundle(subscription: [disney]), home: .spain, subscribed: [ProviderID(8)])
+
+        #expect(options.summary == .notOnYourServices)
+    }
+
+    @Test func summaryIsNotStreamingHereWhenNothingCarriesItAtHome() {
+        let options = WatchOptions(bundle: bundle(rent: [netflix]), home: .spain, subscribed: [ProviderID(8)])
+
+        #expect(options.summary == .notStreamingHere)
+    }
+
+    /// A bundle fetched for the old region says nothing about the new one.
+    @Test func summaryIgnoresAnotherRegionsProviders() {
+        let options = WatchOptions(
+            bundle: bundle(region: .spain, subscription: [disney], free: [rtve]),
+            home: .unitedStates,
+            subscribed: []
+        )
+
+        #expect(options.summary == .notStreamingHere)
+    }
+
     private func bundle(
         region: Region = .spain,
         subscription: [WatchProvider] = [],

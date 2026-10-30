@@ -20,13 +20,13 @@ One Swift Package per layer; boundaries are enforced at build time.
 
 | Package | Depends on | Holds |
 |---|---|---|
-| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` (where to watch, shared by Details and Search) |
+| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` and its `WatchSummary` (where to watch, shared by Details, Search and the Watchlist) |
 | `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
 | `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
 | `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
 | `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
 | `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
-| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `CinemaBackground` (`.cinemaBackground()` on every screen, `.cinemaRow()` on list rows), `ProviderLogo`, `ProviderLogoStrip`, `AbroadMark`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
+| `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `CinemaBackground` (`.cinemaBackground()` on every screen, `.cinemaRow()` on list rows), `ProviderLogo`, `ProviderLogoStrip`, `ProviderLine`, `AbroadMark`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
 | `SearchFeature`, `DetailsFeature`, `SettingsFeature`, `WatchlistFeature` | Domain, DesignSystem (+ Preferences, ReferenceData, Watchlist) | One screen each, with its view model |
 | App (`StreamIn/`) | everything | Composition root (`StreamInApp`), `RootView`, tab containers |
 

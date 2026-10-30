@@ -28,7 +28,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Description on the empty Watchlist screen, explaining how to save movies with the heart button on a movie's page
+     Hint under the headline on the empty Watchlist screen: how to save movies with the heart button on a movie's page, and what the list then shows
      
      Localized string for key “watchlistEmptyDescription” in table “Localizable.xcstrings”.
      */
@@ -37,7 +37,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Title shown on the watchlist screen when no movies have been saved
+     Headline on the Watchlist screen when no movies have been saved
      
      Localized string for key “watchlistEmptyTitle” in table “Localizable.xcstrings”.
      */
@@ -70,6 +70,60 @@ nonisolated extension LocalizedStringResource {
      */
     static var watchlistRetry: LocalizedStringResource {
         LocalizedStringResource("watchlistRetry", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver, Watchlist row: the user's services that stream the movie only in other regions. %@ is a list of service names
+     
+     Localized string for key “watchlistRowAbroadProviders” in table “Localizable.xcstrings”.
+     */
+    static func watchlistRowAbroadProviders(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("watchlistRowAbroadProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Watchlist row, in place of provider logos: loading where to watch the movie failed (pull to refresh retries)
+     
+     Localized string for key “watchlistRowAvailabilityFailed” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRowAvailabilityFailed: LocalizedStringResource {
+        LocalizedStringResource("watchlistRowAvailabilityFailed", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver, Watchlist row: where to watch the movie is still loading
+     
+     Localized string for key “watchlistRowCheckingAvailability” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRowCheckingAvailability: LocalizedStringResource {
+        LocalizedStringResource("watchlistRowCheckingAvailability", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Watchlist row, in place of provider logos: something streams the movie in the user's region, but none of the user's services
+     
+     Localized string for key “watchlistRowNotOnYourServices” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRowNotOnYourServices: LocalizedStringResource {
+        LocalizedStringResource("watchlistRowNotOnYourServices", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Watchlist row, in place of provider logos: no subscription or free service streams the movie in the user's region
+     
+     Localized string for key “watchlistRowNotStreamingHere” in table “Localizable.xcstrings”.
+     */
+    static var watchlistRowNotStreamingHere: LocalizedStringResource {
+        LocalizedStringResource("watchlistRowNotStreamingHere", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     VoiceOver, Watchlist row: the user's services or free ones that stream the movie at home. %@ is a list of service names
+     
+     Localized string for key “watchlistRowOnProviders” in table “Localizable.xcstrings”.
+     */
+    static func watchlistRowOnProviders(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("watchlistRowOnProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

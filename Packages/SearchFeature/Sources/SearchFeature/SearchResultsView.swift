@@ -159,74 +159,18 @@ private struct SearchResultRow: View {
                         .foregroundStyle(.secondary)
                 }
 
-                ProviderLine(providers: model.rowProviders(for: movie), model: model)
-                    .padding(.top, Spacing.tight)
+                ProviderLine(
+                    model.rowProviders(for: movie).lineContent,
+                    logoURL: model.providerLogoURL,
+                    name: \.name
+                )
+                .padding(.top, Spacing.tight)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, Spacing.tight)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(model.accessibilityLabel(for: movie))
-    }
-}
-
-/// Up to three small logos and "+N"; abroad ones follow a globe. Holds the
-/// logos' height in every state, so rows don't jump as availability lands.
-private struct ProviderLine: View {
-    let providers: SearchRowProviders
-    let model: SearchViewModel
-
-    @ScaledMetric(relativeTo: .caption) private var logoSize: CGFloat = LogoSize.small
-
-    var body: some View {
-        Group {
-            switch providers {
-            case .loading:
-                ProgressView()
-                    .controlSize(.mini)
-            case .failed:
-                RowCaption(text: .searchRowAvailabilityFailed)
-            case .atHome(let providers):
-                Logos(providers: providers, logoSize: logoSize, model: model)
-            case .abroad(let providers):
-                HStack(spacing: Spacing.default) {
-                    AbroadMark(size: logoSize)
-                    Logos(providers: providers, logoSize: logoSize, model: model)
-                }
-            case .none(.notOnYourServices):
-                RowCaption(text: .searchRowNotOnYourServices)
-            case .none(.notStreamingHere):
-                RowCaption(text: .searchRowNotStreamingHere)
-            }
-        }
-        .frame(minHeight: logoSize, alignment: .leading)
-        .animation(.smooth, value: providers)
-    }
-}
-
-private struct Logos: View {
-    let providers: [WatchProvider]
-    let logoSize: CGFloat
-    let model: SearchViewModel
-
-    var body: some View {
-        ProviderLogoStrip(
-            providers,
-            maxLogos: 3,
-            logoSize: logoSize,
-            logoURL: model.providerLogoURL,
-            name: \.name
-        )
-    }
-}
-
-private struct RowCaption: View {
-    let text: LocalizedStringResource
-
-    var body: some View {
-        Text(text)
-            .font(.caption)
-            .foregroundStyle(.secondary)
     }
 }
 

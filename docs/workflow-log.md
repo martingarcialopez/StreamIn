@@ -13,6 +13,42 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 3 — Watchlist tab (#35) | #35's PR | Yes (plan mode; Martín added the write-failure alert) | 1 medium + 1 low of 2 | Yes — full test plan, 3 previews (light, dark, XXX Large), launch in es; swipe flows left to Martín | — | — |
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
 | 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
+| 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
+
+---
+
+## 2026-10-30 — The Watchlist tab answers "what can I watch tonight" (#48)
+
+**What shipped:** each saved movie shows Search's provider line. The derivation
+moved to Domain (`WatchSummary`) and the line to DesignSystem (`ProviderLine`), so
+two features share them without importing each other. The tab also got a new
+empty state and the look of Search.
+
+**Workflow pieces used**
+- **A one-round design Q&A**: four questions, each with a recommended option.
+  Martín took all four. The plan followed in plan mode.
+- **`ios-reviewer` before the PR.**
+- **Merging an open PR's branch:** #85 (the cinema theme) was still open. Its PR
+  body carried a "merge note for #48" listing what this branch would need, and
+  every item on it was right: `trendingMovies()` in the new fakes, `.cinemaRow()`,
+  `AbroadMark` in the shared line, and three small conflicts.
+
+**What the checks caught**
+- **`ios-reviewer`, 1 medium:** the view model lives as long as the app, so rows
+  that loaded once never refreshed. Pull to refresh now asks again for every
+  row.
+- **`ios-reviewer`, 1 low:** no test covered an old region's answer landing after
+  the new region's. A gated fake now holds that request back. The test was
+  mutation-checked: it fails with the guard removed.
+- **Previews:** the first snapshot of every Watchlist preview was blank, because
+  `.task` hadn't loaded the store yet. A second render was always complete, as
+  `pr-screenshots` already says.
+
+**What got in the way**
+- An inline SF Symbol can't go through generated string symbols: `%@` takes a
+  `String`. The empty state's hint names the heart in words instead.
+- In this worktree session, a heredoc piped into `python3 -I -` was refused;
+  the same edit went through with the Edit tool.
 
 ---
 
