@@ -25,8 +25,7 @@ scripts/translations/
    ```
 
    It writes `scripts/translations/streamin-translations.numbers` (gitignored), next to the
-   preview script. Without Numbers it writes an `.xlsx`; `--out` picks another
-   path. An existing workbook is never replaced, since it may hold a review in
+   preview script; `--out` picks another path. It needs a Mac with Numbers. An existing workbook is never replaced, since it may hold a review in
    progress: import it first, or pass `--force`. The first run creates the tool's
    venv with the pinned `openpyxl`, and macOS asks once to let the terminal
    control Numbers.

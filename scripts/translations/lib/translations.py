@@ -6,16 +6,15 @@ Usage (through scripts/translations/translations.sh, which provides openpyxl):
   translations.sh import [<workbook.numbers|.xlsx>] [--dry-run]
   translations.sh preview <StreamIn.app> [<workbook.numbers|.xlsx>]
 
-The workbook defaults to scripts/translations/streamin-translations.numbers (.xlsx without
-Numbers). preview is what translator-preview.sh runs to show the edits in the
+The workbook is scripts/translations/streamin-translations.numbers, which needs
+a Mac with Numbers (an .xlsx path still works with --out, for the tests). preview is what translator-preview.sh runs to show the edits in the
 simulator before they're imported.
 
 export writes every on-screen string, grouped by the screen that shows it
 (screens.json maps the Swift file that uses a key to a screen), with a column
 per language that the reviewer edits in place and hidden copies of the
-exported text. On a Mac with Numbers it writes a .numbers file by default, so
-the reviewer edits it and saves it in place; Numbers itself converts it
-(numbers.applescript). An existing workbook is never replaced without --force.
+exported text. It writes a .numbers file, so the reviewer edits it and saves it
+in place; Numbers itself converts it (numbers.applescript). An existing workbook is never replaced without --force.
 
 import writes every edited cell back to its catalog, keeping each catalog's
 JSON style, and regenerates the package symbols. Nothing is written while any
@@ -38,7 +37,6 @@ REPO = Path(__file__).resolve().parents[3]
 TOOL = REPO / "scripts" / "translations"
 SCREENS = Path(__file__).resolve().with_name("screens.json")
 NUMBERS_SCRIPT = Path(__file__).resolve().with_name("numbers.applescript")
-NUMBERS_APP = Path("/Applications/Numbers.app")
 WORKBOOK_NAME = "streamin-translations"
 
 LANGUAGE_NAMES = {"en": "Inglés", "es": "Español"}
@@ -526,8 +524,7 @@ def print_report(report: Report, dry_run: bool, preview: bool = False) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
-    extension = ".numbers" if NUMBERS_APP.exists() else ".xlsx"
-    default_workbook = TOOL / f"{WORKBOOK_NAME}{extension}"
+    default_workbook = TOOL / f"{WORKBOOK_NAME}.numbers"
     workbook_help = f"a .numbers or .xlsx workbook (default: {default_workbook.relative_to(REPO)})"
     export_parser = commands.add_parser("export", help="Write the review workbook")
     export_parser.add_argument("--out", type=Path, default=default_workbook, help=workbook_help)
