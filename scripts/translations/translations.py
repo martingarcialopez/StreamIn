@@ -409,8 +409,8 @@ def read_workbook(repo: Path, workbook_path: Path):
                 if edits:
                     report.errors.append(f"{where}: the key no longer exists in {catalog_name}")
                 continue
-            for language, (exported, proposal) in sorted(edits.items()):
-                if not proposal:
+            for language, (exported, edited) in sorted(edits.items()):
+                if not edited:
                     report.errors.append(f"{where} [{language}]: the cell is empty; write the text back")
                     continue
                 if catalog.has_variants(key):
@@ -420,18 +420,18 @@ def read_workbook(repo: Path, workbook_path: Path):
                 if exported != live:
                     report.stale.append(f"{where} [{language}]: the text changed since the export, now “{live}”")
                     continue
-                if proposal == live:
+                if edited == live:
                     continue
                 reference = live or catalog.value(key, languages_of([catalog])[0]) or ""
-                if placeholders(proposal) != placeholders(reference):
+                if placeholders(edited) != placeholders(reference):
                     report.errors.append(
-                        f"{where} [{language}]: “{proposal}” must keep the variables of “{reference}”")
+                        f"{where} [{language}]: “{edited}” must keep the variables of “{reference}”")
                     continue
-                if live and len(proposal) > max(len(live) * 1.5, len(live) + 10):
-                    report.warnings.append(f"{where} [{language}]: {len(live)} → {len(proposal)} characters, check it fits")
-                catalog.set_value(key, language, proposal)
-                applied.append(Edit(catalog_name, key, language, proposal))
-                report.changes.append(f"{where} [{language}]: “{live}” → “{proposal}”")
+                if live and len(edited) > max(len(live) * 1.5, len(live) + 10):
+                    report.warnings.append(f"{where} [{language}]: {len(live)} → {len(edited)} characters, check it fits")
+                catalog.set_value(key, language, edited)
+                applied.append(Edit(catalog_name, key, language, edited))
+                report.changes.append(f"{where} [{language}]: “{live}” → “{edited}”")
     return report, catalogs, applied
 
 

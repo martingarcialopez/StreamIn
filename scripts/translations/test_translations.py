@@ -1,4 +1,4 @@
-"""Tests for translations.py: export → fill in proposals → import, on a tiny repo.
+"""Tests for translations.py: export → edit cells → import or preview, on a tiny repo.
 
 Run with scripts/translations.sh test (CI does, before the app build).
 """
@@ -87,7 +87,7 @@ class TranslationsTests(unittest.TestCase):
         self.write("Packages/List/Sources/List/ListView.swift",
                    "Text(.listTitle)\nText(.listCount(3, name))\nText(.listEmpty)\nText(.listPlural(2))\n")
 
-    def propose(self, key, **values):
+    def edit_cells(self, key, **values):
         """Edits the language (es=…, en=…) or notes cells of the row for `key`, as the reviewer does."""
         book = load_workbook(self.workbook)
         for sheet in book.worksheets[1:]:
@@ -148,11 +148,11 @@ class TranslationsTests(unittest.TestCase):
 
     # MARK: Import
 
-    def test_import_writes_proposals_and_keeps_the_catalog_style(self):
+    def test_import_writes_edits_and_keeps_the_catalog_style(self):
         self.export()
         before = self.app_catalog.read_text(encoding="utf-8")
-        self.propose("Settings", es="Configuración")
-        self.propose("listTitle", en="My list")
+        self.edit_cells("Settings", es="Configuración")
+        self.edit_cells("listTitle", en="My list")
 
         report = self.run_import()
 
@@ -166,21 +166,21 @@ class TranslationsTests(unittest.TestCase):
 
     def test_import_adds_a_missing_translation(self):
         self.export()
-        self.propose("listEmpty", es="Aquí no hay nada")
+        self.edit_cells("listEmpty", es="Aquí no hay nada")
         self.run_import()
         self.assertEqual(self.value(self.package_catalog, "listEmpty", "es"), "Aquí no hay nada")
 
     def test_import_accepts_reordered_positional_placeholders(self):
         self.export()
-        self.propose("listCount", es="De %2$@: %1$lld películas")
+        self.edit_cells("listCount", es="De %2$@: %1$lld películas")
         report = self.run_import()
         self.assertEqual(report.errors, [])
         self.assertEqual(self.value(self.package_catalog, "listCount", "es"), "De %2$@: %1$lld películas")
 
     def test_import_refuses_changed_placeholders_and_writes_nothing(self):
         self.export()
-        self.propose("listTitle", es="Lista guardada")
-        self.propose("listCount", es="%@ películas")
+        self.edit_cells("listTitle", es="Lista guardada")
+        self.edit_cells("listCount", es="%@ películas")
         before = self.package_catalog.read_text(encoding="utf-8")
 
         report = self.run_import()
@@ -191,8 +191,8 @@ class TranslationsTests(unittest.TestCase):
 
     def test_import_skips_rows_changed_since_the_export(self):
         self.export()
-        self.propose("listTitle", es="Guardadas")
-        self.propose("Settings", es="Configuración")
+        self.edit_cells("listTitle", es="Guardadas")
+        self.edit_cells("Settings", es="Configuración")
         catalog = json.loads(self.package_catalog.read_text(encoding="utf-8"))
         catalog["strings"]["listTitle"]["localizations"]["es"]["stringUnit"]["value"] = "Tu lista"
         self.package_catalog.write_text(json.dumps(catalog, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -205,7 +205,7 @@ class TranslationsTests(unittest.TestCase):
 
     def test_import_reports_a_key_that_no_longer_exists(self):
         self.export()
-        self.propose("listTitle", es="Guardadas")
+        self.edit_cells("listTitle", es="Guardadas")
         catalog = json.loads(self.package_catalog.read_text(encoding="utf-8"))
         del catalog["strings"]["listTitle"]
         self.package_catalog.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
@@ -217,7 +217,7 @@ class TranslationsTests(unittest.TestCase):
 
     def test_import_refuses_an_emptied_cell(self):
         self.export()
-        self.propose("listTitle", es="")
+        self.edit_cells("listTitle", es="")
         report = self.run_import()
         self.assertEqual(len(report.errors), 1)
         self.assertIn("empty", report.errors[0])
@@ -225,7 +225,7 @@ class TranslationsTests(unittest.TestCase):
 
     def test_import_refuses_a_key_that_gained_plural_forms(self):
         self.export()
-        self.propose("listTitle", es="Guardadas")
+        self.edit_cells("listTitle", es="Guardadas")
         catalog = json.loads(self.package_catalog.read_text(encoding="utf-8"))
         catalog["strings"]["listTitle"]["localizations"]["es"] = {"variations": {"plural": {}}}
         self.package_catalog.write_text(json.dumps(catalog, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -239,15 +239,15 @@ class TranslationsTests(unittest.TestCase):
 
     def test_dry_run_writes_nothing(self):
         self.export()
-        self.propose("Settings", es="Configuración")
+        self.edit_cells("Settings", es="Configuración")
         before = self.app_catalog.read_text(encoding="utf-8")
         report = self.run_import(dry_run=True)
         self.assertEqual(len(report.changes), 1)
         self.assertEqual(self.app_catalog.read_text(encoding="utf-8"), before)
 
-    def test_import_collects_notes_and_warns_about_long_proposals(self):
+    def test_import_collects_notes_and_warns_about_long_edits(self):
         self.export()
-        self.propose("Settings", es="Configuración de la aplicación", notes="¿Mejor «Ajustes»?")
+        self.edit_cells("Settings", es="Configuración de la aplicación", notes="¿Mejor «Ajustes»?")
         report = self.run_import()
         self.assertEqual(len(report.warnings), 1)
         self.assertIn("¿Mejor «Ajustes»?", report.notes[0])
@@ -263,9 +263,9 @@ class TranslationsTests(unittest.TestCase):
             path.parent.mkdir(parents=True)
             path.write_bytes(plistlib.dumps(strings, fmt=plistlib.FMT_BINARY))
         self.export()
-        self.propose("listTitle", es="Guardadas")
-        self.propose("Settings", es="Configuración")
-        self.propose("listCount", es="%@ películas")
+        self.edit_cells("listTitle", es="Guardadas")
+        self.edit_cells("Settings", es="Configuración")
+        self.edit_cells("listCount", es="%@ películas")
         catalog_before = self.package_catalog.read_text(encoding="utf-8")
 
         report = t.preview_workbook(self.repo, self.workbook, app)

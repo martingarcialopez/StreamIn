@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Translation review: the app's strings to a spreadsheet and back.
 #
-#   scripts/translations.sh export [--out <workbook.xlsx>]   # one sheet per screen
-#   scripts/translations.sh import <workbook.xlsx> [--dry-run]
+#   scripts/translations.sh export [--force]      # scripts/streamin-translations.numbers
+#   scripts/translations.sh import [--dry-run]
+#   scripts/translations.sh preview <StreamIn.app>  # what translator-preview.sh runs
 #   scripts/translations.sh test
 #
 # Runs scripts/translations/translations.py in its own venv, created on first
-# use with the pinned openpyxl (requirements.txt). docs/translations.md has the
-# whole loop, from export to seeing the new copy in the simulator.
+# use with the pinned openpyxl (requirements.txt); `export --help` and
+# `import --help` list the other options. docs/translations.md has the whole
+# loop, from export to seeing the new copy in the simulator.
 
 set -euo pipefail
 
