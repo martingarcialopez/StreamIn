@@ -250,6 +250,14 @@ A pattern used by two screens moves to DesignSystem.
 - **Store assets:** screenshots for iPhone **and iPad** (the app supports both),
   description in en + es, keywords, Entertainment category, age rating, a privacy
   policy URL (one page on GitHub Pages).
+- **Privacy and support pages** live in `site/`, published by `pages.yml` (only that folder).
+  Stable URLs for App Store Connect, one per localization:
+  - Privacy: <https://martingarcialopez.github.io/StreamIn/privacy/> ·
+    es <https://martingarcialopez.github.io/StreamIn/es/privacy/>
+  - Support: <https://martingarcialopez.github.io/StreamIn/support/> ·
+    es <https://martingarcialopez.github.io/StreamIn/es/support/>
+- **Listing text** (name, subtitle, description, keywords, age rating, App Privacy, review notes):
+  `docs/app-store/listing.md`, en and es.
 - **Make the repository public** before sharing it. History is clean: the secrets
   files were never committed.
 - **Version 1.0.0, build 1**, TestFlight, submit. Expect one review round trip.
