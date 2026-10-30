@@ -1,0 +1,117 @@
+/* StreamIn's privacy and support pages. Colors follow the app's AppPalette. */
+
+:root {
+  color-scheme: light dark;
+  --background: #f7f7f7;
+  --card: #ffffff;
+  --separator: #e0e0e0;
+  --text: #1c1c1e;
+  --secondary-text: #5f5f66;
+  --accent: #f5c150;
+  --link: #8a5a00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1a1a;
+    --card: #2a2a2a;
+    --separator: #3a3a3a;
+    --text: #f2f2f7;
+    --secondary-text: #a1a1a8;
+    --accent: #ffcb6b;
+    --link: #ffcb6b;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.language {
+  font-size: 15px;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 4px;
+}
+
+h2 {
+  font-size: 21px;
+  margin: 32px 0 8px;
+}
+
+h3 {
+  font-size: 17px;
+  margin: 20px 0 4px;
+}
+
+p, ul { margin: 0 0 12px; }
+
+ul { padding-left: 22px; }
+
+li { margin-bottom: 6px; }
+
+a { color: var(--link); }
+
+.updated {
+  color: var(--secondary-text);
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+
+.card p:last-child, .card ul:last-child { margin-bottom: 0; }
+
+footer {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--separator);
+  color: var(--secondary-text);
+  font-size: 14px;
+}
