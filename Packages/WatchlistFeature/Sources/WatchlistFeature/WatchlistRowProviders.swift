@@ -21,7 +21,7 @@ enum WatchlistRowProviders: Equatable {
         case .failed: .caption(.watchlistRowAvailabilityFailed)
         case .loaded(.atHome(let providers)): .logos(providers, abroad: false)
         case .loaded(.abroad(let providers)): .logos(providers, abroad: true)
-        case .loaded(.notOnYourServices): .caption(.watchlistRowNotOnYourServices)
+        case .loaded(.othersAtHome(let providers)): .others(providers, label: .watchlistRowNotYours)
         case .loaded(.notStreamingHere): .caption(.watchlistRowNotStreamingHere)
         }
     }

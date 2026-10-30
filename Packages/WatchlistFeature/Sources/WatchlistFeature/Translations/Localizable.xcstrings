@@ -127,24 +127,6 @@
         }
       }
     },
-    "watchlistRowNotOnYourServices" : {
-      "comment" : "Watchlist row, in place of provider logos: something streams the movie in the user's region, but none of the user's services",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on your services"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No está en tus servicios"
-          }
-        }
-      }
-    },
     "watchlistRowNotStreamingHere" : {
       "comment" : "Watchlist row, in place of provider logos: no subscription or free service streams the movie in the user's region",
       "extractionState" : "manual",
@@ -231,6 +213,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con tus servicios en el extranjero: %@"
+          }
+        }
+      }
+    },
+    "watchlistRowNotYours" : {
+      "comment" : "Watchlist row: caption before dimmed logos of services that stream the movie in the user's region but aren't the user's",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yours:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No los tienes:"
+          }
+        }
+      }
+    },
+    "watchlistRowOthersProviders" : {
+      "comment" : "VoiceOver, watchlist row: services that stream the movie in the user's region but aren't the user's. %@ is a list of service names",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not on your services, on %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No está en tus servicios, está en %@"
           }
         }
       }

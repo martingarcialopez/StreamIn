@@ -140,7 +140,7 @@ struct WatchlistViewModelTests {
     }
 
     /// Details' answer, per row: yours and free at home, else yours abroad,
-    /// else why there's nothing.
+    /// else the other services at home, else nothing.
     @Test func eachRowShowsDetailsAnswer() async {
         let movies = FakeMovieRepository(bundles: [
             MovieID(1): { .fixture(MovieID(1), region: $0, free: [.rtvePlay], global: [.init(provider: .netflix, regions: [$0])]) },
@@ -153,7 +153,7 @@ struct WatchlistViewModelTests {
 
         #expect(row(1, in: model) == .loaded(.atHome([.netflix, .rtvePlay])))
         #expect(row(2, in: model) == .loaded(.abroad([.primeVideo])))
-        #expect(row(3, in: model) == .loaded(.notOnYourServices))
+        #expect(row(3, in: model) == .loaded(.othersAtHome([.filmin])))
         #expect(row(4, in: model) == .loaded(.notStreamingHere))
     }
 
@@ -247,7 +247,7 @@ struct WatchlistViewModelTests {
         let prefs = makePrefs()
         let (model, _) = await loadedModel([1], movies: movies, prefs: prefs)
         await model.loadAvailability()
-        #expect(row(1, in: model) == .loaded(.notOnYourServices))
+        #expect(row(1, in: model) == .loaded(.othersAtHome([.filmin])))
 
         prefs.subscribedProviderIDs = [WatchProvider.filmin.id]
 
@@ -275,6 +275,18 @@ struct WatchlistViewModelTests {
         let year = Date.year(2010).formatted(.dateTime.year())
         let names = providers.map(\.name).formatted(.list(type: .and))
         #expect(model.accessibilityLabel(for: item) == "Movie 1, \(year), Christopher Nolan, On \(names)")
+    }
+
+    @Test func voiceOverSaysOtherServicesArentYours() async {
+        let movies = FakeMovieRepository(bundles: [
+            MovieID(1): { .fixture(MovieID(1), region: $0, subscription: [.filmin, .disneyPlus]) },
+        ])
+        let (model, _) = await loadedModel([1], movies: movies, prefs: makePrefs(subscribedTo: [.netflix]))
+
+        await model.loadAvailability()
+
+        let names = [WatchProvider.filmin, .disneyPlus].map(\.name).formatted(.list(type: .and))
+        #expect(model.accessibilityLabel(for: model.items[0]).hasSuffix("Not on your services, on \(names)"))
     }
 
     // MARK: - Helpers

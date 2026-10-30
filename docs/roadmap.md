@@ -282,8 +282,12 @@ A pattern used by two screens moves to DesignSystem.
      Without either, your services abroad, behind an `AbroadMark` (a flat accent globe on a
      logo-sized tile, since #46; the 3D `SpinningGlobe` stays for Details' card). Up to 3 logos at
      `LogoSize.small`, then "+N" (`ProviderLogoStrip`, promoted to DesignSystem from Details).
-   - **No logos:** a quiet caption, "Not on your services", or "Not streaming here" when no
-     subscription or free service carries it at home.
+   - **Then the other services at home** (#72, Oct 30): when none of yours carry it, here or
+     abroad, and nothing is free, the row lists the subscription services that carry it at home
+     behind a "Not yours:" caption, their logos dimmed. More useful than the "Not on your services"
+     caption it replaced, and in both lists, since it's `WatchSummary.othersAtHome`. Considered:
+     all four groups on one line (#72 as first written), dropped to keep #47's one answer per row.
+   - **No logos:** "Not streaming here" when no subscription or free service carries it at home.
    - **A failed row** says "Couldn't check availability"; pull to refresh retries it, and Details
      still opens and loads on its own.
    - **The system inset list stays,** on `AppPalette.background` pages with
@@ -308,7 +312,7 @@ A pattern used by two screens moves to DesignSystem.
    - **Newest first** stays: no grouping by verdict (rows would jump between sections as
      availability lands) and no sort menu.
    - **The look matches Search:** an inset list on the cinema background with `.cinemaRow()` rows
-     (#46), abroad logos behind `AbroadMark`, the poster above the title at accessibility sizes, and
+     (#46), abroad logos behind `AbroadMark`, others' logos dimmed behind "Not yours:" (#72), the poster above the title at accessibility sizes, and
      one VoiceOver element per row that names every provider. Swipe to delete stays.
    - **The empty state:** a large heart in the accent color, a semibold "Nothing saved yet", and a
      hint to tap the heart on a movie's page. No button. It scrolls at accessibility sizes, and the

@@ -9,17 +9,21 @@ public struct ProviderLogoStrip<Provider: Identifiable>: View {
     public let logoSize: CGFloat
     public let logoURL: @MainActor (Provider) -> URL?
     public let name: @MainActor (Provider) -> String
+    /// Dims the logos only; "+N" stays readable.
+    public let logoOpacity: Double
 
     public init(
         _ providers: [Provider],
         maxLogos: Int,
         logoSize: CGFloat,
+        logoOpacity: Double = 1,
         logoURL: @escaping @MainActor (Provider) -> URL?,
         name: @escaping @MainActor (Provider) -> String
     ) {
         self.providers = providers
         self.maxLogos = maxLogos
         self.logoSize = logoSize
+        self.logoOpacity = logoOpacity
         self.logoURL = logoURL
         self.name = name
     }
@@ -33,6 +37,7 @@ public struct ProviderLogoStrip<Provider: Identifiable>: View {
                     size: logoSize,
                     cornerRadius: Radius.small
                 )
+                .opacity(logoOpacity)
             }
             if providers.count > maxLogos {
                 Text(verbatim: "+\(providers.count - maxLogos)")
