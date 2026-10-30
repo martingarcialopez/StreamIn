@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Translation review: String Catalogs ⇄ one spreadsheet, a sheet per screen.
 
-Usage (through scripts/translations.sh, which provides openpyxl):
-  translations.sh export [--out <workbook.xlsx>]
-  translations.sh import <workbook.xlsx> [--dry-run]
+Usage (through scripts/translations/translations.sh, which provides openpyxl):
+  translations.sh export [--out <workbook.numbers|.xlsx>] [--force]
+  translations.sh import [<workbook.numbers|.xlsx>] [--dry-run]
+  translations.sh preview <StreamIn.app> [<workbook.numbers|.xlsx>]
+
+The workbook is scripts/translations/streamin-translations.numbers, which needs
+a Mac with Numbers (an .xlsx path still works with --out, for the tests). preview is what translator-preview.sh runs to show the edits in the
+simulator before they're imported.
 
 export writes every on-screen string, grouped by the screen that shows it
 (screens.json maps the Swift file that uses a key to a screen), with a column
 per language that the reviewer edits in place and hidden copies of the
-exported text.
+exported text. It writes a .numbers file, so the reviewer edits it and saves it
+in place; Numbers itself converts it (numbers.applescript). An existing workbook is never replaced without --force.
 
 import writes every edited cell back to its catalog, keeping each catalog's
 JSON style, and regenerates the package symbols. Nothing is written while any
@@ -18,16 +24,20 @@ the export are skipped and listed, so they can be reviewed again.
 """
 
 import argparse
-import datetime
 import json
+import plistlib
 import re
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
+TOOL = REPO / "scripts" / "translations"
 SCREENS = Path(__file__).resolve().with_name("screens.json")
+NUMBERS_SCRIPT = Path(__file__).resolve().with_name("numbers.applescript")
+WORKBOOK_NAME = "streamin-translations"
 
 LANGUAGE_NAMES = {"en": "Inglés", "es": "Español"}
 KEY_HEADER = "Clave"
@@ -254,8 +264,30 @@ def export(repo: Path, out: Path, screens_path: Path = SCREENS):
         sheet.freeze_panes = "B2"
 
     out.parent.mkdir(parents=True, exist_ok=True)
-    workbook.save(out)
+    if out.suffix == ".numbers":
+        with numbers_temporary_directory(out.parent) as temp:
+            xlsx = Path(temp) / f"{out.stem}.xlsx"
+            workbook.save(xlsx)
+            convert_with_numbers("to-numbers", xlsx, out)
+    else:
+        workbook.save(out)
     return rows, unused
+
+
+def numbers_temporary_directory(beside: Path):
+    """A visible folder next to the workbook, a place sandboxed Numbers reaches,
+    unlike the system temp folder."""
+    return tempfile.TemporaryDirectory(prefix="translations-tmp-", dir=beside)
+
+
+def convert_with_numbers(mode: str, source: Path, destination: Path) -> None:
+    """mode is "to-numbers" or "to-xlsx"; Numbers asks once for permission to be scripted."""
+    result = subprocess.run(
+        ["osascript", str(NUMBERS_SCRIPT), mode, str(source), str(destination), GUIDE_SHEET],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        sys.exit(f"Numbers couldn't convert {source.name}: {result.stderr.strip()}")
 
 
 def _write_guide(sheet, screens: dict, languages: list) -> None:
@@ -280,13 +312,13 @@ def _write_guide(sheet, screens: dict, languages: list) -> None:
         ("Contexto", "heading"),
         ("«Contexto» dice dónde aparece el texto y qué significa. Botones, pestañas y títulos tienen poco sitio: mejor cortos.", None),
         ("La app trata al usuario de tú.", None),
-        ("Para verla funcionando, pide que te la abran en el simulador del Mac en el idioma que quieras.", None),
-        ("También se cambia dentro de la app: Ajustes (engranaje) → Idioma, y reiniciar.", None),
+        ("Para ver tus cambios en la app, aunque no hayas guardado, ejecuta en la terminal, desde la carpeta del proyecto:", None),
+        ("    scripts/translations/translator-preview.sh es     (o en, para inglés)", None),
         ("", None),
         ("Pantallas", "heading"),
     ]
     lines += [(f"• {s['sheet']}: {s['description']}", None) for s in screens["screens"]]
-    lines += [("", None), ("Cuando termines, guarda el fichero en .xlsx y devuélvelo.", "heading")]
+    lines += [("", None), ("Cuando termines, guarda el fichero (⌘S) y devuélvelo tal cual.", "heading")]
     for text, style in lines:
         sheet.append([text])
         cell = sheet.cell(row=sheet.max_row, column=1)
@@ -311,13 +343,34 @@ class Report:
     symbol_failures: list = field(default_factory=list)
 
 
-def import_workbook(repo: Path, workbook_path: Path, dry_run: bool = False, regenerate_symbols: bool = True) -> Report:
+@dataclass
+class Edit:
+    catalog: str  # path relative to the repo
+    key: str
+    language: str
+    text: str
+
+
+def read_workbook(repo: Path, workbook_path: Path):
+    """Checks every edited cell against the catalogs.
+
+    Returns (report, catalogs by relative path with the valid edits applied in
+    memory, the valid edits). Nothing is written.
+    """
     from openpyxl import load_workbook
+
+    if workbook_path.suffix == ".numbers":
+        # Read through Numbers: if the document is open there, as on screen,
+        # unsaved edits included.
+        with numbers_temporary_directory(workbook_path.parent) as temp:
+            xlsx = Path(temp) / f"{workbook_path.stem}.xlsx"
+            convert_with_numbers("to-xlsx", workbook_path, xlsx)
+            return read_workbook(repo, xlsx)
 
     catalogs = {c.path.relative_to(repo).as_posix(): c for c in load_catalogs(repo)}
     workbook = load_workbook(workbook_path, read_only=True, data_only=True)
     report = Report()
-    touched = set()
+    applied = []
 
     for sheet in workbook.worksheets:
         rows = sheet.iter_rows(values_only=True)
@@ -355,8 +408,8 @@ def import_workbook(repo: Path, workbook_path: Path, dry_run: bool = False, rege
                 if edits:
                     report.errors.append(f"{where}: the key no longer exists in {catalog_name}")
                 continue
-            for language, (exported, proposal) in sorted(edits.items()):
-                if not proposal:
+            for language, (exported, edited) in sorted(edits.items()):
+                if not edited:
                     report.errors.append(f"{where} [{language}]: the cell is empty; write the text back")
                     continue
                 if catalog.has_variants(key):
@@ -366,21 +419,26 @@ def import_workbook(repo: Path, workbook_path: Path, dry_run: bool = False, rege
                 if exported != live:
                     report.stale.append(f"{where} [{language}]: the text changed since the export, now “{live}”")
                     continue
-                if proposal == live:
+                if edited == live:
                     continue
                 reference = live or catalog.value(key, languages_of([catalog])[0]) or ""
-                if placeholders(proposal) != placeholders(reference):
+                if placeholders(edited) != placeholders(reference):
                     report.errors.append(
-                        f"{where} [{language}]: “{proposal}” must keep the variables of “{reference}”")
+                        f"{where} [{language}]: “{edited}” must keep the variables of “{reference}”")
                     continue
-                if live and len(proposal) > max(len(live) * 1.5, len(live) + 10):
-                    report.warnings.append(f"{where} [{language}]: {len(live)} → {len(proposal)} characters, check it fits")
-                catalog.set_value(key, language, proposal)
-                touched.add(catalog_name)
-                report.changes.append(f"{where} [{language}]: “{live}” → “{proposal}”")
+                if live and len(edited) > max(len(live) * 1.5, len(live) + 10):
+                    report.warnings.append(f"{where} [{language}]: {len(live)} → {len(edited)} characters, check it fits")
+                catalog.set_value(key, language, edited)
+                applied.append(Edit(catalog_name, key, language, edited))
+                report.changes.append(f"{where} [{language}]: “{live}” → “{edited}”")
+    return report, catalogs, applied
 
+
+def import_workbook(repo: Path, workbook_path: Path, dry_run: bool = False, regenerate_symbols: bool = True) -> Report:
+    report, catalogs, applied = read_workbook(repo, workbook_path)
     if report.errors or dry_run:
         return report
+    touched = {edit.catalog for edit in applied}
     # Every catalog first, so a symbol failure never leaves half the changes unwritten.
     for name in sorted(touched):
         catalogs[name].path.write_text(catalogs[name].serialized(), encoding="utf-8")
@@ -398,16 +456,53 @@ def import_workbook(repo: Path, workbook_path: Path, dry_run: bool = False, rege
     return report
 
 
+# MARK: - Preview
+
+
+def preview_workbook(repo: Path, workbook_path: Path, app: Path) -> Report:
+    """Writes the workbook's valid edits into a built StreamIn.app's compiled strings.
+
+    The catalogs aren't touched, so the reviewer can try copy in the simulator
+    before anything is imported. Cells with errors are left out of the app.
+    """
+    report, _, applied = read_workbook(repo, workbook_path)
+    for edit in applied:
+        path = compiled_strings(app, edit.catalog, edit.language)
+        if not path.exists():
+            report.warnings.append(f"{edit.key} [{edit.language}]: no {path.relative_to(app)} in the app")
+            continue
+        with path.open("rb") as file:
+            strings = plistlib.load(file)
+        strings[edit.key] = edit.text
+        with path.open("wb") as file:
+            plistlib.dump(strings, file, fmt=plistlib.FMT_BINARY)
+    return report
+
+
+def compiled_strings(app: Path, catalog: str, language: str) -> Path:
+    """Where Xcode compiles a catalog's strings for one language inside the .app."""
+    parts = Path(catalog).parts
+    lproj = f"{language}.lproj/{Path(catalog).stem}.strings"
+    if parts[0] == "Packages":
+        return app / f"{parts[1]}_{parts[3]}.bundle" / lproj
+    return app / lproj
+
+
 def _text(value) -> str:
     if value is None:
         return ""
     return str(value).strip()
 
 
-def print_report(report: Report, dry_run: bool) -> None:
+def print_report(report: Report, dry_run: bool, preview: bool = False) -> None:
+    if preview:
+        errors_title, changes_title = "Not shown — fix these cells", "Shown in the app"
+    else:
+        errors_title = "Errors — fix these cells, nothing was written"
+        changes_title = "Changes" + (" (dry run, nothing written)" if dry_run or report.errors else "")
     sections = [
-        ("Errors — fix these cells, nothing was written", report.errors),
-        ("Changes" + (" (dry run, nothing written)" if dry_run or report.errors else ""), report.changes),
+        (errors_title, report.errors),
+        (changes_title, report.changes),
         ("Skipped — the text changed since the export; review these again", report.stale),
         ("Check the length on screen", report.warnings),
         ("Reviewer's notes", report.notes),
@@ -420,7 +515,7 @@ def print_report(report: Report, dry_run: bool) -> None:
             for item in items:
                 print(f"  • {item}")
     if not any(items for _, items in sections):
-        print("No proposals in the workbook.")
+        print("No edits in the workbook.")
 
 
 # MARK: - CLI
@@ -429,16 +524,31 @@ def print_report(report: Report, dry_run: bool) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
+    default_workbook = TOOL / f"{WORKBOOK_NAME}.numbers"
+    workbook_help = f"a .numbers or .xlsx workbook (default: {default_workbook.relative_to(REPO)})"
     export_parser = commands.add_parser("export", help="Write the review workbook")
-    default_out = REPO / "build" / "translations" / f"StreamIn-textos-{datetime.date.today().isoformat()}.xlsx"
-    export_parser.add_argument("--out", type=Path, default=default_out)
+    export_parser.add_argument("--out", type=Path, default=default_workbook, help=workbook_help)
+    export_parser.add_argument("--force", action="store_true", help="Replace an existing workbook")
     import_parser = commands.add_parser("import", help="Apply a reviewed workbook to the catalogs")
-    import_parser.add_argument("workbook", type=Path)
+    import_parser.add_argument("workbook", type=Path, nargs="?", default=default_workbook, help=workbook_help)
     import_parser.add_argument("--dry-run", action="store_true", help="Report what would change, write nothing")
+    preview_parser = commands.add_parser("preview", help="Put a workbook's edits into a built StreamIn.app")
+    preview_parser.add_argument("app", type=Path, help="the .app to change (translator-preview.sh passes a copy)")
+    preview_parser.add_argument("workbook", type=Path, nargs="?", default=default_workbook, help=workbook_help)
     args = parser.parse_args()
 
-    if args.command == "export":
+    if args.command == "preview":
+        report = preview_workbook(REPO, args.workbook.resolve(), args.app.resolve())
+        print_report(report, dry_run=False, preview=True)
+    elif args.command == "export":
         out = args.out.resolve()
+        if out.suffix not in (".numbers", ".xlsx"):
+            sys.exit(f"--out must end in .numbers or .xlsx, got {out.name}")
+        if out.exists() and not args.force:
+            sys.exit(f"{out} already exists and may hold a review in progress.\n"
+                     "Import it first, or pass --force to replace it (--out writes another file).")
+        if out.exists():
+            out.unlink()
         rows, unused = export(REPO, out)
         print(f"Wrote {len(rows)} strings on {len({r.screen for r in rows})} screens to {out}")
         if unused:

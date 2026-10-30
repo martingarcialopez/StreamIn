@@ -46,7 +46,7 @@ jobs:
       # The translation review tool rewrites the String Catalogs, so it's tested
       # like app code too.
       - name: Translation review tool
-        run: scripts/translations.sh test
+        run: scripts/translations/translations.sh test
 
       - name: Toolchain
         run: |
