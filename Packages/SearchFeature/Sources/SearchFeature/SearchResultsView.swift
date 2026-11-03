@@ -261,7 +261,7 @@ private struct PreviewMovieRepository: MovieRepository {
             ProviderRegionalAvailability(provider: .netflix, regions: [.unitedStates, Region(code: "GB")]),
             ProviderRegionalAvailability(provider: .primeVideo, regions: [Region(code: "JP")]),
         ])),
-        (movie(5, "Peter Pan", 1953), .home(subscription: [.filmin])),
+        (movie(5, "Peter Pan", 1953), .home(subscription: [.filmin, .movistarPlus])),
         (movie(6, "Peter Pan: The Quest for the Never Book", 2018), .home()),
         (movie(7, "Hook", 1991), .fails),
         (movie(8, "Finding Neverland", 2004), .pending),
@@ -365,6 +365,7 @@ private extension WatchProvider {
     static let hboMax = preview(1899, "HBO Max")
     static let filmin = preview(63, "Filmin")
     static let rtvePlay = preview(541, "RTVE Play")
+    static let movistarPlus = preview(149, "Movistar Plus+")
 
     static func preview(_ id: Int, _ name: String) -> WatchProvider {
         WatchProvider(id: ProviderID(id), name: name, logoPath: nil, priority: 1)

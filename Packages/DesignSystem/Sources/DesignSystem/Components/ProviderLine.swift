@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// A list row's answer to "where can I watch it?": up to three small logos
-/// and "+N" (abroad ones behind `AbroadMark`), a caption, or a spinner while
-/// it loads. Holds the logos' height in every state, so rows don't jump as
-/// availability lands. Search results and the Watchlist share it.
+/// and "+N" (abroad ones behind `AbroadMark`), a caption, or a spinner while it loads. Holds the logos' height in every
+/// state, so rows don't jump as availability lands. Search results and the
+/// Watchlist share it.
 public struct ProviderLine<Provider: Identifiable>: View {
     public let content: ProviderLineContent<Provider>
     public let logoURL: @MainActor (Provider) -> URL?
@@ -57,7 +57,7 @@ public struct ProviderLine<Provider: Identifiable>: View {
         line(.logos((1...2).map(Sample.init), abroad: false))
         line(.logos((1...5).map(Sample.init), abroad: false))
         line(.logos((1...2).map(Sample.init), abroad: true))
-        line(.caption("Not on your services"))
+        line(.caption("Not streaming here"))
     }
     .padding()
     .cinemaBackground()
