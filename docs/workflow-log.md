@@ -14,7 +14,7 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
 | 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
 | 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
-| 5 — Settings and the picker (#49) | #49's PR | Yes (issue, a one-round design Q&A, then plan mode) | 2 medium + 4 low of 6 | Partly — full test plan (295 tests), onboarding on the simulator in en and es; previews not rendered (Xcode MCP down) | — | — |
+| 5 — Settings and the picker (#49) | [#95](https://github.com/martingarcialopez/StreamIn/pull/95) | Yes (issue, a one-round design Q&A, then plan mode) | 2 medium + 4 low of 6 | Partly — full test plan (295 tests), onboarding on the simulator in en and es; previews not rendered (Xcode MCP down) | — | — |
 
 ---
 
@@ -47,6 +47,10 @@ shows once. StreamIn's English became British.
   that never fired (a toggled tile is a new view in the other section), a stale
   translator comment, an asset loaded by string, a magic number. All fixed, with
   tests for the new states.
+- **The GitHub review, 1 medium,** after the local review had passed the branch:
+  a stored en-US didn't become en-GB but fell back to the device's language, so
+  a Spanish iPhone set to English in the app would have turned Spanish. My test
+  used English as the default and couldn't see it; it now uses Spanish.
 - **Writing the empty-state fix:** a search matching only your picks would have
   said "You've picked every service here"; the condition moved into the view
   model and got a test.
