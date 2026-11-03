@@ -6,7 +6,7 @@
 import Foundation
 
 #if SWIFT_PACKAGE
-private let resourceBundle = Foundation.Bundle.module
+private nonisolated let resourceBundle = Foundation.Bundle.module
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 private nonisolated let resourceBundleDescription = LocalizedStringResource.BundleDescription.atURL(resourceBundle.bundleURL)
 #else

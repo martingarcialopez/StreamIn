@@ -14,7 +14,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajustes"
+            "value" : "Configuración"
           }
         }
       }
@@ -50,7 +50,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mi lista"
+            "value" : "Favoritos"
           }
         }
       }
@@ -68,7 +68,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sigue en tu watchlist. Inténtalo de nuevo en un momento."
+            "value" : "Sigue en tus favoritos. Inténtalo de nuevo en un momento."
           }
         }
       }
