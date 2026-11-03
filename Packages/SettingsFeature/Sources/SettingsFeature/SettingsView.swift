@@ -96,7 +96,11 @@ private struct RegionSection: View {
                 RegionPickerView(model: model)
             } label: {
                 LabeledContent {
-                    Text(verbatim: "\(prefs.region.flag) \(prefs.region.displayName)")
+                    HStack(spacing: Spacing.tight) {
+                        Text(prefs.region.flag)
+                            .accessibilityHidden(true)
+                        Text(prefs.region.displayName)
+                    }
                 } label: {
                     Text(.settingsRegionPicker)
                 }

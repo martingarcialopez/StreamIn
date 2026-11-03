@@ -37,11 +37,13 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
         providersByRegion[region?.code ?? worldwideKey] ?? []
     }
 
-    /// What `watchRegions()` returns.
+    /// What `watchRegions()` returns, unless `regionsFailure` is set.
     var regions: [Region] = []
+    var regionsFailure: MovieError?
 
     func watchRegions() async throws -> [Region] {
-        regions
+        if let regionsFailure { throw regionsFailure }
+        return regions
     }
 }
 
@@ -216,11 +218,41 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
     /// Names that read alike in English and Spanish, so the tests don't depend
     /// on the simulator's language.
-    private func makeModel(region: Region = .spain) -> (RegionPickerViewModel, Preferences) {
-        let repo = FakeMovieRepository()
+    private func makeModel(
+        region: Region = .spain,
+        repo: FakeMovieRepository = FakeMovieRepository()
+    ) -> (RegionPickerViewModel, Preferences) {
         repo.regions = ["IT", "CA", "AR", "ES", "US"].map(Region.init(code:))
         let prefs = makePrefs(region: region)
         return (RegionPickerViewModel(catalog: RegionCatalog(repository: repo), prefs: prefs), prefs)
+    }
+
+    @Test func failedLoadShowsTheErrorUntilARetrySucceeds() async {
+        let repo = FakeMovieRepository()
+        repo.regionsFailure = .offline
+        let (model, _) = makeModel(repo: repo)
+
+        await model.load()
+        #expect(model.loadError == .offline)
+        #expect(!model.isInitialLoad)
+
+        repo.regionsFailure = nil
+        await model.load()
+        #expect(model.loadError == nil)
+        #expect(model.matchingRegions.count == 5)
+    }
+
+    /// The model outlives the pushed picker: picking a region must not leave
+    /// the next visit filtered.
+    @Test func selectingClearsTheSearch() async {
+        let (model, _) = makeModel()
+        await model.load()
+
+        model.searchText = "ita"
+        model.select(Region(code: "IT"))
+
+        #expect(model.searchText.isEmpty)
+        #expect(model.showsSelectedRegion)
     }
 
     @Test func isInitialLoadUntilTheListArrives() async {

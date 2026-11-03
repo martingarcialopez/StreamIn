@@ -124,10 +124,13 @@ struct RootView: View {
         }
         // The regions TMDB covers. A home region it doesn't (a device default
         // in an uncovered country) moves to the fallback, which re-fires the
-        // provider preload below.
+        // provider preload below. Keyed on the list rather than the launch
+        // load, so a list Settings fetches after an offline launch counts too.
         .task {
             await regionCatalog.load()
-            if let regions = regionCatalog.regions {
+        }
+        .onChange(of: regionCatalog.regions, initial: true) { _, regions in
+            if let regions {
                 prefs.adoptSupportedRegion(among: regions)
             }
         }

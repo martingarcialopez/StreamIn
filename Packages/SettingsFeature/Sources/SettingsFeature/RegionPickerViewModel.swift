@@ -36,14 +36,16 @@ public final class RegionPickerViewModel {
         prefs.region
     }
 
-    /// No list yet and nothing has failed: show a spinner.
+    /// No list yet, and either nothing has failed or a retry is running: show
+    /// a spinner, so Retry visibly does something.
     var isInitialLoad: Bool {
-        catalog.regions == nil && catalog.lastError == nil
+        catalog.regions == nil && (catalog.lastError == nil || catalog.isLoading)
     }
 
-    /// Why the list couldn't load, while there's no list to show.
+    /// Why the list couldn't load, while there's no list to show and no
+    /// retry running.
     var loadError: MovieError? {
-        catalog.regions == nil ? catalog.lastError : nil
+        catalog.regions == nil && !catalog.isLoading ? catalog.lastError : nil
     }
 
     /// The selected region is pinned above the list, except while searching.
@@ -63,7 +65,10 @@ public final class RegionPickerViewModel {
         }
     }
 
+    /// Also clears the search: the model outlives the pushed picker, which
+    /// should reopen on the full list with the region pinned.
     func select(_ region: Region) {
         prefs.region = region
+        searchText = ""
     }
 }
