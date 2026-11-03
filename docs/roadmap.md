@@ -320,6 +320,39 @@ A pattern used by two screens moves to DesignSystem.
      hint to tap the heart on a movie's page. No button. It scrolls at accessibility sizes, and the
      load-failed state uses the same layout with Retry.
 4. #49 — Settings, the services picker and onboarding's reuse of it.
+5. #91 — The abroad verdict only promises what a VPN unlocks. ✅
+
+   **Decided (Nov 3, Martín):** "my VPN handles the rest" was wrong twice.
+   - **Catalogue scope** (`CatalogScope`, Domain): only services whose catalogue follows the
+     *location* count abroad. Prime Video's follows the Amazon *account's* country, so a VPN alone
+     unlocks nothing there. A service not in the table is `.account`: a missing option is better
+     than a false "On your services abroad".
+   - **EU portability** (`Region.reachesCatalogue(in:)`): paid services show an EEA resident their
+     *home* catalogue anywhere in the EEA ([Regulation (EU) 2017/1128](https://eur-lex.europa.eu/eli/reg/2017/1128/oj)).
+     From Spain, a VPN to France brings back Spain's catalogue, so other EEA regions don't count
+     from an EEA home. The UK is outside since Brexit.
+
+   **Catalogue scope** (drafted by Claude from the services' help pages, to be checked by Martín):
+
+   | Service (TMDB id) | Scope | Source |
+   |---|---|---|
+   | Netflix (8) | location | [Netflix Help](https://help.netflix.com/en/node/24853): "Choices … vary by country"; within the EU, "the same content as your home country" |
+   | Disney+ (122) | location | Disney+ Help, as quoted by [Sony support](https://www.sony.co.uk/electronics/support/articles/00268158): you can watch "content available in the country/region you're in"; same version at home within the EU/EEA |
+   | HBO Max (1899, legacy 384) | location | [HBO Max Help](https://help.hbomax.com/dk-en/Answer/Detail/000001150): the selection "will change when you travel to another country or region" |
+   | Crunchyroll (283) | location | [Crunchyroll Help](https://help.crunchyroll.com/hc/en-us/articles/43269213267092-Why-can-t-I-watch-certain-shows-in-my-region) (as summarised in search results; the page didn't load): titles are licensed per region, and a VPN to reach another region's isn't supported. That the region comes from the IP, with no account setting, rests on third-party guides. Weakest "location" row |
+   | Prime Video (9) | account | [Prime Video Help](https://www.amazon.com/gp/help/customer/display.html?nodeId=GTBPYKSYKCXSPRKP): outside your home country, only "a selection of Prime Video titles"; [Top10VPN](https://www.top10vpn.com/guides/amazon-prime-vpn/), [Cybernews](https://cybernews.com/how-to-use-vpn/amazon-prime-video-change-country/) |
+   | Apple TV+ (350) | account | [Apple Community](https://discussions.apple.com/thread/254814625): content follows the Apple Account's country or region, not your location |
+   | Paramount+ (531) | account | [Paramount+ Help](https://support.paramountplus.com/s/article/PI-Can-I-watch-my-Paramount-content-while-traveling?language=en_US): abroad you get the visiting country's service, but never the US one, and US subscriptions work only in the US. Location-like with a US hole, kept `.account` |
+   | Movistar Plus+ (149) | account | [Comunidad Movistar](https://comunidad.movistar.es/discussions/movistarplus/movistar-plus-en-extranjero/5100517): Spain's content in the EU/EEA only, no other catalogue |
+   | Peacock (386) | account | US only |
+   | Pluto TV (300) | location | Free and needs no account; the catalogue follows the IP ([PIA](https://www.privateinternetaccess.com/blog/how-to-watch-pluto-tv-outside-the-us/), [VPNOverview](https://vpnoverview.com/unblocking/streaming/access-pluto-tv/); VPN vendors only). Free, so it never appears in the subscription matrix today |
+   | SkyShowtime (1773) | account | [SkyShowtime Help](https://www.skyshowtime.com/me/help/article/can-i-watch-skyshowtime-outside-the-eu-eea): "you can only watch SkyShowtime within the EU/EEA"; [in another EU/EEA country](https://www.skyshowtime.com/nl/help/article/watching-skyshowtime-from-another-eu-eea-country) for up to 180 days (portability) |
+   | Filmin (63) | account | [Filmin Help](https://ayuda.filmin.es/es/support/solutions/articles/47001259202-ver-filmin-fuera-de-espa%C3%B1a): a subscription bought in Spain works "dentro de Europa", temporarily, with its subscription catalogue; Portugal and Mexico are separate services |
+   | Discovery+ (510) | account | Third-party only ([Gizmodo](https://gizmodo.com/best-vpn/watch-discovery-plus-abroad), [VPNpro](https://vpnpro.com/guides-and-tutorials/how-to-watch-discovery-plus-online/)): the account belongs to the country it was created in, and another country's version refuses the sign-in |
+   | Canal+ (381) | account | Third-party only ([monpetitforfait](https://www.monpetitforfait.com/comparateur-box-internet/aides/acces-canal-plus-etranger), [lesmeilleursvpn](https://lesmeilleursvpn.com/comment-regarder-canal-a-etranger/)): blocked outside the EU, home catalogue inside it; each country's Canal+ is a separate service |
+   | Starz / STARZPLAY / Lionsgate Play (43) | account | Unverified: no source either way. Lionsgate's standalone service has closed in several markets (UK, Feb 2024) |
+
+   To change a row: edit `CatalogScope.scopes` and this table together.
 
    **Decided (Oct 30, design Q&A):**
    - **Settings stays an inset `Form`** on the cinema background, the most familiar shape for a
