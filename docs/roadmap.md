@@ -333,14 +333,21 @@ A pattern used by two screens moves to DesignSystem.
      comes first, then "🇪🇸 Available in Spain" with a settings-style Worldwide switch under it
      (it didn't fit beside the heading). Search narrows both sections; a search with no match shows
      the system's search empty state.
+   - **Free services stay out of the picker** (public broadcasters' players, ad-supported
+     streamers): it's for the services you pay for. TMDB doesn't say which are free, so
+     `FreeProviders` (Domain) lists them, matched by id or by name (case and accents ignored),
+     since a broadcaster's id differs per region. A movie's page still shows them.
    - **Onboarding wraps the same grid** with a `SpinningGlobe`, "Pick the services you pay for" and
      one subtitle line that scroll away with it, and a credit line at the end. It shows **once**:
      Done sets `Preferences.hasCompletedOnboarding`, even with nothing picked (folded in from
      Phase 6).
    - **About** (folded in from Phase 6, TMDB's terms and App Store 5.1.1(i)): TMDB's official logo,
      unmodified and small, over their attribution sentence; JustWatch's credit; the privacy policy
-     (the Spanish page in Spanish); "Version 1.0.0 (1)" from the bundle. Links are plain text with
-     a ↗, not three sentences in the accent color.
+     (the Spanish page in Spanish); "Version 1.0.0 (1)" from the bundle. It's fine print, not
+     settings (Martín, after seeing it as a card): no header and no rows, small centred gray text
+     on the page with room above it, the links a step brighter than the version. An underline says
+     what's a link: the brand a credit names (TMDB, JustWatch) or the whole privacy line. Each link
+     has its own row: links sharing a Form row all opened the first.
    - **Dark only:** the issue asked for light and dark, but the app is dark-only since #46, so
      there's no light mode to check.
    - **Nothing new in DesignSystem** beyond tokens: the tile and grid are used only inside
