@@ -32,7 +32,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca el corazón en la página de una película para guardarla aquí y ver de un vistazo dónde puedes verla."
+            "value" : "Toca el corazón en la página de una película para guardarla aquí y comprobar de un vistazo dónde puedes verla."
           }
         }
       }
@@ -68,7 +68,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Watchlist"
+            "value" : "Favoritos"
           }
         }
       }
@@ -86,7 +86,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se ha podido cargar tu watchlist"
+            "value" : "No se han podido cargar tus favoritos"
           }
         }
       }
@@ -123,24 +123,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reintentar"
-          }
-        }
-      }
-    },
-    "watchlistRowNotOnYourServices" : {
-      "comment" : "Watchlist row, in place of provider logos: something streams the movie in the user's region, but none of the user's services",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on your services"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No está en tus servicios"
           }
         }
       }

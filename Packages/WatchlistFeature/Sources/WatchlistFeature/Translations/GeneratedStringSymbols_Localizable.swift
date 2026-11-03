@@ -100,15 +100,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Watchlist row, in place of provider logos: something streams the movie in the user's region, but none of the user's services
-     
-     Localized string for key “watchlistRowNotOnYourServices” in table “Localizable.xcstrings”.
-     */
-    static var watchlistRowNotOnYourServices: LocalizedStringResource {
-        LocalizedStringResource("watchlistRowNotOnYourServices", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Watchlist row, in place of provider logos: no subscription or free service streams the movie in the user's region
      
      Localized string for key “watchlistRowNotStreamingHere” in table “Localizable.xcstrings”.

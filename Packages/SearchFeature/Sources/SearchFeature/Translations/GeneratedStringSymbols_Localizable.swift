@@ -154,15 +154,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Search result row, in place of provider logos: something streams the movie in the user's region, but none of the user's services
-     
-     Localized string for key “searchRowNotOnYourServices” in table “Localizable.xcstrings”.
-     */
-    static var searchRowNotOnYourServices: LocalizedStringResource {
-        LocalizedStringResource("searchRowNotOnYourServices", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Search result row, in place of provider logos: no subscription or free service streams the movie in the user's region
      
      Localized string for key “searchRowNotStreamingHere” in table “Localizable.xcstrings”.
