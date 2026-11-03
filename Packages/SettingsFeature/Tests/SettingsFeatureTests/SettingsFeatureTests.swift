@@ -98,6 +98,22 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(model.availableProviders.map(\.id) == [ProviderID(9), ProviderID(337)])
     }
 
+    @Test func availableProvidersLeavesOutFreeServices() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([
+            provider(8, "Netflix"),
+            provider(9999, "RTVE Play"),
+            provider(300, "Pluto TV")
+        ], for: .spain)
+        repo.setProviders([], for: nil)
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo), prefs: makePrefs(region: .spain)
+        )
+        await model.load()
+
+        #expect(model.availableProviders.map(\.id) == [ProviderID(8)])
+    }
+
     @Test func availableProvidersSwitchesOnWorldwideToggle() async {
         let repo = FakeMovieRepository()
         repo.setProviders([provider(8, "Netflix")], for: .spain)

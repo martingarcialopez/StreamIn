@@ -95,11 +95,12 @@ public final class StreamingServicesViewModel {
 
     /// Catalog under the current scope. Excludes already-selected providers
     /// (those live in the "Your services" section above to avoid
-    /// duplicated tiles) and applies the search filter.
+    /// duplicated tiles), leaves out free services (the picker is for the ones
+    /// you pay for) and applies the search filter.
     public var availableProviders: [WatchProvider] {
         let selectedIDs = prefs.subscribedProviderIDs
         return (scopedCatalog ?? [])
-            .filter { !selectedIDs.contains($0.id) }
+            .filter { !selectedIDs.contains($0.id) && !FreeProviders.contains($0) }
             .filter(matchesSearch)
     }
 
