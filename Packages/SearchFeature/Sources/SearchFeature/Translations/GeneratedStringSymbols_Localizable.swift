@@ -163,29 +163,11 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Search result row: caption before dimmed logos of services that stream the movie in the user's region but aren't the user's
-     
-     Localized string for key “searchRowNotYours” in table “Localizable.xcstrings”.
-     */
-    static var searchRowNotYours: LocalizedStringResource {
-        LocalizedStringResource("searchRowNotYours", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      VoiceOver, search result row: the user's services or free ones that stream the movie at home. %@ is a list of service names
      
      Localized string for key “searchRowOnProviders” in table “Localizable.xcstrings”.
      */
     static func searchRowOnProviders(_ arg1: String) -> LocalizedStringResource {
         LocalizedStringResource("searchRowOnProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     VoiceOver, search result row: services that stream the movie in the user's region but aren't the user's. %@ is a list of service names
-     
-     Localized string for key “searchRowOthersProviders” in table “Localizable.xcstrings”.
-     */
-    static func searchRowOthersProviders(_ arg1: String) -> LocalizedStringResource {
-        LocalizedStringResource("searchRowOthersProviders", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
     }
 }
