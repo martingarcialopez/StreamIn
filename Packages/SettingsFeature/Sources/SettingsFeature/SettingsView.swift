@@ -189,8 +189,8 @@ private struct FlaggedName: View {
 }
 
 private extension Language {
-    /// The flag of the language's region subtag: 🇺🇸 for en-US, 🇪🇸 for es-ES,
-    /// matching "English (United States)" in the picker.
+    /// The flag of the language's region subtag: 🇬🇧 for en-GB, 🇪🇸 for es-ES,
+    /// matching "English (United Kingdom)" in the picker.
     var flag: String {
         Locale.Language(identifier: code).region.map { Region(code: $0.identifier).flag } ?? ""
     }
@@ -287,7 +287,7 @@ private struct StreamingServicesSummary: View {
 private func previewSettings(_ name: String, subscribedTo ids: [Int]) -> some View {
     let prefs = Preferences(
         defaultRegion: .spain,
-        defaultLanguage: .englishUS,
+        defaultLanguage: .englishUK,
         defaults: UserDefaults(suiteName: "SettingsView.preview.\(name)")!
     )
     prefs.region = .spain

@@ -318,7 +318,11 @@ A pattern used by two screens moves to DesignSystem.
    **Decided (Oct 30, design Q&A):**
    - **Settings stays an inset `Form`** on the cinema background, the most familiar shape for a
      settings screen. Region and language options carry their flag (a language shows its region
-     subtag's: 🇺🇸 English (United States), 🇪🇸 Español (España)); VoiceOver reads only the name.
+     subtag's: 🇬🇧 English (United Kingdom), 🇪🇸 Español (España)); VoiceOver reads only the name.
+   - **StreamIn's English is British** (`Language.englishUK`, en-GB): the picker, the default for
+     every non-Spanish device, and iOS's language for the app. TMDB still gets en-US for it
+     (`TMDBConfig.contentLanguage(for:)`): few movies have an en-GB translation, and one without
+     comes back with an empty overview. A stored en-US from an older build becomes en-GB.
    - **The language restart is said up front:** a "↻ Takes effect after restarting StreamIn." line
      under the picker, and the Restart now / Later alert stays.
    - **The services row** keeps its logo summary, now DesignSystem's `ProviderLogoStrip` (3 + "+N"),

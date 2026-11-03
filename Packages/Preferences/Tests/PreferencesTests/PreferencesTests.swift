@@ -56,10 +56,10 @@ import Domain
 
     @Test func roundTripPersistsAcrossInstances() {
         let defaults = makeDefaults()
-        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+        let prefs = Preferences(defaultLanguage: .englishUK, defaults: defaults)
         prefs.language = .spanishES
 
-        #expect(Preferences(defaultLanguage: .englishUS, defaults: defaults).language == .spanishES)
+        #expect(Preferences(defaultLanguage: .englishUK, defaults: defaults).language == .spanishES)
     }
 
     /// French was offered before the picker was limited to translated
@@ -68,9 +68,19 @@ import Domain
         let defaults = makeDefaults()
         defaults.set("fr-FR", forKey: "settings.language.code")
 
-        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+        let prefs = Preferences(defaultLanguage: .englishUK, defaults: defaults)
 
-        #expect(prefs.language == .englishUS)
+        #expect(prefs.language == .englishUK)
+    }
+
+    /// English was en-US before it became British; that choice becomes en-GB.
+    @Test func americanEnglishFromAnOlderBuildBecomesBritish() {
+        let defaults = makeDefaults()
+        defaults.set("en-US", forKey: "settings.language.code")
+
+        let prefs = Preferences(defaultLanguage: .englishUK, defaults: defaults)
+
+        #expect(prefs.language == .englishUK)
     }
 }
 
