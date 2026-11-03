@@ -179,10 +179,9 @@ public final class DetailsViewModel {
         options?.yoursAtHome ?? []
     }
 
-    /// Subscribed providers + the regions where they carry this film
-    /// **outside** the user's home region. Each entry's `regions` leads with
-    /// popular VPN locations (`PopularRegions`). Providers whose only region
-    /// IS home are excluded (they appear in `providersAvailableAtHome` instead).
+    /// The user's services that carry this film where a VPN reaches another
+    /// catalogue (`WatchOptions.yoursAbroad`). Each entry's `regions` leads
+    /// with popular VPN locations (`PopularRegions`).
     public var providersAvailableElsewhere: [ProviderRegionalAvailability] {
         (options?.yoursAbroad ?? []).map { entry in
             ProviderRegionalAvailability(provider: entry.provider, regions: PopularRegions.sorted(entry.regions))

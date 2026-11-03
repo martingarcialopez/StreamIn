@@ -651,6 +651,8 @@ private struct BackdropView: View {
         subscribedTo: [.netflix, .primeVideo],
         repository: PreviewMovieRepository(
             subscription: [.disneyPlus, .hboMax, .movistarPlus],
+            // France and Italy bring back Spain's catalogue (EU portability),
+            // and Prime Video's follows the account, so neither is listed.
             global: [
                 ProviderRegionalAvailability(
                     provider: .netflix,

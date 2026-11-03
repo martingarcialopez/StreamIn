@@ -166,7 +166,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
             bundle(
                 movieID: sampleMovie.id, region: .spain,
                 subscriptions: [
-                    // Prime in ES + FR — both home and elsewhere
+                    // Prime in ES + FR — carries it at home
                     ProviderRegionalAvailability(provider: provider(9, "Prime Video"),
                                                   regions: [.spain, .france]),
                     // Netflix only in JP — elsewhere only
@@ -192,29 +192,53 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
             bundle(
                 movieID: sampleMovie.id, region: .spain,
                 subscriptions: [
-                    // Prime in ES + FR + DE → elsewhere shows FR, DE
-                    ProviderRegionalAvailability(provider: provider(9, "Prime Video"),
-                                                  regions: [.spain, .france, .germany]),
-                    // Netflix only in ES → excluded from elsewhere (no other regions)
+                    // Netflix in ES + US + GB → elsewhere shows US, GB
                     ProviderRegionalAvailability(provider: provider(8, "Netflix"),
+                                                  regions: [.spain, .unitedStates, .unitedKingdom]),
+                    // Disney+ only in ES → excluded from elsewhere (no other regions)
+                    ProviderRegionalAvailability(provider: provider(337, "Disney+"),
                                                   regions: [.spain])
                 ]
             )
         )
-        let prefs = makePrefs(subscribedTo: [8, 9])
+        let prefs = makePrefs(subscribedTo: [8, 337])
         prefs.region = .spain
         let model = makeModel(repository: repo, prefs: prefs)
 
         await model.load(region: .spain)
 
-        // Netflix is home-only → not in elsewhere. Prime's elsewhere list
+        // Disney+ is home-only → not in elsewhere. Netflix's elsewhere list
         // excludes ES.
         #expect(model.providersAvailableElsewhere.count == 1)
-        let primeElsewhere = try #require(
-            model.providersAvailableElsewhere.first(where: { $0.provider.id == ProviderID(9) })
+        let netflixElsewhere = try #require(
+            model.providersAvailableElsewhere.first(where: { $0.provider.id == ProviderID(8) })
         )
-        #expect(Set(primeElsewhere.regions.map(\.code)) == Set(["FR", "DE"]))
-        #expect(!primeElsewhere.regions.contains(.spain))
+        #expect(Set(netflixElsewhere.regions.map(\.code)) == Set(["US", "GB"]))
+        #expect(!netflixElsewhere.regions.contains(.spain))
+    }
+
+    /// A Spanish subscriber gets the Spanish catalogue anywhere in the EEA
+    /// (EU portability), so France and Germany aren't "elsewhere".
+    @Test func providersAvailableElsewhereSkipOtherEEARegionsFromAnEEAHome() async throws {
+        let repo = FakeMovieRepository()
+        repo.movieResult = .success(sampleMovie)
+        repo.bundleResult = .success(
+            bundle(
+                movieID: sampleMovie.id, region: .spain,
+                subscriptions: [
+                    ProviderRegionalAvailability(provider: provider(8, "Netflix"),
+                                                  regions: [.france, .germany, .unitedStates])
+                ]
+            )
+        )
+        let prefs = makePrefs(subscribedTo: [8])
+        prefs.region = .spain
+        let model = makeModel(repository: repo, prefs: prefs)
+
+        await model.load(region: .spain)
+
+        let regions = try #require(model.providersAvailableElsewhere.first).regions
+        #expect(regions == [.unitedStates])
     }
 
 
@@ -227,13 +251,13 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
                 movieID: sampleMovie.id, region: .spain,
                 subscriptions: [
                     ProviderRegionalAvailability(
-                        provider: provider(9, "Prime Video"),
+                        provider: provider(8, "Netflix"),
                         regions: ["ZA", "AR", "MX", "GB", "AD", "US"].map(Region.init(code:))
                     )
                 ]
             )
         )
-        let prefs = makePrefs(subscribedTo: [9])
+        let prefs = makePrefs(subscribedTo: [8])
         prefs.region = .spain
         let model = makeModel(repository: repo, prefs: prefs)
 
@@ -488,7 +512,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
             bundle(
                 subscription: [netflix],
                 global: [
-                    ProviderRegionalAvailability(provider: netflix, regions: [.spain, .france]),
+                    ProviderRegionalAvailability(provider: netflix, regions: [.spain, .unitedStates]),
                     ProviderRegionalAvailability(provider: prime, regions: [.unitedStates]),
                 ]
             ),
@@ -504,7 +528,7 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let model = await loadedModel(
             bundle(
                 free: [rtve],
-                global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])]
             ),
             subscribedTo: [8]
         )
@@ -524,13 +548,36 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         let model = await loadedModel(
             bundle(
                 subscription: [disney],
-                global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])]
             ),
             subscribedTo: [8]
         )
 
         #expect(model.verdict == .abroad)
         #expect(model.homeSubscriptionsOthers.map(\.id) == [ProviderID(337)])
+    }
+
+    /// Prime Video's catalogue follows the Amazon account's country: a VPN to
+    /// the US doesn't unlock it, so there's nothing to watch.
+    @Test func unavailableWhenOnlyPrimeVideoAbroadCarriesIt() async {
+        let model = await loadedModel(
+            bundle(global: [ProviderRegionalAvailability(provider: prime, regions: [.unitedStates])]),
+            subscribedTo: [9]
+        )
+
+        #expect(model.verdict == .unavailable)
+        #expect(model.providersAvailableElsewhere.isEmpty)
+    }
+
+    /// From Spain, Netflix in France brings back the Spanish catalogue (EU
+    /// portability), so it isn't somewhere to watch.
+    @Test func unavailableWhenYourServicesCarryItOnlyElsewhereInTheEEA() async {
+        let model = await loadedModel(
+            bundle(global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]),
+            subscribedTo: [8]
+        )
+
+        #expect(model.verdict == .unavailable)
     }
 
     @Test func chooseServicesWithoutServicesAndNothingFree() async {
