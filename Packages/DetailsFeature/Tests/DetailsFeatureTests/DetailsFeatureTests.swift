@@ -41,6 +41,7 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
         return try bundleResult.get()
     }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 struct NoopImageURLBuilder: ImageURLBuilder {

@@ -17,4 +17,6 @@ public protocol TMDBClient: Sendable {
     /// `/watch/providers/movie?watch_region=XX` if `watchRegion != nil`,
     /// `/watch/providers/movie` otherwise (every provider globally).
     func providerList(watchRegion: String?) async throws -> TMDBProviderListResponse
+    /// `/watch/providers/regions`: every country with streaming availability.
+    func watchRegions() async throws -> TMDBWatchRegionListResponse
 }

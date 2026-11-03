@@ -99,6 +99,7 @@ private struct NoMovieRepository: MovieRepository {
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.notFound }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle { throw MovieError.notFound }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct NoImageURLBuilder: ImageURLBuilder {

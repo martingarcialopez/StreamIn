@@ -136,6 +136,7 @@ private struct PreviewMovieRepository: MovieRepository {
             .enumerated()
             .map { WatchProvider(id: ProviderID($1.0), name: $1.1, logoPath: nil, priority: $0) }
     }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

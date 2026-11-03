@@ -102,6 +102,22 @@ import Domain
         #expect(!last.query.contains { $0.name == "watch_region" })
     }
 
+    /// TMDB's real shape: the names come along but only the code is decoded.
+    @Test func watchRegionsBuildsRequestAndDecodes() async throws {
+        StubURLProtocol.respond(body: #"""
+        {"results":[
+          {"iso_3166_1":"AD","english_name":"Andorra","native_name":"Andorra"},
+          {"iso_3166_1":"IT","english_name":"Italy","native_name":"Italia"}
+        ]}
+        """#)
+        let response = try await client.watchRegions()
+
+        let last = try lastRequest()
+        #expect(last.path == "/3/watch/providers/regions")
+        #expect(last.query == [URLQueryItem(name: "api_key", value: "test-key")])
+        #expect(response.results.map(\.iso3166_1) == ["AD", "IT"])
+    }
+
     @Test func everyRequestAcceptsJSON() async throws {
         StubURLProtocol.respond(body: emptySearch)
         _ = try await client.searchMovies(query: "x", page: 1)

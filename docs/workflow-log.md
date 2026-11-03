@@ -16,6 +16,47 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
 | 5 — Abroad verdict, catalogue scope (#91) | #91's PR | Yes (issue gated on Martín's go-ahead; three decisions asked before code) | 1 medium + 2 low of 3 | Partly — full test plan; previews not rendered (no Xcode MCP in the session) | — | — |
 | 5 — Settings and the picker (#49) | [#95](https://github.com/martingarcialopez/StreamIn/pull/95) | Yes (issue, a one-round design Q&A, then plan mode) | 2 medium + 4 low of 6 | Partly — full test plan (325 tests after merging main), onboarding on the simulator in en and es; previews not rendered (Xcode MCP down) | — | — |
+| 6 — Regions from TMDB (#22) | [#96](https://github.com/martingarcialopez/StreamIn/pull/96) | Yes (plan mode; Martín cut `Region.allKnown` outright) | 3 low of 3, plus one note | Partly — full test plan, 3 previews; simulator locale checks left to Martín | 1 (the Settings preview rendered light, so its screenshots were unreadable) | — |
+
+---
+
+## 2026-11-03 — Regions from TMDB, defaults for every country (#22)
+
+**What shipped:** the home-region picker lists every country TMDB covers (`RegionCatalog`,
+loaded at launch) with search; the default is the device's region, or the United Kingdom.
+Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES` elsewhere).
+
+**Workflow pieces used**
+- **Plan mode:** Martín's one question on the plan ("where does `Region.allKnown` come
+  from?") settled that the legacy list goes entirely, not kept as a seed.
+- **A decision relayed between sessions:** the session planning #91 passed on Martín's
+  call (UK fallback, launch load only if quick), recorded on the issue; this session
+  checked the issue comment before acting on it.
+- **A measurement instead of a guess:** the region request was timed (~0.2 s round trip,
+  ~10 KB) to decide launch vs. on-demand loading. The secrets file is off-limits, so it
+  was timed without a key; the PR says so.
+
+**What the checks caught**
+- **`ios-reviewer`, 3 low:** Retry on the picker's error looked dead (the error stayed up
+  during the retry); the search text outlived the pushed picker; VoiceOver read the flag on
+  the Settings row. Its note on an offline first launch (the fallback never re-checked) was
+  fixed too: `RootView` now reacts to the list arriving, whoever loads it.
+- **Merging main** brought #92's catalog edits in cleanly; regenerating SettingsFeature's
+  symbols changed nothing. Merging #90, #94 and #97 later conflicted only here, in this log.
+  Merging #95 (Settings redesign, British English) touched the same Settings screen and
+  tests: the region row kept its searchable picker and took #95's flag-and-name style, the
+  picker reuses #95's "Retry", and English tests moved to `englishUK` (TMDB still gets en-US).
+
+**What Martín still had to find**
+- **Unreadable Settings screenshots in the PR:** `SettingsView`'s preview never applied
+  `.cinemaBackground()` (which also makes it dark), so it rendered light with dark rows.
+  The app was fine. The preview now matches `RootView`, and both screenshots were redone.
+  Looking at each snapshot caught nothing, because the bug was already on main and
+  looked "as before".
+
+**What didn't work**
+- **GitHub had no macOS runner** for CI's first two attempts ("not acquired by Runner",
+  capacity): each was dropped after 15 minutes without building. The third run passed.
 
 ---
 

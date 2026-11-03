@@ -776,6 +776,7 @@ private struct PreviewMovieRepository: MovieRepository {
     func allProviders(in region: Region?) async throws -> [WatchProvider] {
         free + subscription
     }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

@@ -334,6 +334,8 @@ private struct PreviewMovieRepository: MovieRepository {
 
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
 
+    func watchRegions() async throws -> [Region] { [] }
+
     private static func row(_ id: MovieID) throws -> (movie: Movie, availability: Availability) {
         guard let row = rows.first(where: { $0.movie.id == id }) else { throw MovieError.notFound }
         return row

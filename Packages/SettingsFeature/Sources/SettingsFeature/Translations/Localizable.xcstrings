@@ -630,6 +630,78 @@
           }
         }
       }
+    },
+    "settingsRegionSearchPrompt": {
+      "comment": "Search field prompt on the home-region picker, which lists every country.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search countries"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar países"
+          }
+        }
+      }
+    },
+    "settingsRegionSelectedHeader": {
+      "comment": "Header above the home region currently picked, pinned at the top of the region picker.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your region"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu región"
+          }
+        }
+      }
+    },
+    "settingsRegionAllHeader": {
+      "comment": "Header above the full list of countries in the region picker.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All regions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las regiones"
+          }
+        }
+      }
+    },
+    "settingsRegionLoadFailed": {
+      "comment": "Title shown in the region picker when the country list couldn't be downloaded.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load regions"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido cargar las regiones"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

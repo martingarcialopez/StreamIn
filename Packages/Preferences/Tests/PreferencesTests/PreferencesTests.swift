@@ -121,3 +121,48 @@ import Domain
         #expect(reloaded.subscribedProviderIDs.isEmpty)
     }
 }
+
+@MainActor
+@Suite struct RegionDefaultTests {
+
+    private func makeDefaults() -> UserDefaults {
+        let suite = "PreferencesTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
+    }
+
+    private let italy = Region(code: "IT")
+    private let covered = [Region.spain, Region(code: "IT"), Region.unitedKingdom]
+
+    @Test func unsupportedRegionFallsBackToUKAndIsSaved() {
+        let defaults = makeDefaults()
+        let prefs = Preferences(defaultRegion: Region(code: "KP"), defaults: defaults)
+
+        prefs.adoptSupportedRegion(among: covered)
+
+        #expect(prefs.region == .unitedKingdom)
+        #expect(Preferences(defaultRegion: italy, defaults: defaults).region == .unitedKingdom)
+    }
+
+    /// A covered device default isn't saved, so it keeps following the device.
+    @Test func supportedDefaultIsKeptAndNotSaved() {
+        let defaults = makeDefaults()
+        let prefs = Preferences(defaultRegion: italy, defaults: defaults)
+
+        prefs.adoptSupportedRegion(among: covered)
+
+        #expect(prefs.region == italy)
+        #expect(defaults.string(forKey: "settings.region.code") == nil)
+    }
+
+    @Test func spanishContentFollowsTheHomeRegion() {
+        let prefs = Preferences(defaultRegion: .spain, defaultLanguage: .spanishES, defaults: makeDefaults())
+        #expect(prefs.contentLanguage == .spanishES)
+
+        prefs.region = Region(code: "MX")
+        #expect(prefs.contentLanguage == .spanishMX)
+        // The interface keeps its one Spanish.
+        #expect(prefs.language == .spanishES)
+    }
+}

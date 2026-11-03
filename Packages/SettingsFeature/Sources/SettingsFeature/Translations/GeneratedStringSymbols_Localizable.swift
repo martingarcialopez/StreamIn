@@ -190,6 +190,15 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Header above the full list of countries in the region picker.
+     
+     Localized string for key “settingsRegionAllHeader” in table “Localizable.xcstrings”.
+     */
+    static var settingsRegionAllHeader: LocalizedStringResource {
+        LocalizedStringResource("settingsRegionAllHeader", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Settings: footer under the Region picker.
      
      Localized string for key “settingsRegionFooter” in table “Localizable.xcstrings”.
@@ -199,12 +208,39 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Title shown in the region picker when the country list couldn't be downloaded.
+     
+     Localized string for key “settingsRegionLoadFailed” in table “Localizable.xcstrings”.
+     */
+    static var settingsRegionLoadFailed: LocalizedStringResource {
+        LocalizedStringResource("settingsRegionLoadFailed", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Label for the region picker control
      
      Localized string for key “settingsRegionPicker” in table “Localizable.xcstrings”.
      */
     static var settingsRegionPicker: LocalizedStringResource {
         LocalizedStringResource("settingsRegionPicker", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Search field prompt on the home-region picker, which lists every country.
+     
+     Localized string for key “settingsRegionSearchPrompt” in table “Localizable.xcstrings”.
+     */
+    static var settingsRegionSearchPrompt: LocalizedStringResource {
+        LocalizedStringResource("settingsRegionSearchPrompt", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Header above the home region currently picked, pinned at the top of the region picker.
+     
+     Localized string for key “settingsRegionSelectedHeader” in table “Localizable.xcstrings”.
+     */
+    static var settingsRegionSelectedHeader: LocalizedStringResource {
+        LocalizedStringResource("settingsRegionSelectedHeader", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

@@ -62,6 +62,7 @@ actor FakeMovieRepository: MovieRepository {
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.unknown }
     /// The same list worldwide and in every region.
     func allProviders(in region: Region?) async throws -> [WatchProvider] { providers }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 struct NullImageURLBuilder: ImageURLBuilder {

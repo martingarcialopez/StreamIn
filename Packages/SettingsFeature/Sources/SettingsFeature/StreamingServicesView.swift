@@ -324,6 +324,7 @@ private struct PreviewMovieRepository: MovieRepository {
             WatchProvider(id: ProviderID(provider.0), name: provider.1, logoPath: nil, priority: index)
         }
     }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

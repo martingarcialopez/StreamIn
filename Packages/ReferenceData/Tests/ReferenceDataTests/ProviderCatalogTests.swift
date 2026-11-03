@@ -29,6 +29,8 @@ private actor FakeProviderRepository: MovieRepository {
         if let failure { throw failure }
         return providersByScope[region] ?? []
     }
+
+    func watchRegions() async throws -> [Region] { throw MovieError.unknown }
 }
 
 private func provider(_ id: Int, _ name: String) -> WatchProvider {

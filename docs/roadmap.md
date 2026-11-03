@@ -403,6 +403,12 @@ A pattern used by two screens moves to DesignSystem.
 - **`PrivacyInfo.xcprivacy`:** UserDefaults reason `CA92.1`, no tracking, no data
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
 - ✅ **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (#49).
+- **Every country (#22, decided Oct 30):** the home-region picker lists the regions TMDB covers
+  (`/watch/providers/regions`, held by `RegionCatalog`), searchable. The default is the device's
+  region, or the United Kingdom when there's none or TMDB doesn't cover it (decided Nov 3).
+  The interface language follows the device (any Spanish → Spanish, anything else → British
+  English); Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES`
+  elsewhere), with one "Español" in the picker. English content is `en-US` everywhere.
 - **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
   contrast in light and dark.
 - **README:** refresh the status section and add screenshots or a demo GIF.

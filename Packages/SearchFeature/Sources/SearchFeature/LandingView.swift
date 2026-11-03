@@ -106,6 +106,7 @@ private struct PreviewMovieRepository: MovieRepository {
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.offline }
     func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle { throw MovieError.offline }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

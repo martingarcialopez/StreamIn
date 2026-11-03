@@ -36,6 +36,11 @@
       "files": ["StreamingServicesView.swift"]
     },
     {
+      "sheet": "Región",
+      "description": "Ajustes → Región: todos los países, con buscador.",
+      "files": ["RegionPickerView.swift", "RegionPickerViewModel.swift"]
+    },
+    {
       "sheet": "Errores",
       "description": "Mensajes de error que puede mostrar cualquier pantalla (sin conexión, servidor caído…).",
       "files": ["Domain.swift"]
