@@ -330,7 +330,7 @@ private struct PreviewMovieRepository: MovieRepository {
             ProviderRegionalAvailability(provider: .netflix, regions: [.unitedStates, Region(code: "GB")]),
             ProviderRegionalAvailability(provider: .primeVideo, regions: [Region(code: "JP")]),
         ]),
-        MovieID(4): .home(subscription: [.filmin]),
+        MovieID(4): .home(subscription: [.filmin, .movistarPlus]),
         MovieID(5): .home(),
         MovieID(6): .fails,
         MovieID(7): .pending,
@@ -391,6 +391,7 @@ private extension WatchProvider {
     static let hboMax = preview(1899, "HBO Max")
     static let filmin = preview(63, "Filmin")
     static let rtvePlay = preview(541, "RTVE Play")
+    static let movistarPlus = preview(149, "Movistar Plus+")
 
     static func preview(_ id: Int, _ name: String) -> WatchProvider {
         WatchProvider(id: ProviderID(id), name: name, logoPath: nil, priority: 1)

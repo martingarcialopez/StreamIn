@@ -14,7 +14,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escribe un título y pulsa intro"
+            "value" : "Escribe un título y pulsa Intro"
           }
         }
       }
@@ -105,24 +105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con datos de TMDB · Disponibilidad de JustWatch"
-          }
-        }
-      }
-    },
-    "searchRowNotOnYourServices" : {
-      "comment" : "Search result row, in place of provider logos: something streams the movie in the user's region, but none of the user's services",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on your services"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No está en tus servicios"
           }
         }
       }
