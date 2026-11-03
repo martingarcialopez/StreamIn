@@ -11,8 +11,26 @@
 
 StreamIn is a native iPhone and iPad app. Search a movie and it tells you, at a
 glance, whether you can watch it tonight: on your services or a free one at
-home, or on *your* services in another country (the VPN use case). English and
-Spanish. **App Store release is the next milestone.**
+home, or on *your* services in another country (the VPN use case). Every
+country TMDB covers, in English and Spanish. **App Store release is the next
+milestone.**
+
+<table>
+  <tr>
+    <th width="25%">🎰 Spin or search</th>
+    <th width="25%">🔎 Results lead with where</th>
+    <th width="25%">❤️ Your watchlist</th>
+    <th width="25%">📺 Your services</th>
+  </tr>
+  <tr>
+    <td width="25%" align="center"><img src="docs/screenshots/landing-slot-machine.png" width="200" alt="The search landing page: a slot machine whose three reels stopped on a movie poster, Prime Video and the flag of Canada, above the StreamIn title and the search bar"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/search-results.png" width="200" alt="Search results for Paddington: each row shows its poster, year and where to watch it, Prime Video for the first two films, Netflix abroad behind a globe for the third, and Not streaming here for the rest"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/watchlist.png" width="200" alt="The Watchlist tab: saved movies with their posters, directors and the services that carry them"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/onboarding-services.png" width="200" alt="Onboarding: a globe over Pick the services you pay for, with Prime Video, Disney+ and Netflix picked and a grid of the other services available in the United Kingdom"></td>
+  </tr>
+</table>
+
+Each movie's page leads with one verdict:
 
 <table>
   <tr>
@@ -22,8 +40,8 @@ Spanish. **App Store release is the next milestone.**
   </tr>
   <tr>
     <td width="33%" align="center"><img src="docs/screenshots/details-watch-now.png" width="250" alt="Details for Spirited Away: Watch now, on Netflix in the UK"></td>
-    <td width="33%" align="center"><img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Paddington: on your services abroad, Netflix with the countries that carry it"></td>
-    <td width="33%" align="center"><img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Peter Pan (1953): go read a book, not on your services here or abroad"></td>
+    <td width="33%" align="center"><img src="docs/screenshots/details-abroad.png" width="250" alt="Details for Whiplash: on your services abroad, Netflix in the United States, the Netherlands, South Korea and three more countries"></td>
+    <td width="33%" align="center"><img src="docs/screenshots/details-read-a-book.png" width="250" alt="Details for Greyhound: go read a book, not on your services here or abroad"></td>
   </tr>
   <tr>
     <td align="center">One of your services, or a free one, has it in your country.</td>
@@ -41,23 +59,35 @@ lab for building software with AI agents without lowering the bar.**
 |---|---|
 | 🏗️ **Architecture** | 11 Swift packages, one per layer. Features can't import the network client or SwiftData: it doesn't compile. |
 | ⚡ **Swift concurrency** | Swift 6.2 strict concurrency, async/await end to end, no Combine. `async let` and task-group fan-outs, cancellation, actors. |
-| 🧪 **Quality gates** | 222 Swift Testing tests. Every PR builds and tests on a clean macOS runner, gets an AI review whose verdict gates the merge, and a human review. |
+| 🧪 **Quality gates** | 353 Swift Testing tests. Every PR builds and tests on a clean macOS runner, gets an AI review whose verdict gates the merge, and a human review. |
 | 🤖 **AI workflow** | Built with Claude Code: issue-driven, parallel agents in their own worktrees, a reviewer subagent, skills, hooks and an Xcode MCP server — all versioned in this repo. |
 | 📏 **Measured, not claimed** | A [workflow log](docs/workflow-log.md) records every workflow change and what it actually improved, including what failed. |
 
 ## What's inside the app
 
-- **Search** with each result's streaming services in your region filling in
-  row by row as their answers arrive.
+- **A slot machine to start.** The search page spins three reels (a trending
+  movie, a streaming service, a country) that stop on a winning line. Pull the
+  lever or tap it to spin again. A dark "cinema" theme runs through every
+  screen; with Reduce Motion the reels jump straight to their stop.
+- **Search** where each result leads with where you can watch it: your services
+  and free ones at home; otherwise yours abroad, behind a globe; otherwise the
+  other services in your region. Rows fill in one by one as their answers
+  arrive.
 - **Details** that leads with one verdict, then shows where else it streams:
   a spinning globe and the countries that carry it for each of your services,
   popular VPN countries first.
-- **Watchlist** saved with SwiftData: tap the heart, swipe to delete, and saved
-  movies open complete even offline.
-- **Onboarding and Settings** to pick your services (at home or worldwide),
-  your region and the app's language.
-- **English and Spanish**, switchable in the app; the language also drives the
-  movie data.
+- **An honest "abroad".** It only counts services whose catalogue follows your
+  location (Netflix yes, Prime Video no). From an EU home it also skips the rest
+  of the EU, where portability rules already show your home catalogue.
+- **Watchlist** saved with SwiftData: tap the heart, swipe to delete. Each saved
+  movie shows the same where-to-watch line as a search result, and opens
+  complete even offline.
+- **Onboarding and Settings:** a grid of app-icon logos to pick your services
+  (at home or worldwide), every region TMDB covers (about 150), the app's
+  language, and an About section with TMDB's attribution.
+- **English and Spanish.** The app follows the device's language, and can be
+  switched inside it. Spanish movie data follows your region: Latin American
+  titles in the Americas, Spain's elsewhere.
 
 ## Engineering highlights
 
@@ -90,12 +120,12 @@ DI framework, dependencies go through `init`.
 
 | Package | Holds |
 |---|---|
-| `Domain` | Entities, value types (`Region`, `Language`, typed IDs), `MovieRepository`, `WatchlistRepository`, typed `MovieError` |
+| `Domain` | Entities, value types (`Region`, `Language`, typed IDs), `MovieRepository`, `WatchlistRepository`, typed `MovieError`, `WatchOptions` (the one reading of where to watch) |
 | `TMDBClient` | HTTP client, DTOs, the TMDB adapter and the caching decorator |
 | `Persistence` | A versioned SwiftData schema behind a `@ModelActor` repository |
 | `Watchlist` | `WatchlistStore`: optimistic updates, ordered writes, per-item rollback |
-| `Preferences` · `ReferenceData` | User settings; the provider catalog (names and logos), loaded at launch |
-| `DesignSystem` | Tokens, palette, `ProviderLogo`, `RemoteImage`, `SpinningGlobe` |
+| `Preferences` · `ReferenceData` | User settings; the provider and region catalogs, loaded at launch |
+| `DesignSystem` | Tokens, the cinema theme, `ProviderLogo`, `ProviderLine`, `RemoteImage`, `SpinningGlobe` |
 | `SearchFeature` · `DetailsFeature` · `WatchlistFeature` · `SettingsFeature` | One screen each, with its `@MainActor @Observable` view model |
 
 ### Decisions worth a look
@@ -116,6 +146,18 @@ DI framework, dependencies go through `init`.
 - **One brand, one provider.** TMDB has several IDs per service (Netflix and its
   ad tier, regional Prime Video). `ProviderAliases` merges them so your
   subscription matches in every country.
+- **One answer, three screens.** `WatchOptions` in Domain reads a movie's
+  availability against your region and services once. Details' verdict and the
+  Search and Watchlist rows all render that same reading, so they can't
+  disagree.
+- **"Abroad" only promises what a VPN unlocks.** `CatalogScope` records whether
+  each service's catalogue follows your location or your account, with a source
+  per service. EU portability (Regulation 2017/1128) is modelled too, so an EU
+  user isn't sent to another EU country for the catalogue they already have.
+- **A slot machine without a game engine.** Each reel is an `Animatable` drum,
+  with symbols 45° apart on a cylinder. The reels stop left to right, the lever
+  answers to a tap or a drag, and VoiceOver reads the whole machine as one
+  button: "Dune, on Netflix, in Spain".
 - **A watchlist that never loses a tap.** Changes show at once, writes are
   queued in order, and a failed write rolls back that movie and raises one
   app-wide alert. If the store can't open, the app keeps going in memory.
@@ -168,6 +210,10 @@ flowchart LR
   runs. Branch protection applies to everyone, admins included.
 - **Hooks for the boring guards**: protect generated and secret files,
   regenerate string symbols after catalog edits, lint `project.pbxproj`.
+- **Translations reviewed like copy, not code.** A script exports every string
+  to a Numbers workbook, one sheet per screen. A reviewer edits English and
+  Spanish in place, previews them in the simulator, and the import writes the
+  edits back to the String Catalogs, checking every placeholder.
 
 **What it's caught.** In the Watchlist phase, `ios-reviewer` found 4 medium and
 5 low issues across three PRs — one a real race where a swipe could delete the
@@ -175,7 +221,7 @@ wrong row — all fixed before the PR opened. Martín found no code bugs after
 hand-off. The [workflow log](docs/workflow-log.md) has the per-phase scorecard
 and the things that broke along the way.
 
-**By the numbers:** 33 merged PRs, 5 of them written end to end by claude[bot]
+**By the numbers:** 50 merged PRs, 6 of them written end to end by claude[bot]
 from an issue. Every commit Claude makes carries a co-author trailer, and
 Martín reviews every PR before it merges.
 
@@ -186,11 +232,11 @@ Martín reviews every PR before it merges.
 | 1–2 | Design system, search, caching, provider catalog, iPhone + iPad | ✅ |
 | 3 | Watchlist with SwiftData | ✅ |
 | 4 | Details redesign: one verdict first | ✅ |
-| 5 | Design and UX pass on every screen | 🔜 |
-| 6 | App Store: icon, privacy manifest, accessibility pass, TestFlight, submission | 🔜 |
+| 5 | Design and UX pass on every screen: slot machine, cinema theme, where-to-watch rows | ✅ |
+| 6 | App Store: privacy manifest, TMDB attribution and every region ✅; icon, accessibility pass, store screenshots, TestFlight and submission next | 🔄 |
 
-After 1.0: on-device Foundation Models for natural-language search ("a
-feel-good 90s comedy"), if it earns its place. Full plan in
+After 1.0: French, and on-device Foundation Models for natural-language search
+("a feel-good 90s comedy") if it earns its place. Full plan in
 [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Quick start
@@ -220,7 +266,9 @@ xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn 
 
 **What's tested** (Swift Testing, in every package)
 
-- **Domain:** provider alias groups and merging, region flags, language matching.
+- **Domain:** provider alias groups and merging, where-to-watch ranking,
+  catalogue scope and EU portability, region flags and defaults, language
+  matching.
 - **TMDBClient:** the HTTP client against a stubbed `URLProtocol`, DTO-to-domain
   mapping and errors, the cache's request sharing, expiry and failure handling.
 - **Persistence and Watchlist:** the SwiftData repository, the store's ordering,
@@ -230,8 +278,8 @@ xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn 
   cancellation), the services picker.
 
 CI reports per-package results and line coverage in each run's summary. Views
-are checked with previews in light, dark and large Dynamic Type. Still to come:
-one UI test for search → details → providers.
+are checked with previews at standard and large Dynamic Type sizes (the app is
+dark only). Still to come: one UI test for search → details → providers.
 
 **Launch flags** (scheme → Run → Environment Variables)
 
@@ -252,7 +300,8 @@ StreamIn/
 │                    ReferenceData, DesignSystem and the four *Feature packages
 ├── .claude/         Claude Code setup: skills, rules, the reviewer subagent
 ├── .github/         CI, Claude workflows, the review verdict script
-├── scripts/         Setup, per-worktree simulators, the build lock
+├── scripts/         Setup, per-worktree simulators, the build lock, translations
+├── site/            Privacy and support pages (GitHub Pages)
 └── docs/            Roadmap, workflow log, screenshots
 ```
 
