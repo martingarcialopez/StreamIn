@@ -30,9 +30,12 @@ public final class Preferences {
     /// (useful for debugging and for the "did the user change anything?" check
     /// some screens may want).
     ///
-    /// No region scoping — the feature's mental model is "I have a Netflix
-    /// account, my VPN handles the rest." If multi-region account tagging
-    /// becomes a real need, this would graduate to a `Set<Subscription>` value.
+    /// No region scoping: each service is the user's account in their home
+    /// region. A VPN reaches another country's catalogue only on services
+    /// whose catalogue follows the location (`CatalogScope`), and from an EEA
+    /// home not in the rest of the EEA (EU portability) — `WatchOptions`
+    /// applies both. If multi-region accounts ("Prime in Spain *and* the US")
+    /// become a real need, this would graduate to a `Set<Subscription>` value.
     public var subscribedProviderIDs: Set<ProviderID> {
         didSet { persistSubscribedProviders() }
     }

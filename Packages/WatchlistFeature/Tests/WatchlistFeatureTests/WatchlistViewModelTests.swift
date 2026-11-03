@@ -144,7 +144,7 @@ struct WatchlistViewModelTests {
     @Test func eachRowShowsDetailsAnswer() async {
         let movies = FakeMovieRepository(bundles: [
             MovieID(1): { .fixture(MovieID(1), region: $0, free: [.rtvePlay], global: [.init(provider: .netflix, regions: [$0])]) },
-            MovieID(2): { .fixture(MovieID(2), region: $0, global: [.init(provider: .primeVideo, regions: [.france])]) },
+            MovieID(2): { .fixture(MovieID(2), region: $0, global: [.init(provider: .netflix, regions: [.unitedStates])]) },
             MovieID(3): { .fixture(MovieID(3), region: $0, subscription: [.filmin]) },
         ])
         let (model, _) = await loadedModel([1, 2, 3, 4], movies: movies, prefs: makePrefs(subscribedTo: [.netflix, .primeVideo]))
@@ -152,7 +152,7 @@ struct WatchlistViewModelTests {
         await model.loadAvailability()
 
         #expect(row(1, in: model) == .loaded(.atHome([.netflix, .rtvePlay])))
-        #expect(row(2, in: model) == .loaded(.abroad([.primeVideo])))
+        #expect(row(2, in: model) == .loaded(.abroad([.netflix])))
         #expect(row(3, in: model) == .loaded(.othersAtHome([.filmin])))
         #expect(row(4, in: model) == .loaded(.notStreamingHere))
     }

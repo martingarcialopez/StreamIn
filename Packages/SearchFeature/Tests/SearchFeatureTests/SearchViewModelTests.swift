@@ -223,7 +223,7 @@ struct SearchRowProvidersTests {
             movie.id,
             subscription: [.filmin, .netflix],
             free: [.rtvePlay, .netflix],
-            global: [ProviderRegionalAvailability(provider: .netflix, regions: [.spain, .france])]
+            global: [ProviderRegionalAvailability(provider: .netflix, regions: [.spain, .unitedStates])]
         )
 
         let row = await rowProviders(bundle, subscribedTo: [.netflix])
@@ -256,15 +256,28 @@ struct SearchRowProvidersTests {
             movie.id,
             subscription: [.filmin],
             global: [
-                ProviderRegionalAvailability(provider: .primeVideo, regions: [Region(code: "JP")]),
-                ProviderRegionalAvailability(provider: .disneyPlus, regions: [.unitedStates]),
-                ProviderRegionalAvailability(provider: .netflix, regions: [.france]),
+                ProviderRegionalAvailability(provider: .disneyPlus, regions: [Region(code: "JP")]),
+                ProviderRegionalAvailability(provider: .primeVideo, regions: [.unitedStates]),
+                ProviderRegionalAvailability(provider: .netflix, regions: [.unitedStates]),
             ]
         )
 
-        let row = await rowProviders(bundle, subscribedTo: [.netflix, .primeVideo])
+        let row = await rowProviders(bundle, subscribedTo: [.netflix, .disneyPlus])
 
-        #expect(row == .loaded(.abroad([.primeVideo, .netflix])))
+        #expect(row == .loaded(.abroad([.disneyPlus, .netflix])))
+    }
+
+    /// Prime Video's catalogue follows the Amazon account's country, so a
+    /// VPN to the US doesn't unlock the US one.
+    @Test func primeVideoElsewhereIsNotAbroad() async {
+        let bundle = AvailabilityBundle.fixture(
+            movie.id,
+            global: [ProviderRegionalAvailability(provider: .primeVideo, regions: [.unitedStates])]
+        )
+
+        let row = await rowProviders(bundle, subscribedTo: [.primeVideo])
+
+        #expect(row == .loaded(.notStreamingHere))
     }
 
     @Test func otherServicesWhenOnlyOthersStreamItHere() async {

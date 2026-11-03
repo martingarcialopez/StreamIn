@@ -12,9 +12,10 @@ public struct WatchOptions: Equatable, Sendable {
     public let yoursAtHome: [WatchProvider]
     /// Free providers at home.
     public let freeAtHome: [WatchProvider]
-    /// The user's services that carry the film outside the home region, each
-    /// with only those other regions, in TMDB's order. Services whose only
-    /// region is home aren't here.
+    /// The user's services that carry the film in regions a VPN can reach,
+    /// each with only those regions, in TMDB's order. Only services whose
+    /// catalogue follows the location count (`CatalogScope`), and from an EEA
+    /// home the rest of the EEA doesn't (`Region.reachesCatalogue(in:)`).
     public let yoursAbroad: [ProviderRegionalAvailability]
     /// Home subscription providers that aren't the user's and aren't free.
     public let othersAtHome: [WatchProvider]
@@ -28,7 +29,8 @@ public struct WatchOptions: Equatable, Sendable {
         yoursAtHome = yours.filter { $0.regions.contains(home) }.map(\.provider)
         freeAtHome = regional?.free ?? []
         yoursAbroad = yours.compactMap { entry in
-            let others = entry.regions.filter { $0 != home }
+            guard CatalogScope.of(entry.provider.id) == .location else { return nil }
+            let others = entry.regions.filter(home.reachesCatalogue(in:))
             guard !others.isEmpty else { return nil }
             return ProviderRegionalAvailability(provider: entry.provider, regions: others)
         }
