@@ -356,7 +356,7 @@ struct SearchRowDisplayTests {
         #expect(model.releaseYear(for: .fixture(1)) == nil)
     }
 
-    @Test func accessibilityLabelSaysOtherServicesArentYours() async {
+    @Test func accessibilityLabelNamesOtherServices() async {
         let movie = Movie.fixture(1)
         let repo = FakeMovieRepository(
             results: [movie],
@@ -370,6 +370,6 @@ struct SearchRowDisplayTests {
         await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
 
         let names = [WatchProvider.filmin, .disneyPlus].map(\.name).formatted(.list(type: .and))
-        #expect(model.accessibilityLabel(for: movie).hasSuffix("Not on your services, on \(names)"))
+        #expect(model.accessibilityLabel(for: movie).hasSuffix("On \(names)"))
     }
 }

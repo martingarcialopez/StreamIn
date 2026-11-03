@@ -216,42 +216,6 @@
           }
         }
       }
-    },
-    "watchlistRowNotYours" : {
-      "comment" : "Watchlist row: caption before dimmed logos of services that stream the movie in the user's region but aren't the user's",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not yours:"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No los tienes:"
-          }
-        }
-      }
-    },
-    "watchlistRowOthersProviders" : {
-      "comment" : "VoiceOver, watchlist row: services that stream the movie in the user's region but aren't the user's. %@ is a list of service names",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not on your services, on %@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No está en tus servicios, está en %@"
-          }
-        }
-      }
     }
   },
   "version" : "1.0"

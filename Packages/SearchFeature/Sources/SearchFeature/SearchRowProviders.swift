@@ -21,7 +21,7 @@ enum SearchRowProviders: Equatable {
         case .failed: .caption(.searchRowAvailabilityFailed)
         case .loaded(.atHome(let providers)): .logos(providers, abroad: false)
         case .loaded(.abroad(let providers)): .logos(providers, abroad: true)
-        case .loaded(.othersAtHome(let providers)): .others(providers, label: .searchRowNotYours)
+        case .loaded(.othersAtHome(let providers)): .logos(providers, abroad: false)
         case .loaded(.notStreamingHere): .caption(.searchRowNotStreamingHere)
         }
     }

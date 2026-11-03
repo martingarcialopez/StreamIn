@@ -277,7 +277,7 @@ struct WatchlistViewModelTests {
         #expect(model.accessibilityLabel(for: item) == "Movie 1, \(year), Christopher Nolan, On \(names)")
     }
 
-    @Test func voiceOverSaysOtherServicesArentYours() async {
+    @Test func voiceOverNamesOtherServices() async {
         let movies = FakeMovieRepository(bundles: [
             MovieID(1): { .fixture(MovieID(1), region: $0, subscription: [.filmin, .disneyPlus]) },
         ])
@@ -286,7 +286,7 @@ struct WatchlistViewModelTests {
         await model.loadAvailability()
 
         let names = [WatchProvider.filmin, .disneyPlus].map(\.name).formatted(.list(type: .and))
-        #expect(model.accessibilityLabel(for: model.items[0]).hasSuffix("Not on your services, on \(names)"))
+        #expect(model.accessibilityLabel(for: model.items[0]).hasSuffix("On \(names)"))
     }
 
     // MARK: - Helpers

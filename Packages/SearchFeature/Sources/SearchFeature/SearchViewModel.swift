@@ -128,9 +128,9 @@ public final class SearchViewModel {
         let providers = switch rowProviders(for: movie) {
         case .loading: String(localized: .searchRowCheckingAvailability)
         case .failed: String(localized: .searchRowAvailabilityFailed)
-        case .loaded(.atHome(let providers)): String(localized: .searchRowOnProviders(Self.names(providers)))
+        case .loaded(.atHome(let providers)), .loaded(.othersAtHome(let providers)):
+            String(localized: .searchRowOnProviders(Self.names(providers)))
         case .loaded(.abroad(let providers)): String(localized: .searchRowAbroadProviders(Self.names(providers)))
-        case .loaded(.othersAtHome(let providers)): String(localized: .searchRowOthersProviders(Self.names(providers)))
         case .loaded(.notStreamingHere): String(localized: .searchRowNotStreamingHere)
         }
         return [movie.title, releaseYear(for: movie), providers]
