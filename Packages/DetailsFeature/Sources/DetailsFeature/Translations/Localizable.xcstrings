@@ -14,7 +14,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confirmando disponibilidad…"
+            "value" : "Comprobando disponibilidad…"
           }
         }
       }
@@ -104,7 +104,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elegir tus servicios"
+            "value" : "Elige tus servicios"
           }
         }
       }
@@ -248,7 +248,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No está en tus servicios, ni aquí ni fuera."
+            "value" : "No está en tus servicios, ni aquí ni en otros países."
           }
         }
       }
@@ -320,7 +320,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir a tu watchlist"
+            "value" : "Añadir a Favoritos"
           }
         }
       }
@@ -338,7 +338,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quitar de tu watchlist"
+            "value" : "Quitar de Favoritos"
           }
         }
       }
