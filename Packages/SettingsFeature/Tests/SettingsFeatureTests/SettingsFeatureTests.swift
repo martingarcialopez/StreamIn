@@ -323,6 +323,24 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(AppVersion(infoDictionary: nil) == AppVersion(version: "–", build: "–"))
     }
 
+    /// The underline is the only cue that fine print is a link: the brand
+    /// a credit names, or the whole privacy line.
+    @Test func linksUnderlineTheBrandOrTheWholeLine() {
+        let underlined: (AttributedString) -> String = { text in
+            text.runs
+                .filter { $0.underlineStyle != nil }
+                .map { String(text[$0.range].characters) }
+                .joined()
+        }
+
+        #expect(underlined(QuietLink.text(.settingsAboutJustWatch, underlining: "JustWatch")) == "JustWatch")
+        // TMDB is named twice; only the first mention is underlined.
+        #expect(underlined(QuietLink.text(.settingsAboutTMDB, underlining: "TMDB")) == "TMDB")
+
+        let privacy = QuietLink.text(.settingsAboutPrivacy, underlining: nil)
+        #expect(underlined(privacy) == String(privacy.characters))
+    }
+
     @Test func privacyPolicyFollowsTheInterfaceLanguage() {
         #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "es_ES")).absoluteString
                 == "https://martingarcialopez.github.io/StreamIn/es/privacy/")

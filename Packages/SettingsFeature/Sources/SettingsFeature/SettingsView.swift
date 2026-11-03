@@ -52,8 +52,12 @@ public struct SettingsView: View {
             )
             .cinemaRow()
             AboutSection()
-                .cinemaRow()
         }
+        // Each setting and its footer stand apart from the next one.
+        .listSectionSpacing(.custom(Spacing.sectionGap * 2))
+        // About's fine-print rows are only as tall as their line. The
+        // settings rows are taller than 44 pt by their own content anyway.
+        .environment(\.defaultMinListRowHeight, 0)
         .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
         .toolbar {

@@ -451,24 +451,6 @@
         }
       }
     },
-    "settingsAboutHeader": {
-      "comment": "Settings: header of the last section, with credits, the privacy policy and the app version.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "About"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acerca de"
-          }
-        }
-      }
-    },
     "settingsAboutTMDB": {
       "comment": "Settings → About: TMDB's required attribution, under their logo; opens themoviedb.org. Wording set by TMDB's terms.",
       "extractionState": "manual",

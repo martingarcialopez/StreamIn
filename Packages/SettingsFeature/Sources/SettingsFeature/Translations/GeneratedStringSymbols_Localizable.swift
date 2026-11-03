@@ -64,15 +64,6 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Settings: header of the last section, with credits, the privacy policy and the app version.
-     
-     Localized string for key “settingsAboutHeader” in table “Localizable.xcstrings”.
-     */
-    static var settingsAboutHeader: LocalizedStringResource {
-        LocalizedStringResource("settingsAboutHeader", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
      Settings → About: credit for the watch-provider data; opens justwatch.com.
      
      Localized string for key “settingsAboutJustWatch” in table “Localizable.xcstrings”.
