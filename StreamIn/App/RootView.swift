@@ -4,7 +4,8 @@
 //
 //  Top-level container under `WindowGroup`. Owns the tab structure, the
 //  Settings sheet, the Onboarding cover, and the launch-time tasks that
-//  preload provider reference data and decide whether to surface onboarding.
+//  preload provider and region reference data and decide whether to surface
+//  onboarding.
 //
 //  Composition lives in `StreamInApp` — this view only wires what's already
 //  been constructed.
@@ -26,6 +27,7 @@ struct RootView: View {
     let prefs: Preferences
     let repository: MovieRepository
     let providerCatalog: ProviderCatalog
+    let regionCatalog: RegionCatalog
     let watchlist: WatchlistStore
     let watchlistModel: WatchlistViewModel
     let landingModel: LandingViewModel
@@ -94,6 +96,7 @@ struct RootView: View {
                 SettingsView(
                     prefs: prefs,
                     catalog: providerCatalog,
+                    regionCatalog: regionCatalog,
                     imageURLBuilder: imageURLBuilder
                 )
                 .cinemaBackground()
@@ -113,8 +116,20 @@ struct RootView: View {
                 imageURLBuilder: imageURLBuilder
             )
         }
-        .onChange(of: prefs.language) { _, newLanguage in
+        // Follows the home region too: Spanish content is es-MX in the
+        // Americas, es-ES elsewhere. The caches key on the client's language,
+        // so a new variant is a fresh request.
+        .onChange(of: prefs.contentLanguage) { _, newLanguage in
             tmdbClient.updateLanguage(newLanguage.code)
+        }
+        // The regions TMDB covers. A home region it doesn't (a device default
+        // in an uncovered country) moves to the fallback, which re-fires the
+        // provider preload below.
+        .task {
+            await regionCatalog.load()
+            if let regions = regionCatalog.regions {
+                prefs.adoptSupportedRegion(among: regions)
+            }
         }
         // Provider reference data is loaded at launch (and for each new
         // region), so Settings and Onboarding render complete on their first

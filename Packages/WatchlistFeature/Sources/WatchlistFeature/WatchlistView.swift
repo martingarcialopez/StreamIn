@@ -378,6 +378,8 @@ private struct PreviewMovieRepository: MovieRepository {
     }
 
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 private struct PreviewImageURLBuilder: ImageURLBuilder {

@@ -23,7 +23,7 @@ One Swift Package per layer; boundaries are enforced at build time.
 | `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` and its `WatchSummary` (where to watch, shared by Details, Search and the Watchlist) |
 | `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
 | `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
-| `ReferenceData` | Domain | `ProviderCatalog` — provider names and logos, loaded at launch |
+| `ReferenceData` | Domain | `ProviderCatalog` (provider names and logos) and `RegionCatalog` (the regions TMDB covers), loaded at launch |
 | `Persistence` | Domain, SwiftData | `WatchlistPersistence.makeRepository(storage:)` → an internal `@ModelActor` repository on a versioned schema; the only package that imports SwiftData |
 | `Watchlist` | Domain | `WatchlistStore` — `@MainActor @Observable` saved movies, shared by Details and the Watchlist tab |
 | `DesignSystem` | — | Tokens (`Spacing`, `Radius`, `LogoSize`, `Symbol`), `AppPalette`, `CinemaBackground` (`.cinemaBackground()` on every screen, `.cinemaRow()` on list rows), `ProviderLogo`, `ProviderLogoStrip`, `ProviderLine`, `AbroadMark`, `AppLogoMark`, `RemoteImage`, `SpinningGlobe` (map from `scripts/make-globe-map.swift`) |
@@ -94,7 +94,7 @@ Settled — surface it explicitly before challenging one.
 - **TMDB as the only data source.** Streaming services have no public availability APIs; TMDB is free and JustWatch-backed (same data as the paid aggregators). The concurrency showcase lives in the Details fan-out (`async let`) and the search-row availability fan-out.
 - **One package per layer**, so "features can't import TMDB" is impossible to violate rather than a convention.
 - **Every local package is referenced at project level**, and the App target links the products it imports. This builds cleanly with Xcode 26.6; the old "only the outermost packages" rule came from a "multiple top-level packages named 'Domain'" error that no longer reproduces.
-- **Composition root in `StreamInApp.init()`** is the only place concrete types are built (`LiveTMDBClient`, `TMDBMovieRepository`, `CachingMovieRepository`, `ProviderCatalog`). No DI container.
+- **Composition root in `StreamInApp.init()`** is the only place concrete types are built (`LiveTMDBClient`, `TMDBMovieRepository`, `CachingMovieRepository`, `ProviderCatalog`, `RegionCatalog`). No DI container.
 - **Typed `MovieError`** (offline, timeout, rateLimited, unauthorized, notFound, server, decoding, cancelled, unknown): views switch exhaustively; transport errors never leave the adapter.
 - **Build-time secrets** via a Run Script that generates `GeneratedSecrets.swift` from `Secrets.xcconfig` — details in `.claude/rules/secrets.md`.
 - **Previews** use a `private struct PreviewMovieRepository` at the bottom of the view's file. `fatalError` is fine only in methods the preview never reaches: a view's `.task` runs in previews too, so render the preview once to check. Test fakes must be complete.
@@ -111,6 +111,7 @@ Settled — surface it explicitly before challenging one.
 Three mechanisms, one per kind of data:
 
 - **Provider reference data** — `ProviderCatalog` (`ReferenceData`), a `@MainActor @Observable` class rather than an actor, so views read it synchronously and render complete on their first frame. `RootView` loads it at launch (worldwide + home region) and on region change; screens may call `load(region:)` too — a no-op for loaded scopes that shares in-flight requests. No expiry.
+  `RegionCatalog` works the same way for the regions TMDB covers (the home-region picker); once it loads, `RootView` moves a home region TMDB doesn't cover to `Region.fallback` (US).
 - **Response caching** — `CachingMovieRepository` (`TMDBClient`) wraps `TMDBMovieRepository`, backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language), movie detail (id + language) and trending movies (language) last the session; availability (id + region) expires after 30 min and is shared between `availability(for:in:)` and `availabilities(for:in:)`. Failures are never cached.
 - **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`): `AsyncImage` always starts on its placeholder, so `ProviderLogo` uses `RemoteImage`, which renders synchronously from memory. `RootView` prefetches subscribed providers' logos.
 

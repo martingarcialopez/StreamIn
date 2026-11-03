@@ -19,10 +19,16 @@ public final class Preferences {
         didSet { defaults.set(region.code, forKey: Self.regionKey) }
     }
 
-    /// The user's preferred language (controls TMDB's localised output:
-    /// titles, overviews, poster art).
+    /// The user's preferred language: the interface's, and TMDB's localised
+    /// output (titles, overviews, poster art) through `contentLanguage`.
     public var language: Language {
         didSet { defaults.set(language.code, forKey: Self.languageKey) }
+    }
+
+    /// The variant TMDB is asked for: `language`, with Spanish following the
+    /// home region (see `Language.contentLanguage(in:)`).
+    public var contentLanguage: Language {
+        language.contentLanguage(in: region)
     }
 
     /// The streaming services the user pays for. Persisted as a JSON-encoded
@@ -58,7 +64,7 @@ public final class Preferences {
     private static let subscribedProvidersKey  = "settings.subscribedProviders.ids"
 
     public init(
-        defaultRegion: Region = .currentLocale,
+        defaultRegion: Region = .device(),
         defaultLanguage: Language = .currentLocale,
         defaults: UserDefaults = .standard
     ) {
@@ -81,6 +87,17 @@ public final class Preferences {
         }
 
         self.subscribedProviderIDs = Self.loadSubscribedProviders(from: defaults)
+    }
+
+    /// Moves to the fallback region when TMDB has no streaming data for the
+    /// current one, e.g. a device default in a country it doesn't cover.
+    /// A supported region is left alone, so a device default isn't saved and
+    /// keeps following the device until the user picks a region.
+    public func adoptSupportedRegion(among regions: [Region]) {
+        let supported = region.supported(among: regions)
+        if supported != region {
+            region = supported
+        }
     }
 
     // MARK: - Subscribed providers persistence

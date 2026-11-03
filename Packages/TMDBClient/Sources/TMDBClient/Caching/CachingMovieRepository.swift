@@ -15,6 +15,7 @@
 //  | `trendingMovies()`          | language                    | session    |
 //  | `availability(ies)(for:in:)`| movie + region              | 30 minutes |
 //  | `allProviders(in:)`         | not cached here — `ProviderCatalog` holds it |
+//  | `watchRegions()`            | not cached here — `RegionCatalog` holds it   |
 //
 //  Search results and movie details don't meaningfully change within a
 //  session. Streaming availability does (titles join and leave services), so
@@ -113,5 +114,9 @@ public struct CachingMovieRepository: MovieRepository {
 
     public func allProviders(in region: Region?) async throws -> [WatchProvider] {
         try await upstream.allProviders(in: region)
+    }
+
+    public func watchRegions() async throws -> [Region] {
+        try await upstream.watchRegions()
     }
 }

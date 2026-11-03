@@ -93,6 +93,10 @@ public final class LiveTMDBClient: TMDBClient {
         return try await get(path: "/watch/providers/movie", query: query)
     }
 
+    public func watchRegions() async throws -> TMDBWatchRegionListResponse {
+        try await get(path: "/watch/providers/regions", query: [:])
+    }
+
     // MARK: - HTTP
 
     private func get<T: Decodable>(path: String, query: [String: String]) async throws -> T {

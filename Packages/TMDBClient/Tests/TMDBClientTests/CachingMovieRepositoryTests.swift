@@ -13,6 +13,7 @@ private actor RecordingMovieRepository: MovieRepository {
     private(set) var trendingCalls = 0
     private(set) var availabilitiesCalls = 0
     private(set) var allProvidersCalls = 0
+    private(set) var watchRegionsCalls = 0
     private var shouldFailNextSearch = false
 
     func failNextSearch() { shouldFailNextSearch = true }
@@ -54,6 +55,11 @@ private actor RecordingMovieRepository: MovieRepository {
 
     func allProviders(in region: Region?) async throws -> [WatchProvider] {
         allProvidersCalls += 1
+        return []
+    }
+
+    func watchRegions() async throws -> [Region] {
+        watchRegionsCalls += 1
         return []
     }
 }
@@ -220,5 +226,15 @@ struct CachingMovieRepositoryTests {
         _ = try await repo.allProviders(in: nil)
 
         #expect(await upstream.allProvidersCalls == 2)
+    }
+
+    @Test func regionListIsNotCached() async throws {
+        let upstream = RecordingMovieRepository()
+        let repo = makeRepository(upstream: upstream)
+
+        _ = try await repo.watchRegions()
+        _ = try await repo.watchRegions()
+
+        #expect(await upstream.watchRegionsCalls == 2)
     }
 }

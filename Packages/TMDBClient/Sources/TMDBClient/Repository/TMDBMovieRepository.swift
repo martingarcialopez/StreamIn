@@ -105,6 +105,13 @@ public struct TMDBMovieRepository: MovieRepository {
         }
     }
 
+    public func watchRegions() async throws -> [Region] {
+        let response = try await mapErrors {
+            try await client.watchRegions()
+        }
+        return response.results.map { Region(code: $0.iso3166_1) }
+    }
+
     // MARK: - Private mapping
 
     private func map(dto: TMDBMovieDTO) -> Movie {

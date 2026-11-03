@@ -56,14 +56,6 @@ public struct Region: Identifiable, Hashable, Sendable {
     public static let unitedKingdom = Region(code: "GB")
     public static let france        = Region(code: "FR")
     public static let germany       = Region(code: "DE")
-    public static let denmark       = Region(code: "DK")
-
-    /// Static catalog of regions the app exposes in its settings picker. Add
-    /// to this list as we localize for new markets; each entry needs a TMDB
-    /// presence (every entry here has one, but worth checking when extending).
-    public static let allKnown: [Region] = [
-        .unitedStates, .spain, .unitedKingdom, .france, .germany, .denmark
-    ]
 
     /// Human-readable name in the user's *display* language. So a Spanish-
     /// locale user sees "Estados Unidos"; an English-locale user sees
@@ -355,18 +347,37 @@ public protocol MovieRepository: Sendable {
     ///
     /// Sorted by TMDB display priority.
     func allProviders(in region: Region?) async throws -> [WatchProvider]
+
+    /// Every region TMDB has streaming availability for, in no particular
+    /// order. The home-region picker offers exactly these.
+    func watchRegions() async throws -> [Region]
 }
 
 // MARK: - Region helpers
 
 public extension Region {
-    /// Best-effort region from the device locale, *constrained to the catalog*
-    /// of regions the app exposes. If the device locale isn't one we ship with
-    /// (e.g. user is in Mexico, catalog only has Spain), falls back to a
-    /// reasonable default rather than returning a region the picker can't show.
-    static var currentLocale: Region {
-        let code = Locale.current.region?.identifier ?? "ES"
-        return allKnown.first(where: { $0.code == code }) ?? .spain
+    /// Where the app puts people whose region it can't use: a device without
+    /// one, or a country TMDB has no streaming data for.
+    static let fallback = Region.unitedStates
+
+    /// The device's region, or the fallback when the locale has no country
+    /// (e.g. a bare "en" or the "419" Latin America area).
+    static func device(for locale: Locale = .current) -> Region {
+        guard let code = locale.region?.identifier,
+              code.count == 2, code.allSatisfy(\.isLetter)
+        else { return .fallback }
+        return Region(code: code)
+    }
+
+    /// This region if `regions` lists it, the fallback otherwise.
+    func supported(among regions: [Region]) -> Region {
+        regions.contains(self) ? self : .fallback
+    }
+
+    /// Whether the region is in North, Central or South America or the
+    /// Caribbean (UN M.49 area 019).
+    var isInAmericas: Bool {
+        Locale.Region(code).continent == Locale.Region("019")
     }
 }
 
@@ -386,6 +397,9 @@ public struct Language: Identifiable, Hashable, Sendable {
 
     public static let englishUS = Language(code: "en-US")
     public static let spanishES = Language(code: "es-ES")
+    /// Latin American Spanish. Never offered by the picker: the interface has
+    /// one Spanish, and this is only the variant movie data is requested in.
+    public static let spanishMX = Language(code: "es-MX")
 
     /// Languages the settings picker offers. The picker switches the
     /// interface as well as TMDB's content, so it only lists languages every
@@ -416,6 +430,17 @@ public struct Language: Identifiable, Hashable, Sendable {
         return allKnown.first(where: { $0.code == bcp47 })
             ?? allKnown.first(where: { $0.code.hasPrefix(lang + "-") })
             ?? .englishUS
+    }
+
+    /// The variant movie data (titles, overviews) is requested in for a home
+    /// region. Spanish titles differ between Spain and Latin America ("La
+    /// jungla de cristal" vs "Duro de matar"), so Spanish follows the region:
+    /// Mexican Spanish anywhere in the Americas, the US included, and Spain's
+    /// everywhere else. TMDB rarely has other variants. Other languages don't
+    /// change.
+    public func contentLanguage(in region: Region) -> Language {
+        guard self == .spanishES else { return self }
+        return region.isInAmericas ? .spanishMX : .spanishES
     }
 }
 

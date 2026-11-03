@@ -38,6 +38,7 @@ actor FakeMovieRepository: MovieRepository {
     /// The view model fetches the whole bundle instead.
     func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability { throw MovieError.unknown }
     func allProviders(in region: Region?) async throws -> [WatchProvider] { [] }
+    func watchRegions() async throws -> [Region] { [] }
 }
 
 /// Preferences on their own defaults suite, so tests don't share state.

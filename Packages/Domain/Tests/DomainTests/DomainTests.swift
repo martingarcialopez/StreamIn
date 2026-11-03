@@ -188,6 +188,65 @@ import Foundation
     @Test func untranslatedLanguageFallsBackToEnglish() {
         #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUS)
         #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "de_DE")) == .englishUS)
+    }
+
+    /// Every Spanish gets the one Spanish interface.
+    @Test(arguments: ["es", "es_ES", "es_MX", "es_AR", "es_419"])
+    func anySpanishDeviceGetsSpanish(identifier: String) {
+        #expect(Language.currentLocale(for: Locale(identifier: identifier)) == .spanishES)
+    }
+
+    /// The language decides, not the region: English in Mexico stays English.
+    @Test(arguments: ["en", "en_US", "en_MX", "en_ES"])
+    func anyEnglishDeviceGetsEnglish(identifier: String) {
+        #expect(Language.currentLocale(for: Locale(identifier: identifier)) == .englishUS)
+    }
+
+    @Test(arguments: [
+        ("ES", "es-ES"), ("DE", "es-ES"), ("MX", "es-MX"), ("AR", "es-MX"), ("US", "es-MX"),
+    ])
+    func spanishContentFollowsHomeRegion(region: String, expected: String) {
+        #expect(Language.spanishES.contentLanguage(in: Region(code: region)).code == expected)
+    }
+
+    @Test(arguments: ["US", "MX", "ES", "DE"])
+    func englishContentIsAlwaysUS(region: String) {
+        #expect(Language.englishUS.contentLanguage(in: Region(code: region)) == .englishUS)
+    }
+}
+
+// MARK: - Region defaults
+
+@Suite struct RegionDefaultTests {
+
+    @Test func deviceRegionComesFromTheLocale() {
+        #expect(Region.device(for: Locale(identifier: "it_IT")) == Region(code: "IT"))
+        #expect(Region.device(for: Locale(identifier: "en_MX")) == Region(code: "MX"))
+    }
+
+    /// No country to go on: a bare language, or an area like Latin America.
+    @Test func localeWithoutCountryFallsBackToUS() {
+        #expect(Region.device(for: Locale(identifier: "en")) == .unitedStates)
+        #expect(Region.device(for: Locale(identifier: "es_419")) == .unitedStates)
+    }
+
+    @Test func supportedRegionIsKept() {
+        let italy = Region(code: "IT")
+        #expect(italy.supported(among: [.spain, italy, .unitedStates]) == italy)
+    }
+
+    @Test func unsupportedRegionFallsBackToUS() {
+        #expect(Region(code: "KP").supported(among: [.spain, .unitedStates]) == .unitedStates)
+    }
+
+    @Test func americasIncludeNorthCentralSouthAndCaribbean() {
+        for code in ["US", "CA", "MX", "GT", "CU", "PR", "CO", "AR", "BR"] {
+            #expect(Region(code: code).isInAmericas, "\(code)")
+        }
+        for code in ["ES", "DE", "GQ", "PH", "JP", "AU"] {
+            #expect(!Region(code: code).isInAmericas, "\(code)")
+        }
     }
 }
 

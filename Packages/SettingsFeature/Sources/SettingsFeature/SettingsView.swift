@@ -22,6 +22,7 @@ public struct SettingsView: View {
     @Bindable var prefs: Preferences
 
     @State private var streamingServicesModel: StreamingServicesViewModel
+    @State private var regionPickerModel: RegionPickerViewModel
 
     private let imageURLBuilder: ImageURLBuilder
 
@@ -30,6 +31,7 @@ public struct SettingsView: View {
     public init(
         prefs: Preferences,
         catalog: ProviderCatalog,
+        regionCatalog: RegionCatalog,
         imageURLBuilder: ImageURLBuilder
     ) {
         self.prefs = prefs
@@ -37,11 +39,14 @@ public struct SettingsView: View {
         _streamingServicesModel = State(
             initialValue: StreamingServicesViewModel(catalog: catalog, prefs: prefs)
         )
+        _regionPickerModel = State(
+            initialValue: RegionPickerViewModel(catalog: regionCatalog, prefs: prefs)
+        )
     }
 
     public var body: some View {
         Form {
-            RegionSection(prefs: prefs)
+            RegionSection(prefs: prefs, model: regionPickerModel)
                 .cinemaRow()
             LanguageSection(prefs: prefs)
                 .cinemaRow()
@@ -65,6 +70,10 @@ public struct SettingsView: View {
         .task(id: prefs.region) {
             await streamingServicesModel.load()
         }
+        // Same for the region list, so the picker opens complete.
+        .task {
+            await regionPickerModel.load()
+        }
     }
 }
 
@@ -75,17 +84,22 @@ public struct SettingsView: View {
 // onto the picker. SwiftUI's per-property observation tracking means an unrelated
 // section won't re-render when a different one's value changes.
 
+/// A row showing the home region, pushing the searchable picker: TMDB's
+/// ~150 countries are too many for an inline menu.
 private struct RegionSection: View {
-    @Bindable var prefs: Preferences
+    let prefs: Preferences
+    let model: RegionPickerViewModel
 
     var body: some View {
         Section {
-            Picker(selection: $prefs.region) {
-                ForEach(Region.allKnown) { region in
-                    Text(region.displayName).tag(region)
-                }
+            NavigationLink {
+                RegionPickerView(model: model)
             } label: {
-                Text(.settingsRegionPicker)
+                LabeledContent {
+                    Text(verbatim: "\(prefs.region.flag) \(prefs.region.displayName)")
+                } label: {
+                    Text(.settingsRegionPicker)
+                }
             }
         } footer: {
             Text(.settingsRegionFooter)
@@ -287,6 +301,7 @@ private struct ProviderIcon: View {
         SettingsView(
             prefs: Preferences(),
             catalog: ProviderCatalog(repository: PreviewMovieRepository()),
+            regionCatalog: RegionCatalog(repository: PreviewMovieRepository()),
             imageURLBuilder: PreviewImageURLBuilder()
         )
     }
@@ -320,6 +335,9 @@ private struct PreviewMovieRepository: MovieRepository {
             WatchProvider(id: ProviderID(9), name: "Amazon Prime Video", logoPath: nil, priority: 2),
             WatchProvider(id: ProviderID(337), name: "Disney Plus", logoPath: nil, priority: 3)
         ]
+    }
+    func watchRegions() async throws -> [Region] {
+        [.unitedStates, .spain, .unitedKingdom, .france, .germany]
     }
 }
 

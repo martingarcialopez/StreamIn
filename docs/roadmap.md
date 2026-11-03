@@ -326,6 +326,11 @@ A pattern used by two screens moves to DesignSystem.
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
 - **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (steps in
   CLAUDE.md, "TODO: onboarding trigger").
+- **Every country (#22, decided Oct 30):** the home-region picker lists the regions TMDB covers
+  (`/watch/providers/regions`, held by `RegionCatalog`), searchable. The default is the device's
+  region, or the US when TMDB doesn't cover it. The interface language follows the device (any
+  Spanish → Spanish, anything else → English); Spanish movie data follows the home region
+  (`es-MX` in the Americas, `es-ES` elsewhere), with one "Español" in the picker.
 - **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
   contrast in light and dark.
 - **README:** refresh the status section and add screenshots or a demo GIF.

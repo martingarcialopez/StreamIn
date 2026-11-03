@@ -237,3 +237,25 @@ import Domain
         }
     }
 }
+
+@Suite struct WatchRegionsMappingTests {
+
+    @Test func codesBecomeRegionsInTMDBsOrder() async throws {
+        let stub = StubTMDBClient()
+        stub.watchRegionsResult = .success(TMDBWatchRegionListResponse(results: [
+            TMDBWatchRegionDTO(iso3166_1: "IT"), TMDBWatchRegionDTO(iso3166_1: "ar")
+        ]))
+        let regions = try await TMDBMovieRepository(client: stub).watchRegions()
+
+        #expect(regions == [Region(code: "IT"), Region(code: "AR")])
+    }
+
+    @Test func transportErrorsAreMapped() async {
+        let stub = StubTMDBClient()
+        stub.watchRegionsResult = .failure(URLError(.timedOut))
+
+        await #expect(throws: MovieError.timeout) {
+            try await TMDBMovieRepository(client: stub).watchRegions()
+        }
+    }
+}

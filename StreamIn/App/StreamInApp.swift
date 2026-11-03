@@ -6,7 +6,7 @@
 //
 //  Composition root. This file holds the `@main` App entry point and
 //  constructs the long-lived dependencies (TMDB client, repository, provider
-//  catalog, image URL builder, Preferences, watchlist, and the models of the
+//  and region catalogs, image URL builder, Preferences, watchlist, and the models of the
 //  Search landing page and the Watchlist tab, which live as long as their
 //  tabs do). Concrete implementations are wired up here exactly once and
 //  passed down as protocol-typed references.
@@ -36,6 +36,7 @@ struct StreamInApp: App {
     private let tmdbClient: LiveTMDBClient
     private let repository: MovieRepository
     private let providerCatalog: ProviderCatalog
+    private let regionCatalog: RegionCatalog
     private let watchlist: WatchlistStore
     private let watchlistModel: WatchlistViewModel
     private let landingModel: LandingViewModel
@@ -44,7 +45,7 @@ struct StreamInApp: App {
         let client = LiveTMDBClient(
             config: TMDBConfig(
                 apiKey: AppConfig.tmdbAPIKey,
-                language: prefs.language.code
+                language: prefs.contentLanguage.code
             )
         )
         let liveRepository = TMDBMovieRepository(client: client)
@@ -55,6 +56,7 @@ struct StreamInApp: App {
         self.tmdbClient = client
         self.repository = repository
         self.providerCatalog = ProviderCatalog(repository: repository)
+        self.regionCatalog = RegionCatalog(repository: repository)
         let watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
         self.watchlist = watchlist
         self.watchlistModel = WatchlistViewModel(
@@ -96,6 +98,7 @@ struct StreamInApp: App {
                 prefs: prefs,
                 repository: repository,
                 providerCatalog: providerCatalog,
+                regionCatalog: regionCatalog,
                 watchlist: watchlist,
                 watchlistModel: watchlistModel,
                 landingModel: landingModel,

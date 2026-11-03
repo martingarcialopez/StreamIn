@@ -11,6 +11,7 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
     var trendingResult: Result<TMDBSearchResponse, Error> = .failure(MovieError.unknown)
     var watchProvidersResult: Result<TMDBWatchProvidersResponse, Error> = .failure(MovieError.unknown)
     var providerListResult: Result<TMDBProviderListResponse, Error> = .failure(MovieError.unknown)
+    var watchRegionsResult: Result<TMDBWatchRegionListResponse, Error> = .failure(MovieError.unknown)
 
     var searchLastQuery: String?
     var searchLastPage: Int?
@@ -39,5 +40,8 @@ final class StubTMDBClient: TMDBClient, @unchecked Sendable {
         providerListCallCount += 1
         providerListLastWatchRegion = watchRegion
         return try providerListResult.get()
+    }
+    func watchRegions() async throws -> TMDBWatchRegionListResponse {
+        try watchRegionsResult.get()
     }
 }
