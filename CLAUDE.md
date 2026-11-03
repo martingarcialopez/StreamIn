@@ -111,7 +111,7 @@ Settled — surface it explicitly before challenging one.
 Three mechanisms, one per kind of data:
 
 - **Provider reference data** — `ProviderCatalog` (`ReferenceData`), a `@MainActor @Observable` class rather than an actor, so views read it synchronously and render complete on their first frame. `RootView` loads it at launch (worldwide + home region) and on region change; screens may call `load(region:)` too — a no-op for loaded scopes that shares in-flight requests. No expiry.
-  `RegionCatalog` works the same way for the regions TMDB covers (the home-region picker); once it loads, `RootView` moves a home region TMDB doesn't cover to `Region.fallback` (US).
+  `RegionCatalog` works the same way for the regions TMDB covers (the home-region picker); once it loads, `RootView` moves a home region TMDB doesn't cover to `Region.fallback` (the UK).
 - **Response caching** — `CachingMovieRepository` (`TMDBClient`) wraps `TMDBMovieRepository`, backed by the generic `MemoryCache` actor, which stores in-flight *tasks* so concurrent callers share one request. Search (query + page + language), movie detail (id + language) and trending movies (language) last the session; availability (id + region) expires after 30 min and is shared between `availability(for:in:)` and `availabilities(for:in:)`. Failures are never cached.
 - **Logo images** — `RemoteImageStore` + `RemoteImage` (`DesignSystem`): `AsyncImage` always starts on its placeholder, so `ProviderLogo` uses `RemoteImage`, which renders synchronously from memory. `RootView` prefetches subscribed providers' logos.
 

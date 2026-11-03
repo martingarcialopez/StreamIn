@@ -85,16 +85,16 @@ import Domain
     }
 
     private let italy = Region(code: "IT")
-    private let covered = [Region.spain, Region(code: "IT"), Region.unitedStates]
+    private let covered = [Region.spain, Region(code: "IT"), Region.unitedKingdom]
 
-    @Test func unsupportedRegionFallsBackToUSAndIsSaved() {
+    @Test func unsupportedRegionFallsBackToUKAndIsSaved() {
         let defaults = makeDefaults()
         let prefs = Preferences(defaultRegion: Region(code: "KP"), defaults: defaults)
 
         prefs.adoptSupportedRegion(among: covered)
 
-        #expect(prefs.region == .unitedStates)
-        #expect(Preferences(defaultRegion: italy, defaults: defaults).region == .unitedStates)
+        #expect(prefs.region == .unitedKingdom)
+        #expect(Preferences(defaultRegion: italy, defaults: defaults).region == .unitedKingdom)
     }
 
     /// A covered device default isn't saved, so it keeps following the device.

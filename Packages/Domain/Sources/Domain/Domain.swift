@@ -357,8 +357,9 @@ public protocol MovieRepository: Sendable {
 
 public extension Region {
     /// Where the app puts people whose region it can't use: a device without
-    /// one, or a country TMDB has no streaming data for.
-    static let fallback = Region.unitedStates
+    /// one, or a country TMDB has no streaming data for. The UK: an
+    /// English-speaking market with broad TMDB coverage (decided on #22).
+    static let fallback = Region.unitedKingdom
 
     /// The device's region, or the fallback when the locale has no country
     /// (e.g. a bare "en" or the "419" Latin America area).

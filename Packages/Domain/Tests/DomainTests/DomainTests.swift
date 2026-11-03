@@ -226,18 +226,18 @@ import Foundation
     }
 
     /// No country to go on: a bare language, or an area like Latin America.
-    @Test func localeWithoutCountryFallsBackToUS() {
-        #expect(Region.device(for: Locale(identifier: "en")) == .unitedStates)
-        #expect(Region.device(for: Locale(identifier: "es_419")) == .unitedStates)
+    @Test func localeWithoutCountryFallsBackToUK() {
+        #expect(Region.device(for: Locale(identifier: "en")) == .unitedKingdom)
+        #expect(Region.device(for: Locale(identifier: "es_419")) == .unitedKingdom)
     }
 
     @Test func supportedRegionIsKept() {
         let italy = Region(code: "IT")
-        #expect(italy.supported(among: [.spain, italy, .unitedStates]) == italy)
+        #expect(italy.supported(among: [.spain, italy, .unitedKingdom]) == italy)
     }
 
-    @Test func unsupportedRegionFallsBackToUS() {
-        #expect(Region(code: "KP").supported(among: [.spain, .unitedStates]) == .unitedStates)
+    @Test func unsupportedRegionFallsBackToUK() {
+        #expect(Region(code: "KP").supported(among: [.spain, .unitedKingdom]) == .unitedKingdom)
     }
 
     @Test func americasIncludeNorthCentralSouthAndCaribbean() {
