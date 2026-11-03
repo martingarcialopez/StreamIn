@@ -190,7 +190,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Services picker: switch beside the 'Available in …' heading that lists every service in the world instead of the home region's.
+     Services picker: switch under the 'Available in …' heading that lists every service in the world instead of the home region's.
      
      Localized string for key “settingsMoreProvidersWorldwideToggle” in table “Localizable.xcstrings”.
      */
@@ -214,6 +214,24 @@ nonisolated extension LocalizedStringResource {
      */
     static var settingsRegionPicker: LocalizedStringResource {
         LocalizedStringResource("settingsRegionPicker", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: button that asks again for the list of services after a failure.
+     
+     Localized string for key “settingsRetry” in table “Localizable.xcstrings”.
+     */
+    static var settingsRetry: LocalizedStringResource {
+        LocalizedStringResource("settingsRetry", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: shown under 'Available in …' when every service there is already one of yours.
+     
+     Localized string for key “settingsStreamingServicesAllPicked” in table “Localizable.xcstrings”.
+     */
+    static var settingsStreamingServicesAllPicked: LocalizedStringResource {
+        LocalizedStringResource("settingsStreamingServicesAllPicked", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -241,6 +259,15 @@ nonisolated extension LocalizedStringResource {
      */
     static func settingsStreamingServicesCount(_ arg1: Int) -> LocalizedStringResource {
         LocalizedStringResource("settingsStreamingServicesCount", defaultValue: "\(arg1, specifier: "%lld")", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: title shown in place of the grid when the list of services couldn't be loaded; the reason and a Retry button follow.
+     
+     Localized string for key “settingsStreamingServicesLoadFailed” in table “Localizable.xcstrings”.
+     */
+    static var settingsStreamingServicesLoadFailed: LocalizedStringResource {
+        LocalizedStringResource("settingsStreamingServicesLoadFailed", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

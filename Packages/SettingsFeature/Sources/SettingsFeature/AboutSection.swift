@@ -63,7 +63,7 @@ private struct TMDBLogo: View {
     @ScaledMetric(relativeTo: .footnote) private var height: CGFloat = 14
 
     var body: some View {
-        Image("tmdbLogo", bundle: .module)
+        Image(.tmdbLogo)
             .resizable()
             .scaledToFit()
             .frame(height: height)

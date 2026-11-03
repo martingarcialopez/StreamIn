@@ -81,6 +81,18 @@ public final class StreamingServicesViewModel {
         scopedCatalog == nil && catalog.lastError == nil
     }
 
+    /// Every service in the current scope is already picked, with no search
+    /// narrowing it: "Available" says so instead of standing empty.
+    public var hasPickedEveryService: Bool {
+        searchText.isEmpty && scopedCatalog != nil && availableProviders.isEmpty
+    }
+
+    /// Why the "Available" section has nothing to show, when its catalog
+    /// failed to load (e.g. a first launch offline). `load()` retries it.
+    public var loadError: MovieError? {
+        scopedCatalog == nil ? catalog.lastError : nil
+    }
+
     /// Catalog under the current scope. Excludes already-selected providers
     /// (those live in the "Your services" section above to avoid
     /// duplicated tiles) and applies the search filter.

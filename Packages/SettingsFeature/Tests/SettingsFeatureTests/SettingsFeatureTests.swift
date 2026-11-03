@@ -13,6 +13,8 @@ import ReferenceData
 final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
     private var providersByRegion: [String: [WatchProvider]] = [:]
     private let worldwideKey = "_worldwide"
+    /// When set, `allProviders` throws it, like a launch offline.
+    var failure: MovieError?
 
     func setProviders(_ providers: [WatchProvider], for region: Region?) {
         providersByRegion[region?.code ?? worldwideKey] = providers
@@ -34,7 +36,8 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
         throw MovieError.unknown
     }
     func allProviders(in region: Region?) async throws -> [WatchProvider] {
-        providersByRegion[region?.code ?? worldwideKey] ?? []
+        if let failure { throw failure }
+        return providersByRegion[region?.code ?? worldwideKey] ?? []
     }
 }
 
@@ -201,6 +204,45 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         model.searchText = "zzz"
         #expect(model.isInitialLoad)
         #expect(!model.hasNoSearchMatches)
+    }
+
+    /// A first launch offline: the grid explains and offers a retry instead
+    /// of standing empty, and a retry that works clears it.
+    @Test func failedCatalogReportsItsErrorUntilARetryWorks() async {
+        let repo = FakeMovieRepository()
+        repo.failure = .offline
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo),
+            prefs: makePrefs(region: .spain)
+        )
+        await model.load()
+        #expect(model.loadError == .offline)
+        #expect(!model.isInitialLoad)
+        #expect(!model.hasPickedEveryService)
+
+        repo.failure = nil
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([], for: nil)
+        await model.load()
+        #expect(model.loadError == nil)
+        #expect(model.availableProviders.map(\.id) == [ProviderID(8)])
+    }
+
+    @Test func pickingEveryServiceSaysSoUnlessSearching() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+        #expect(!model.hasPickedEveryService)
+
+        model.toggle(ProviderID(8))
+        #expect(model.hasPickedEveryService)
+
+        // Searching for a pick empties "Available" too; that's not "every service".
+        model.searchText = "net"
+        #expect(!model.hasPickedEveryService)
     }
 
     @Test func hasLoadedAnyCatalogFlipsAfterLoad() async {

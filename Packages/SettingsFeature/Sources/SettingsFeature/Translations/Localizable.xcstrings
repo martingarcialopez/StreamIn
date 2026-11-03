@@ -218,7 +218,7 @@
       }
     },
     "settingsMoreProvidersWorldwideToggle": {
-      "comment": "Services picker: switch beside the 'Available in …' heading that lists every service in the world instead of the home region's.",
+      "comment": "Services picker: switch under the 'Available in …' heading that lists every service in the world instead of the home region's.",
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -591,6 +591,60 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se aplica al reiniciar StreamIn."
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesLoadFailed": {
+      "comment": "Services picker: title shown in place of the grid when the list of services couldn't be loaded; the reason and a Retry button follow.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load the services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido cargar los servicios"
+          }
+        }
+      }
+    },
+    "settingsRetry": {
+      "comment": "Services picker: button that asks again for the list of services after a failure.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesAllPicked": {
+      "comment": "Services picker: shown under 'Available in …' when every service there is already one of yours.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've picked every service here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya has elegido todos los servicios de aquí."
           }
         }
       }

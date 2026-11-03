@@ -56,6 +56,8 @@ struct StreamingServicesView<Header: View, Footer: View>: View {
             VStack(alignment: .leading, spacing: Spacing.sectionGap) {
                 header
                 if model.hasNoSearchMatches {
+                    // Kept: a service missing here may exist abroad.
+                    WorldwideToggle(model: model)
                     ContentUnavailableView.search(text: model.searchText)
                 } else {
                     YourServicesSection(model: model, imageURLBuilder: imageURLBuilder)
@@ -69,6 +71,9 @@ struct StreamingServicesView<Header: View, Footer: View>: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.immediately)
+        // Here, not on the tile: a toggled tile moves to the other section,
+        // so it's a new view whose `isSelected` never changes.
+        .sensoryFeedback(.selection, trigger: model.selectedCount)
         // Here rather than at each call site: the grid is pushed from
         // Settings and shown in the services sheet and in Onboarding.
         .cinemaBackground()
@@ -132,6 +137,14 @@ private struct AvailableSection: View {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.sectionGap)
+            } else if let error = model.loadError {
+                LoadFailed(error: error) {
+                    await model.load()
+                }
+            } else if model.hasPickedEveryService {
+                Text(.settingsStreamingServicesAllPicked)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             } else {
                 ProviderGrid(providers: model.availableProviders, model: model, imageURLBuilder: imageURLBuilder)
             }
@@ -150,6 +163,30 @@ private struct AvailableHeading: View {
             Text(showWorldwide
                  ? .settingsStreamingServicesAvailableWorldwide
                  : .settingsStreamingServicesAvailableInRegion(region.displayName))
+        }
+    }
+}
+
+/// The catalog couldn't load, e.g. on a first launch offline. Onboarding's
+/// `.task` won't run again on its own, so the retry is a button.
+private struct LoadFailed: View {
+    let error: MovieError
+    let retry: () async -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label {
+                Text(.settingsStreamingServicesLoadFailed)
+            } icon: {
+                Image(systemName: Symbol.exclamationmarkTriangle)
+            }
+        } description: {
+            Text(error.userMessage)
+        } actions: {
+            Button(.settingsRetry) {
+                Task { await retry() }
+            }
+            .buttonStyle(.bordered)
         }
     }
 }

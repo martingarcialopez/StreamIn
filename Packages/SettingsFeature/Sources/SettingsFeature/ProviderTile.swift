@@ -17,7 +17,7 @@ struct ProviderTile: View {
     let toggle: () -> Void
 
     @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.tile
-    @ScaledMetric(relativeTo: .body) private var ringGap: CGFloat = 4
+    @ScaledMetric(relativeTo: .body) private var ringGap: CGFloat = Spacing.tight
 
     var body: some View {
         Button(action: toggle) {
@@ -57,7 +57,6 @@ struct ProviderTile: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(provider.name)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-        .sensoryFeedback(.selection, trigger: isSelected)
     }
 }
 
