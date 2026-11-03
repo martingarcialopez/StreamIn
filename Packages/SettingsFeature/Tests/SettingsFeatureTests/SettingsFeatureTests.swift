@@ -156,6 +156,53 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(model.availableProviders.map(\.id) == [ProviderID(11)])
     }
 
+    /// The picker's grid narrows both sections; the Settings summary
+    /// (`selectedProviders`) keeps every pick.
+    @Test func searchNarrowsTheVisiblePicks() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix"), provider(337, "Disney Plus")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        prefs.subscribedProviderIDs = [ProviderID(8), ProviderID(337)]
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+
+        model.searchText = "dis"
+
+        #expect(model.visibleSelectedProviders.map(\.id) == [ProviderID(337)])
+        #expect(model.selectedProviders.count == 2)
+        #expect(!model.hasNoSearchMatches)
+    }
+
+    @Test func searchMatchingNothingIsReportedOnce() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix"), provider(11, "MUBI")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        prefs.subscribedProviderIDs = [ProviderID(8)]
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+        #expect(!model.hasNoSearchMatches)
+
+        model.searchText = "zzz"
+        #expect(model.hasNoSearchMatches)
+
+        // A match among the picks alone is a match.
+        model.searchText = "net"
+        #expect(!model.hasNoSearchMatches)
+    }
+
+    /// Before the catalog arrives the grid shows a spinner, not "no results".
+    @Test func noSearchMatchesWaitsForTheCatalog() {
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: FakeMovieRepository()),
+            prefs: makePrefs(region: .spain)
+        )
+        model.searchText = "zzz"
+        #expect(model.isInitialLoad)
+        #expect(!model.hasNoSearchMatches)
+    }
+
     @Test func hasLoadedAnyCatalogFlipsAfterLoad() async {
         let repo = FakeMovieRepository()
         repo.setProviders([provider(8, "Netflix")], for: .spain)

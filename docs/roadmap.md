@@ -315,13 +315,40 @@ A pattern used by two screens moves to DesignSystem.
      load-failed state uses the same layout with Retry.
 4. #49 — Settings, the services picker and onboarding's reuse of it.
 
+   **Decided (Oct 30, design Q&A):**
+   - **Settings stays an inset `Form`** on the cinema background, the most familiar shape for a
+     settings screen. Region and language options carry their flag (a language shows its region
+     subtag's: 🇺🇸 English (United States), 🇪🇸 Español (España)); VoiceOver reads only the name.
+   - **The language restart is said up front:** a "↻ Takes effect after restarting StreamIn." line
+     under the picker, and the Restart now / Later alert stays.
+   - **The services row** keeps its logo summary, now DesignSystem's `ProviderLogoStrip` (3 + "+N"),
+     read by VoiceOver as one list of every name.
+   - **The picker is a grid of app-icon logos** (`ProviderTile`, `LogoSize.tile`), as many columns
+     as fit (fewer at accessibility sizes, more on iPad, at most 720 pt wide). A picked tile gets
+     an accent ring and a check badge; VoiceOver reads it as a selected button. "🍿 Your services · N"
+     comes first, then "🇪🇸 Available in Spain" with a settings-style Worldwide switch under it
+     (it didn't fit beside the heading). Search narrows both sections; a search with no match shows
+     the system's search empty state.
+   - **Onboarding wraps the same grid** with a `SpinningGlobe`, "Pick the services you pay for" and
+     one subtitle line that scroll away with it, and a credit line at the end. It shows **once**:
+     Done sets `Preferences.hasCompletedOnboarding`, even with nothing picked (folded in from
+     Phase 6).
+   - **About** (folded in from Phase 6, TMDB's terms and App Store 5.1.1(i)): TMDB's official logo,
+     unmodified and small, over their attribution sentence; JustWatch's credit; the privacy policy
+     (the Spanish page in Spanish); "Version 1.0.0 (1)" from the bundle. Links are plain text with
+     a ↗, not three sentences in the accent color.
+   - **Dark only:** the issue asked for light and dark, but the app is dark-only since #46, so
+     there's no light mode to check.
+   - **Nothing new in DesignSystem** beyond tokens: the tile and grid are used only inside
+     SettingsFeature, where Settings, the sheet and Onboarding all live.
+
 ---
 
 ## Phase 6 — App Store readiness
 
 - **Icon** (Martín designs it) and a launch screen matching the landing page.
-- **TMDB attribution** (required by TMDB's terms): Settings, "Powered by TMDB" with
-  their logo and a link; a line in onboarding.
+- ✅ **TMDB attribution** (required by TMDB's terms): Settings → About with their logo and a
+  link; a line in onboarding (#49).
 - **`PrivacyInfo.xcprivacy`:** UserDefaults reason `CA92.1`, no tracking, no data
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
 - ✅ **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (#49).
