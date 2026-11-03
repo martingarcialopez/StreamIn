@@ -19,6 +19,15 @@ private nonisolated let resourceBundleDescription = LocalizedStringResource.Bund
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 nonisolated extension LocalizedStringResource {
     /**
+     Onboarding: one quiet credit line at the end of the services list. Same copy as the landing page's credits.
+     
+     Localized string for key “onboardingCredits” in table “Localizable.xcstrings”.
+     */
+    static var onboardingCredits: LocalizedStringResource {
+        LocalizedStringResource("onboardingCredits", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Toolbar button that dismisses the onboarding sheet
      
      Localized string for key “onboardingDone” in table “Localizable.xcstrings”.
@@ -28,7 +37,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Sub-header on the onboarding screen explaining what to do
+     Onboarding: one line under the headline saying what picking services gets you.
      
      Localized string for key “onboardingHeaderSubtitle” in table “Localizable.xcstrings”.
      */
@@ -37,7 +46,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Large header on the onboarding screen, above the picker list
+     Onboarding: headline under the spinning globe, above the services picker.
      
      Localized string for key “onboardingHeaderTitle” in table “Localizable.xcstrings”.
      */
@@ -55,21 +64,39 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     VoiceOver-friendly form of the '+N' overflow pill on the Settings streaming-services row. %lld is the count.
+     Settings → About: credit for the watch-provider data; opens justwatch.com.
      
-     Localized string for key “providerIconStripOverflowAccessibility” in table “Localizable.xcstrings”.
+     Localized string for key “settingsAboutJustWatch” in table “Localizable.xcstrings”.
      */
-    static func providerIconStripOverflowAccessibility(_ arg1: Int) -> LocalizedStringResource {
-        LocalizedStringResource("providerIconStripOverflowAccessibility", defaultValue: "\(arg1, specifier: "%lld")", table: "Localizable", bundle: resourceBundleDescription)
+    static var settingsAboutJustWatch: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutJustWatch", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
-     VoiceOver label for the checkmark next to a subscribed provider in the picker
+     Settings → About: link to StreamIn's privacy policy web page.
      
-     Localized string for key “providerRowSubscribedAccessibility” in table “Localizable.xcstrings”.
+     Localized string for key “settingsAboutPrivacy” in table “Localizable.xcstrings”.
      */
-    static var providerRowSubscribedAccessibility: LocalizedStringResource {
-        LocalizedStringResource("providerRowSubscribedAccessibility", table: "Localizable", bundle: resourceBundleDescription)
+    static var settingsAboutPrivacy: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutPrivacy", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: TMDB's required attribution, under their logo; opens themoviedb.org. Wording set by TMDB's terms.
+     
+     Localized string for key “settingsAboutTMDB” in table “Localizable.xcstrings”.
+     */
+    static var settingsAboutTMDB: LocalizedStringResource {
+        LocalizedStringResource("settingsAboutTMDB", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Settings → About: the app version, then the build number in parentheses, e.g. Version 1.0.0 (1).
+     
+     Localized string for key “settingsAboutVersion” in table “Localizable.xcstrings”.
+     */
+    static func settingsAboutVersion(_ arg1: String, _ arg2: String) -> LocalizedStringResource {
+        LocalizedStringResource("settingsAboutVersion", defaultValue: "\(arg1)\(arg2)", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -82,7 +109,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Section footer explaining what the language picker affects
+     Settings: footer under the Language picker, before the restart note.
      
      Localized string for key “settingsLanguageFooter” in table “Localizable.xcstrings”.
      */
@@ -118,6 +145,15 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     Settings: second footer line under the Language picker, with a restart icon; says a new language applies only after StreamIn restarts.
+     
+     Localized string for key “settingsLanguageRestartNote” in table “Localizable.xcstrings”.
+     */
+    static var settingsLanguageRestartNote: LocalizedStringResource {
+        LocalizedStringResource("settingsLanguageRestartNote", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      Primary button on the restart alert, quits the app so the user can reopen it
      
      Localized string for key “settingsLanguageRestartNow” in table “Localizable.xcstrings”.
@@ -136,25 +172,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Done button on the More Providers sheet
-     
-     Localized string for key “settingsMoreProvidersDone” in table “Localizable.xcstrings”.
-     */
-    static var settingsMoreProvidersDone: LocalizedStringResource {
-        LocalizedStringResource("settingsMoreProvidersDone", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Empty-state text shown in the More Providers sheet when the search returns no matches
-     
-     Localized string for key “settingsMoreProvidersEmpty” in table “Localizable.xcstrings”.
-     */
-    static var settingsMoreProvidersEmpty: LocalizedStringResource {
-        LocalizedStringResource("settingsMoreProvidersEmpty", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Prompt text for the search field in the More Providers sheet
+     Services picker: placeholder of the search field that filters services by name.
      
      Localized string for key “settingsMoreProvidersSearchPrompt” in table “Localizable.xcstrings”.
      */
@@ -163,16 +181,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Navigation title for the sheet that lists all TMDB providers the user can add
-     
-     Localized string for key “settingsMoreProvidersTitle” in table “Localizable.xcstrings”.
-     */
-    static var settingsMoreProvidersTitle: LocalizedStringResource {
-        LocalizedStringResource("settingsMoreProvidersTitle", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Toggle in the More Providers sheet that switches between home-region and worldwide provider lists
+     Services picker: switch under the 'Available in …' heading that lists every service in the world instead of the home region's.
      
      Localized string for key “settingsMoreProvidersWorldwideToggle” in table “Localizable.xcstrings”.
      */
@@ -181,7 +190,7 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Section footer explaining what the region picker affects
+     Settings: footer under the Region picker.
      
      Localized string for key “settingsRegionFooter” in table “Localizable.xcstrings”.
      */
@@ -196,6 +205,24 @@ nonisolated extension LocalizedStringResource {
      */
     static var settingsRegionPicker: LocalizedStringResource {
         LocalizedStringResource("settingsRegionPicker", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: button that asks again for the list of services after a failure.
+     
+     Localized string for key “settingsRetry” in table “Localizable.xcstrings”.
+     */
+    static var settingsRetry: LocalizedStringResource {
+        LocalizedStringResource("settingsRetry", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: shown under 'Available in …' when every service there is already one of yours.
+     
+     Localized string for key “settingsStreamingServicesAllPicked” in table “Localizable.xcstrings”.
+     */
+    static var settingsStreamingServicesAllPicked: LocalizedStringResource {
+        LocalizedStringResource("settingsStreamingServicesAllPicked", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -223,6 +250,15 @@ nonisolated extension LocalizedStringResource {
      */
     static func settingsStreamingServicesCount(_ arg1: Int) -> LocalizedStringResource {
         LocalizedStringResource("settingsStreamingServicesCount", defaultValue: "\(arg1, specifier: "%lld")", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
+     Services picker: title shown in place of the grid when the list of services couldn't be loaded; the reason and a Retry button follow.
+     
+     Localized string for key “settingsStreamingServicesLoadFailed” in table “Localizable.xcstrings”.
+     */
+    static var settingsStreamingServicesLoadFailed: LocalizedStringResource {
+        LocalizedStringResource("settingsStreamingServicesLoadFailed", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -262,21 +298,12 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
-     Section header above the user's currently-selected streaming services on the picker screen
+     Services picker: heading above the services you picked, with how many, e.g. Your services · 3.
      
-     Localized string for key “settingsStreamingServicesYourSubs” in table “Localizable.xcstrings”.
+     Localized string for key “settingsStreamingServicesYourServices” in table “Localizable.xcstrings”.
      */
-    static var settingsStreamingServicesYourSubs: LocalizedStringResource {
-        LocalizedStringResource("settingsStreamingServicesYourSubs", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Button that opens the sheet for adding non-curated streaming providers
-     
-     Localized string for key “settingsSubscriptionsAddMore” in table “Localizable.xcstrings”.
-     */
-    static var settingsSubscriptionsAddMore: LocalizedStringResource {
-        LocalizedStringResource("settingsSubscriptionsAddMore", table: "Localizable", bundle: resourceBundleDescription)
+    static func settingsStreamingServicesYourServices(_ arg1: Int) -> LocalizedStringResource {
+        LocalizedStringResource("settingsStreamingServicesYourServices", defaultValue: "\(arg1, specifier: "%lld")", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**
@@ -295,33 +322,6 @@ nonisolated extension LocalizedStringResource {
      */
     static var settingsSubscriptionsHeader: LocalizedStringResource {
         LocalizedStringResource("settingsSubscriptionsHeader", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Placeholder shown while the provider catalog is loading
-     
-     Localized string for key “settingsSubscriptionsLoading” in table “Localizable.xcstrings”.
-     */
-    static var settingsSubscriptionsLoading: LocalizedStringResource {
-        LocalizedStringResource("settingsSubscriptionsLoading", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Sub-header for the curated/major streaming services in the My Subscriptions section
-     
-     Localized string for key “settingsSubscriptionsMajor” in table “Localizable.xcstrings”.
-     */
-    static var settingsSubscriptionsMajor: LocalizedStringResource {
-        LocalizedStringResource("settingsSubscriptionsMajor", table: "Localizable", bundle: resourceBundleDescription)
-    }
-
-    /**
-     Sub-header for non-curated streaming services the user added via the More Providers sheet
-     
-     Localized string for key “settingsSubscriptionsOther” in table “Localizable.xcstrings”.
-     */
-    static var settingsSubscriptionsOther: LocalizedStringResource {
-        LocalizedStringResource("settingsSubscriptionsOther", table: "Localizable", bundle: resourceBundleDescription)
     }
 
     /**

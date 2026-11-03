@@ -171,23 +171,25 @@ import Foundation
     /// The picker switches the interface too, so it may only offer languages
     /// every String Catalog translates.
     @Test func pickerOffersOnlyTranslatedLanguages() {
-        #expect(Language.allKnown.map(\.code) == ["en-US", "es-ES"])
+        #expect(Language.allKnown.map(\.code) == ["en-GB", "es-ES"])
     }
 
     @Test func exactMatchWins() {
         #expect(Language.currentLocale(for: Locale(identifier: "es_ES")) == .spanishES)
+        #expect(Language.currentLocale(for: Locale(identifier: "en_GB")) == .englishUK)
     }
 
+    /// StreamIn's English is British: an American device gets it too.
     @Test func languageCodeMatchesAcrossRegions() {
         #expect(Language.currentLocale(for: Locale(identifier: "es_MX")) == .spanishES)
-        #expect(Language.currentLocale(for: Locale(identifier: "en_GB")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "en_US")) == .englishUK)
     }
 
     /// An untranslated device language falls back to English, the language
     /// iOS shows the interface in, so content and interface agree.
     @Test func untranslatedLanguageFallsBackToEnglish() {
-        #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUS)
-        #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUK)
+        #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUK)
     }
 }
 

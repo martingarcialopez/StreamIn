@@ -65,5 +65,7 @@ export fails.
 ## Supported languages
 
 The picker (`Language.allKnown` in Domain) must only offer languages that every
-catalog actually translates — today en and es. Adding one means: every package
+catalog actually translates — today en and es. English is British (`en-GB`,
+🇬🇧), the default for every non-Spanish device; TMDB still gets `en-US` for it
+(`TMDBConfig.contentLanguage(for:)`), since few movies have an en-GB translation. Adding one means: every package
 catalog, `InfoPlist.xcstrings`, `knownRegions`, then the `Language` list.

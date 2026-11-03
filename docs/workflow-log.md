@@ -15,6 +15,66 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
 | 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
 | 5 — Abroad verdict, catalogue scope (#91) | #91's PR | Yes (issue gated on Martín's go-ahead; three decisions asked before code) | 1 medium + 2 low of 3 | Partly — full test plan; previews not rendered (no Xcode MCP in the session) | — | — |
+| 5 — Settings and the picker (#49) | [#95](https://github.com/martingarcialopez/StreamIn/pull/95) | Yes (issue, a one-round design Q&A, then plan mode) | 2 medium + 4 low of 6 | Partly — full test plan (325 tests after merging main), onboarding on the simulator in en and es; previews not rendered (Xcode MCP down) | — | — |
+
+---
+
+## 2026-11-03 — Settings, the services picker and onboarding (#49)
+
+**What shipped:** the services picker became a grid of app-icon logos; Settings got
+flags, a restart note on the language and an About section (TMDB's logo and
+terms, JustWatch, privacy, version); onboarding wraps the grid under a globe and
+shows once. StreamIn's English became British.
+
+**Workflow pieces used**
+- **A one-round design Q&A** with ASCII mockups as option previews: four
+  questions, Martín took every recommended option. Then plan mode, approved as
+  written.
+- **Two Phase 6 items folded into a Phase 5 issue** (the onboarding flag, the
+  About section): one commit each, since they touch the same screens.
+- **The simulator as a fallback for previews:** the session restarted and the
+  Xcode MCP didn't come back, so a fresh install's onboarding was checked with
+  `simctl` screenshots in en and es instead.
+
+**What the checks caught**
+- **The simulator screenshot:** the Worldwide switch didn't fit beside "Available
+  in France" and fell onto a line of its own. It became a settings-style row
+  under the heading.
+- **A preview render:** the About links came out in the accent color, three
+  sentences shouting; they became plain text.
+- **`ios-reviewer`, 2 medium:** a search with no match hid the Worldwide switch,
+  the one control that could find the service abroad; and a failed catalog load
+  (a first launch offline) left a blank grid with no retry. **4 low:** a haptic
+  that never fired (a toggled tile is a new view in the other section), a stale
+  translator comment, an asset loaded by string, a magic number. All fixed, with
+  tests for the new states.
+- **The GitHub review, 1 medium,** after the local review had passed the branch:
+  a stored en-US didn't become en-GB but fell back to the device's language, so
+  a Spanish iPhone set to English in the app would have turned Spanish. My test
+  used English as the default and couldn't see it; it now uses Spanish.
+- **Writing the empty-state fix:** a search matching only your picks would have
+  said "You've picked every service here"; the condition moved into the view
+  model and got a test.
+
+**What Martín found by hand**
+- **About read as settings:** a card of rows at the same level as the
+  configuration. It became small centred gray fine print on the page, well
+  below the last setting, with more room between the sections too.
+- **Every About link opened TMDB:** the links shared one Form row, and a row
+  sends any tap to its first button. Each link has its own row now. The
+  simulator screenshots couldn't catch it: nothing in the session can tap.
+- **The links didn't look like links:** the credited brand (TMDB, JustWatch)
+  and the whole privacy line are underlined, with a test.
+
+**What Martín decided along the way**
+- **English is British,** asked during `/ship-phase`. TMDB's en-GB coverage is
+  thin (an untranslated movie's overview may come back empty), so the question
+  was put to him: UK everywhere in the app, en-US for TMDB's content.
+
+**What got in the way**
+- Reading `Secrets.xcconfig` to fetch real logo paths for previews was refused,
+  rightly; previews use placeholder logos, like Details'.
+- No preview renders after the restart: `pr-screenshots` couldn't run either.
 
 ---
 

@@ -377,21 +377,23 @@ public extension Region {
 // device locale (constrained to the catalog).
 
 public struct Language: Identifiable, Hashable, Sendable {
-    /// BCP-47 identifier, e.g. "en-US", "es-ES", "fr-FR".
+    /// BCP-47 identifier, e.g. "en-GB", "es-ES", "fr-FR".
     public let code: String
 
     public var id: String { code }
 
     public init(code: String) { self.code = code }
 
-    public static let englishUS = Language(code: "en-US")
+    /// StreamIn's English is British. TMDB still gets American English
+    /// content for it (`TMDBConfig.contentLanguage(for:)`).
+    public static let englishUK = Language(code: "en-GB")
     public static let spanishES = Language(code: "es-ES")
 
     /// Languages the settings picker offers. The picker switches the
     /// interface as well as TMDB's content, so it only lists languages every
     /// String Catalog translates; anything else would show English text over
     /// localized movie data. Adding one: `.claude/rules/localization.md`.
-    public static let allKnown: [Language] = [.englishUS, .spanishES]
+    public static let allKnown: [Language] = [.englishUK, .spanishES]
 
     /// Self-localized name — each language's name *in itself*: "English",
     /// "Español", "Français". This is the iOS / App Store convention for
@@ -415,7 +417,7 @@ public struct Language: Identifiable, Hashable, Sendable {
         let bcp47 = "\(lang)-\(region)"
         return allKnown.first(where: { $0.code == bcp47 })
             ?? allKnown.first(where: { $0.code.hasPrefix(lang + "-") })
-            ?? .englishUS
+            ?? .englishUK
     }
 }
 

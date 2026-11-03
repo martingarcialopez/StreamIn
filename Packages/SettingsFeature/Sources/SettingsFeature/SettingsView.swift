@@ -51,7 +51,13 @@ public struct SettingsView: View {
                 imageURLBuilder: imageURLBuilder
             )
             .cinemaRow()
+            AboutSection()
         }
+        // Each setting and its footer stand apart from the next one.
+        .listSectionSpacing(.custom(Spacing.sectionGap * 2))
+        // About's fine-print rows are only as tall as their line. The
+        // settings rows are taller than 44 pt by their own content anyway.
+        .environment(\.defaultMinListRowHeight, 0)
         .navigationTitle(Text(.settingsTitle))
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
@@ -82,7 +88,8 @@ private struct RegionSection: View {
         Section {
             Picker(selection: $prefs.region) {
                 ForEach(Region.allKnown) { region in
-                    Text(region.displayName).tag(region)
+                    FlaggedName(flag: region.flag, name: region.displayName)
+                        .tag(region)
                 }
             } label: {
                 Text(.settingsRegionPicker)
@@ -107,13 +114,22 @@ private struct LanguageSection: View {
         Section {
             Picker(selection: languageBinding) {
                 ForEach(Language.allKnown) { language in
-                    Text(language.displayName).tag(language)
+                    FlaggedName(flag: language.flag, name: language.displayName)
+                        .tag(language)
                 }
             } label: {
                 Text(.settingsLanguagePicker)
             }
         } footer: {
-            Text(.settingsLanguageFooter)
+            // Said before the change, not only in the alert after it.
+            VStack(alignment: .leading, spacing: Spacing.tight) {
+                Text(.settingsLanguageFooter)
+                Label {
+                    Text(.settingsLanguageRestartNote)
+                } icon: {
+                    Image(systemName: Symbol.arrowClockwise)
+                }
+            }
         }
         .alert(Text(.settingsLanguageRestartTitle), isPresented: $showRestartAlert) {
             Button(.settingsLanguageRestartNow) {
@@ -165,6 +181,25 @@ private struct LanguageSection: View {
     }
 }
 
+/// A picker option: the flag, then the name. VoiceOver reads only the name.
+private struct FlaggedName: View {
+    let flag: String
+    let name: String
+
+    var body: some View {
+        Text(verbatim: "\(flag)  \(name)")
+            .accessibilityLabel(name)
+    }
+}
+
+private extension Language {
+    /// The flag of the language's region subtag: 🇬🇧 for en-GB, 🇪🇸 for es-ES,
+    /// matching "English (United Kingdom)" in the picker.
+    var flag: String {
+        Locale.Language(identifier: code).region.map { Region(code: $0.identifier).flag } ?? ""
+    }
+}
+
 // MARK: - Streaming services row
 
 /// Single-row section: "Streaming services" with a trailing summary and a
@@ -210,6 +245,8 @@ private struct StreamingServicesSummary: View {
     let model: StreamingServicesViewModel
     let imageURLBuilder: ImageURLBuilder
 
+    @ScaledMetric(relativeTo: .body) private var logoSize: CGFloat = LogoSize.small
+
     var body: some View {
         let selected = model.selectedProviders
         if selected.isEmpty {
@@ -219,77 +256,55 @@ private struct StreamingServicesSummary: View {
             Text(.settingsStreamingServicesCount(selected.count))
                 .foregroundStyle(.secondary)
         } else {
-            ProviderIconStrip(providers: selected, imageURLBuilder: imageURLBuilder)
+            // Three logos fit beside the label and chevron on the smallest
+            // iPhone; the rest become "+N". VoiceOver reads every name.
+            ProviderLogoStrip(
+                selected,
+                maxLogos: 3,
+                logoSize: logoSize,
+                logoURL: { provider in
+                    provider.logoPath.flatMap { imageURLBuilder.url(for: $0, size: .providerLogo) }
+                },
+                name: \.name
+            )
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(selected.map(\.name).formatted(.list(type: .and)))
         }
     }
 }
 
-// MARK: - Provider icon strip (Settings row trailing summary)
-
-/// Compact horizontal strip of provider logos shown on the Settings
-/// "Streaming services" row. Caps at 3 inline icons + a `+N` capsule —
-/// the row shares space with the label and chevron so we stay conservative
-/// on width.
-private struct ProviderIconStrip: View {
-    let providers: [WatchProvider]
-    let imageURLBuilder: ImageURLBuilder
-
-    /// Three logos comfortably fit on the smallest iPhone after the label
-    /// ("Streaming services") + chevron. Anything beyond surfaces as `+N`.
-    private static let maxInline = 3
-
-    private var inlineProviders: [WatchProvider] {
-        Array(providers.prefix(Self.maxInline))
-    }
-
-    private var overflow: Int {
-        max(0, providers.count - Self.maxInline)
-    }
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(inlineProviders) { provider in
-                ProviderIcon(provider: provider, imageURLBuilder: imageURLBuilder)
-            }
-            if overflow > 0 {
-                Text(verbatim: "+\(overflow)")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 1)
-                    .background(.quaternary, in: .capsule)
-                    .accessibilityLabel(Text(.providerIconStripOverflowAccessibility(overflow)))
-            }
-        }
-    }
+#Preview("Services picked") {
+    previewSettings("picked", subscribedTo: [8, 9, 337, 149, 63])
 }
 
-private struct ProviderIcon: View {
-    let provider: WatchProvider
-    let imageURLBuilder: ImageURLBuilder
-
-    @ScaledMetric(relativeTo: .body) private var size: CGFloat = LogoSize.small
-
-    var body: some View {
-        ProviderLogo(
-            url: provider.logoPath.flatMap {
-                imageURLBuilder.url(for: $0, size: .providerLogo)
-            },
-            providerName: provider.name,
-            size: size,
-            cornerRadius: Radius.small
-        )
-    }
+#Preview("None picked") {
+    previewSettings("none", subscribedTo: [])
 }
 
-#Preview {
-    NavigationStack {
+#Preview("Large text") {
+    previewSettings("large", subscribedTo: [8, 9])
+        .dynamicTypeSize(.accessibility3)
+}
+
+/// Each preview gets its own defaults suite so previews don't share state.
+@MainActor
+private func previewSettings(_ name: String, subscribedTo ids: [Int]) -> some View {
+    let prefs = Preferences(
+        defaultRegion: .spain,
+        defaultLanguage: .englishUK,
+        defaults: UserDefaults(suiteName: "SettingsView.preview.\(name)")!
+    )
+    prefs.region = .spain
+    prefs.subscribedProviderIDs = Set(ids.map(ProviderID.init))
+    return NavigationStack {
         SettingsView(
-            prefs: Preferences(),
+            prefs: prefs,
             catalog: ProviderCatalog(repository: PreviewMovieRepository()),
             imageURLBuilder: PreviewImageURLBuilder()
         )
+        .cinemaBackground()
     }
+    .preferredColorScheme(.dark)
 }
 
 private struct PreviewMovieRepository: MovieRepository {

@@ -81,7 +81,7 @@ struct RootView: View {
         // The two sheets and `.fullScreenCover(showingOnboarding)` coexist
         // intentionally. They're coordinated by their bindings:
         //   - `showingOnboarding` is flipped exactly once per launch by the
-        //     `.task` below, only when the user has no subscriptions.
+        //     `.task` below, only until onboarding has been completed.
         //   - `showingSettings` is flipped only via the gear button on a
         //     tab's first screen, and `showingStreamingServices` only via a
         //     button on Details — both unreachable while the onboarding
@@ -128,14 +128,10 @@ struct RootView: View {
         .task {
             await watchlist.load()
         }
-        // TODO: ship-time trigger should be a first-launch flag persisted in
-        // `Preferences` (e.g. `hasCompletedOnboarding: Bool`). The current
-        // "empty subscriptions" rule re-triggers the sheet every launch
-        // until the user picks at least one service, which is exactly what
-        // we want during the test phase to make the flow easy to retrigger.
-        // See CLAUDE.md "TODO: onboarding trigger".
+        // First launch only: Done in onboarding sets the flag, even with no
+        // services picked.
         .task {
-            if prefs.subscribedProviderIDs.isEmpty {
+            if !prefs.hasCompletedOnboarding {
                 showingOnboarding = true
             }
         }

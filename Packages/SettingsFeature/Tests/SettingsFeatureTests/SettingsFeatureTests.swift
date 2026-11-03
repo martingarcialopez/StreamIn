@@ -13,6 +13,8 @@ import ReferenceData
 final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
     private var providersByRegion: [String: [WatchProvider]] = [:]
     private let worldwideKey = "_worldwide"
+    /// When set, `allProviders` throws it, like a launch offline.
+    var failure: MovieError?
 
     func setProviders(_ providers: [WatchProvider], for region: Region?) {
         providersByRegion[region?.code ?? worldwideKey] = providers
@@ -34,7 +36,8 @@ final class FakeMovieRepository: MovieRepository, @unchecked Sendable {
         throw MovieError.unknown
     }
     func allProviders(in region: Region?) async throws -> [WatchProvider] {
-        providersByRegion[region?.code ?? worldwideKey] ?? []
+        if let failure { throw failure }
+        return providersByRegion[region?.code ?? worldwideKey] ?? []
     }
 }
 
@@ -93,6 +96,22 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
 
         // Netflix is selected → only Prime Video + Disney+ in the available list.
         #expect(model.availableProviders.map(\.id) == [ProviderID(9), ProviderID(337)])
+    }
+
+    @Test func availableProvidersLeavesOutFreeServices() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([
+            provider(8, "Netflix"),
+            provider(9999, "RTVE Play"),
+            provider(300, "Pluto TV")
+        ], for: .spain)
+        repo.setProviders([], for: nil)
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo), prefs: makePrefs(region: .spain)
+        )
+        await model.load()
+
+        #expect(model.availableProviders.map(\.id) == [ProviderID(8)])
     }
 
     @Test func availableProvidersSwitchesOnWorldwideToggle() async {
@@ -156,6 +175,92 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(model.availableProviders.map(\.id) == [ProviderID(11)])
     }
 
+    /// The picker's grid narrows both sections; the Settings summary
+    /// (`selectedProviders`) keeps every pick.
+    @Test func searchNarrowsTheVisiblePicks() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix"), provider(337, "Disney Plus")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        prefs.subscribedProviderIDs = [ProviderID(8), ProviderID(337)]
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+
+        model.searchText = "dis"
+
+        #expect(model.visibleSelectedProviders.map(\.id) == [ProviderID(337)])
+        #expect(model.selectedProviders.count == 2)
+        #expect(!model.hasNoSearchMatches)
+    }
+
+    @Test func searchMatchingNothingIsReportedOnce() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix"), provider(11, "MUBI")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        prefs.subscribedProviderIDs = [ProviderID(8)]
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+        #expect(!model.hasNoSearchMatches)
+
+        model.searchText = "zzz"
+        #expect(model.hasNoSearchMatches)
+
+        // A match among the picks alone is a match.
+        model.searchText = "net"
+        #expect(!model.hasNoSearchMatches)
+    }
+
+    /// Before the catalog arrives the grid shows a spinner, not "no results".
+    @Test func noSearchMatchesWaitsForTheCatalog() {
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: FakeMovieRepository()),
+            prefs: makePrefs(region: .spain)
+        )
+        model.searchText = "zzz"
+        #expect(model.isInitialLoad)
+        #expect(!model.hasNoSearchMatches)
+    }
+
+    /// A first launch offline: the grid explains and offers a retry instead
+    /// of standing empty, and a retry that works clears it.
+    @Test func failedCatalogReportsItsErrorUntilARetryWorks() async {
+        let repo = FakeMovieRepository()
+        repo.failure = .offline
+        let model = StreamingServicesViewModel(
+            catalog: ProviderCatalog(repository: repo),
+            prefs: makePrefs(region: .spain)
+        )
+        await model.load()
+        #expect(model.loadError == .offline)
+        #expect(!model.isInitialLoad)
+        #expect(!model.hasPickedEveryService)
+
+        repo.failure = nil
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([], for: nil)
+        await model.load()
+        #expect(model.loadError == nil)
+        #expect(model.availableProviders.map(\.id) == [ProviderID(8)])
+    }
+
+    @Test func pickingEveryServiceSaysSoUnlessSearching() async {
+        let repo = FakeMovieRepository()
+        repo.setProviders([provider(8, "Netflix")], for: .spain)
+        repo.setProviders([], for: nil)
+        let prefs = makePrefs(region: .spain)
+        let model = StreamingServicesViewModel(catalog: ProviderCatalog(repository: repo), prefs: prefs)
+        await model.load()
+        #expect(!model.hasPickedEveryService)
+
+        model.toggle(ProviderID(8))
+        #expect(model.hasPickedEveryService)
+
+        // Searching for a pick empties "Available" too; that's not "every service".
+        model.searchText = "net"
+        #expect(!model.hasPickedEveryService)
+    }
+
     @Test func hasLoadedAnyCatalogFlipsAfterLoad() async {
         let repo = FakeMovieRepository()
         repo.setProviders([provider(8, "Netflix")], for: .spain)
@@ -201,5 +306,47 @@ private func provider(_ id: Int, _ name: String, priority: Int = 1) -> WatchProv
         #expect(model.isInitialLoad)
         await model.load()
         #expect(!model.isInitialLoad)
+    }
+}
+
+@Suite struct AboutTests {
+
+    @Test func versionReadsMarketingVersionAndBuild() {
+        let version = AppVersion(infoDictionary: [
+            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleVersion": "1"
+        ])
+        #expect(version == AppVersion(version: "1.0.0", build: "1"))
+    }
+
+    @Test func missingVersionKeysShowADash() {
+        #expect(AppVersion(infoDictionary: nil) == AppVersion(version: "–", build: "–"))
+    }
+
+    /// The underline is the only cue that fine print is a link: the brand
+    /// a credit names, or the whole privacy line.
+    @Test func linksUnderlineTheBrandOrTheWholeLine() {
+        let underlined: (AttributedString) -> String = { text in
+            text.runs
+                .filter { $0.underlineStyle != nil }
+                .map { String(text[$0.range].characters) }
+                .joined()
+        }
+
+        #expect(underlined(QuietLink.text(.settingsAboutJustWatch, underlining: "JustWatch")) == "JustWatch")
+        // TMDB is named twice; only the first mention is underlined.
+        #expect(underlined(QuietLink.text(.settingsAboutTMDB, underlining: "TMDB")) == "TMDB")
+
+        let privacy = QuietLink.text(.settingsAboutPrivacy, underlining: nil)
+        #expect(underlined(privacy) == String(privacy.characters))
+    }
+
+    @Test func privacyPolicyFollowsTheInterfaceLanguage() {
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "es_ES")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/es/privacy/")
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "en_US")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/privacy/")
+        #expect(AboutLinks.privacyPolicy(for: Locale(identifier: "fr_FR")).absoluteString
+                == "https://martingarcialopez.github.io/StreamIn/privacy/")
     }
 }
