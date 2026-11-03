@@ -57,7 +57,7 @@ public struct ProviderLine<Provider: Identifiable>: View {
         line(.logos((1...2).map(Sample.init), abroad: false))
         line(.logos((1...5).map(Sample.init), abroad: false))
         line(.logos((1...2).map(Sample.init), abroad: true))
-        line(.caption("Not on your services"))
+        line(.caption("Not streaming here"))
     }
     .padding()
     .cinemaBackground()

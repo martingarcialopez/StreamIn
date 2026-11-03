@@ -104,9 +104,9 @@ public final class WatchlistViewModel {
         let providers = switch rowProviders(for: item) {
         case .loading: String(localized: .watchlistRowCheckingAvailability)
         case .failed: String(localized: .watchlistRowAvailabilityFailed)
-        case .loaded(.atHome(let providers)): String(localized: .watchlistRowOnProviders(Self.names(providers)))
+        case .loaded(.atHome(let providers)), .loaded(.othersAtHome(let providers)):
+            String(localized: .watchlistRowOnProviders(Self.names(providers)))
         case .loaded(.abroad(let providers)): String(localized: .watchlistRowAbroadProviders(Self.names(providers)))
-        case .loaded(.notOnYourServices): String(localized: .watchlistRowNotOnYourServices)
         case .loaded(.notStreamingHere): String(localized: .watchlistRowNotStreamingHere)
         }
         return [item.movie.title, year(for: item), directorsLine(for: item), providers]

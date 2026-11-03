@@ -14,7 +14,8 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 4 — Details redesign (#36) | [#50](https://github.com/martingarcialopez/StreamIn/pull/50) | Yes (issue, then a plan-mode design Q&A) | 1 medium + 10 low of 13 (two were merge notes) | Yes — full test plan + 7 previews, light, dark, XXX Large | — | — |
 | 5 — Landing page (#46) | #46's PR | Yes (issue, then three design Q&As, two in plan mode) | 3 medium + 2 low of 5 | Yes — full test plan (267 tests), previews, SE and iPad simulators in en and es, spin recordings | — | — |
 | 5 — Watchlist tab (#48) | #48's PR | Yes (issue, a one-round design Q&A, then plan mode) | 1 medium + 1 low of 2 | Partly — full test plan before and after merging #85's branch, 5 previews; simulator left to Martín | — | — |
-| 6 — Regions from TMDB (#22) | #22's PR | Yes (plan mode; Martín cut `Region.allKnown` outright) | 3 low of 3, plus one note | Partly — full test plan, 3 previews; simulator locale checks left to Martín | — | — |
+| 5 — Abroad verdict, catalogue scope (#91) | #91's PR | Yes (issue gated on Martín's go-ahead; three decisions asked before code) | 1 medium + 2 low of 3 | Partly — full test plan; previews not rendered (no Xcode MCP in the session) | — | — |
+| 6 — Regions from TMDB (#22) | [#96](https://github.com/martingarcialopez/StreamIn/pull/96) | Yes (plan mode; Martín cut `Region.allKnown` outright) | 3 low of 3, plus one note | Partly — full test plan, 3 previews; simulator locale checks left to Martín | 1 (the Settings preview rendered light, so its screenshots were unreadable) | — |
 
 ---
 
@@ -40,7 +41,56 @@ Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES` els
   the Settings row. Its note on an offline first launch (the fallback never re-checked) was
   fixed too: `RootView` now reacts to the list arriving, whoever loads it.
 - **Merging main** brought #92's catalog edits in cleanly; regenerating SettingsFeature's
-  symbols changed nothing.
+  symbols changed nothing. Merging #90, #94 and #97 later conflicted only here, in this log.
+
+**What Martín still had to find**
+- **Unreadable Settings screenshots in the PR:** `SettingsView`'s preview never applied
+  `.cinemaBackground()` (which also makes it dark), so it rendered light with dark rows.
+  The app was fine. The preview now matches `RootView`, and both screenshots were redone.
+  Looking at each snapshot caught nothing, because the bug was already on main and
+  looked "as before".
+
+**What didn't work**
+- **GitHub had no macOS runner** for CI's first two attempts ("not acquired by Runner",
+  capacity): each was dropped after 15 minutes without building. The third run passed.
+
+---
+
+## 2026-11-03 — "Abroad" only promises what a VPN unlocks (#91)
+
+**What shipped:** `WatchOptions.yoursAbroad` keeps a service only if its
+catalogue follows the location (`CatalogScope`, Domain), and from an EEA home
+it drops the rest of the EEA (`Region.reachesCatalogue(in:)`). The table and
+its sources are in the roadmap, Phase 5.
+
+**Workflow pieces used**
+- **The issue stopped the session at the right point:** it changed a settled
+  premise and left one question open, so `/start-issue` asked before any code.
+  The answers (go ahead; unknown services count as `.account`; Claude drafts the
+  research) were recorded on the issue as comments.
+- **Research as part of the task:** the services' help pages, searched and
+  fetched in the session, with a source per row. It found a second false
+  positive the issue hadn't anticipated: EU portability gives an EEA resident
+  the home catalogue anywhere in the EEA (Netflix's help says so), so Spain → France
+  never helped either. Asked, then fixed in the same PR.
+- **Martín asked for the numbers,** then for the six "unverified" rows to be
+  checked: two got official sources (SkyShowtime, Filmin), and Pluto TV moved
+  to `.location`. 5 of 15 services follow the IP, roughly 60 % of subscribers.
+
+**What the checks caught**
+- **`ios-reviewer`, 1 medium:** four "watch now beats abroad" tests still used
+  France or Prime Video as the abroad entry, which no longer counts, so they
+  passed without testing anything. Moved to Netflix or Disney+ in the US.
+  **2 low:** a doc comment that said the opposite of `reachesCatalogue(in:)`,
+  and a stale one on `providersAvailableElsewhere`.
+
+**What didn't work**
+- **Provider ids couldn't be checked against TMDB:** reading `Secrets.xcconfig`
+  is (rightly) refused, so the ids were matched against the repo's preview
+  fixtures instead. HBO Max's legacy id 384 is unconfirmed.
+- **Creating an issue from the session was refused** by the permission check
+  (the all-regions follow-up Martín asked for mid-task); the draft was handed over.
+- **No Xcode MCP in this session**, so no preview renders or PR screenshots.
 
 ---
 

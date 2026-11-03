@@ -20,7 +20,7 @@ One Swift Package per layer; boundaries are enforced at build time.
 
 | Package | Depends on | Holds |
 |---|---|---|
-| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` and its `WatchSummary` (where to watch, shared by Details, Search and the Watchlist) |
+| `Domain` | — | Entities, value types, `MovieRepository`, `MovieError`, `WatchOptions` and its `WatchSummary` (where to watch, shared by Details, Search and the Watchlist), `CatalogScope` |
 | `TMDBClient` | Domain | HTTP client, DTOs, `TMDBMovieRepository`, `CachingMovieRepository` |
 | `Preferences` | Domain | `@Observable` user settings (region, language, subscriptions), UserDefaults-backed |
 | `ReferenceData` | Domain | `ProviderCatalog` (provider names and logos) and `RegionCatalog` (the regions TMDB covers), loaded at launch |
@@ -102,6 +102,7 @@ Settled — surface it explicitly before challenging one.
 - **Localization per package** with committed generated symbols, and an in-app language picker that drives both UI and TMDB (restart required) — details in `.claude/rules/localization.md`.
 - **Caching and reference data** — see the next section.
 - **Watchlist**: a `WatchlistItem` keeps the whole `Movie`, so Details opens complete from the list, even offline; Details' `refresh` keeps the snapshot current. One `WatchlistStore` is shared by Details' heart and the Watchlist tab: changes show at once, writes are queued in order, and a failed one is rolled back for that movie and reported as `writeFailure`, which `RootView` shows as one alert for any tab. Newest first, no sorting options. SwiftData stays in Persistence.
+- **"Abroad" only promises what a VPN unlocks** (#91). `WatchOptions.yoursAbroad` keeps a service only if its catalogue follows the location (`CatalogScope`, Domain: Netflix yes, Prime Video no; services not in the table count as `.account`). From an EEA home it also drops the rest of the EEA, where EU portability shows the home catalogue (`Region.reachesCatalogue(in:)`). Table and sources: `docs/roadmap.md`, Phase 5 → #91.
 - **Rent/buy aren't shown in v1**: the audience is free / subscription / VPN viewers. The data stays in the domain.
 - **Dark only, on a "cinema" background**: `INFOPLIST_KEY_UIUserInterfaceStyle = Dark` and `.preferredColorScheme(.dark)` at the root. Every screen applies DesignSystem's `.cinemaBackground()` (warm near-black `AppPalette.background` plus a faint accent spotlight), so there is no light mode to check.
 - **iPhone and iPad, nothing else**: `TARGETED_DEVICE_FAMILY = "1,2"`, iOS platforms only, "Designed for iPhone/iPad" on Mac and Vision Pro disabled. iPad keeps all four orientations (required for multitasking) and uses the same adaptive layouts — App Store submission needs iPad screenshots too.

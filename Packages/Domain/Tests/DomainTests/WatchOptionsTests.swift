@@ -42,16 +42,114 @@ import Domain
     @Test func yoursAbroadDropHomeAndHomeOnlyServices() {
         let options = WatchOptions(
             bundle: bundle(global: [
-                ProviderRegionalAvailability(provider: prime, regions: [.spain, .france, .germany]),
-                ProviderRegionalAvailability(provider: netflix, regions: [.spain]),
+                ProviderRegionalAvailability(provider: netflix, regions: [.spain, .unitedStates, .japan]),
+                ProviderRegionalAvailability(provider: disney, regions: [.spain]),
+            ]),
+            home: .spain,
+            subscribed: [ProviderID(8), ProviderID(337)]
+        )
+
+        #expect(options.yoursAbroad == [
+            ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates, .japan])
+        ])
+    }
+
+    // MARK: - Catalogue scope
+
+    /// Netflix's catalogue follows where you connect from.
+    @Test func locationScopedServiceAbroadCounts() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])]),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.yoursAbroad == [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])])
+    }
+
+    /// Prime Video's catalogue follows the Amazon account's country.
+    @Test func accountScopedServiceAbroadDoesntCount() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: prime, regions: [.unitedStates])]),
+            home: .spain,
+            subscribed: [ProviderID(9)]
+        )
+
+        #expect(options.yoursAbroad.isEmpty)
+        #expect(options.summary == .notStreamingHere)
+    }
+
+    @Test func onlyLocationScopedServicesCountWhenBothCarryIt() {
+        let options = WatchOptions(
+            bundle: bundle(global: [
+                ProviderRegionalAvailability(provider: prime, regions: [.unitedStates]),
+                ProviderRegionalAvailability(provider: netflix, regions: [.japan]),
             ]),
             home: .spain,
             subscribed: [ProviderID(8), ProviderID(9)]
         )
 
-        #expect(options.yoursAbroad == [
-            ProviderRegionalAvailability(provider: prime, regions: [.france, .germany])
-        ])
+        #expect(options.summary == .abroad([netflix]))
+    }
+
+    /// A service nobody has checked might be account-scoped, so it isn't
+    /// promised abroad.
+    @Test func unknownServiceAbroadDoesntCount() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: rtve, regions: [.unitedStates])]),
+            home: .spain,
+            subscribed: [ProviderID(541)]
+        )
+
+        #expect(options.yoursAbroad.isEmpty)
+    }
+
+    /// The scope only matters abroad: at home the account's country is home.
+    @Test func accountScopedServiceAtHomeIsWatchNow() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: prime, regions: [.spain, .unitedStates])]),
+            home: .spain,
+            subscribed: [ProviderID(9)]
+        )
+
+        #expect(options.summary == .atHome([prime]))
+        #expect(options.yoursAbroad.isEmpty)
+    }
+
+    // MARK: - EU portability
+
+    /// From an EEA home, the rest of the EEA shows the home catalogue.
+    @Test func otherEEARegionsDontCountFromAnEEAHome() {
+        let options = WatchOptions(
+            bundle: bundle(global: [
+                ProviderRegionalAvailability(provider: netflix, regions: [.france, .germany, .unitedKingdom]),
+            ]),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.yoursAbroad == [ProviderRegionalAvailability(provider: netflix, regions: [.unitedKingdom])])
+    }
+
+    @Test func onlyEEARegionsFromAnEEAHomeIsNotAbroad() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: netflix, regions: [.france])]),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.summary == .notStreamingHere)
+    }
+
+    /// Portability is for EEA residents; the UK left with Brexit.
+    @Test func eeaRegionsCountFromOutsideTheEEA() {
+        let options = WatchOptions(
+            bundle: bundle(global: [ProviderRegionalAvailability(provider: netflix, regions: [.france, .germany])]),
+            home: .unitedKingdom,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.yoursAbroad == [ProviderRegionalAvailability(provider: netflix, regions: [.france, .germany])])
     }
 
     @Test func othersAtHomeDropYoursAndFreeAndKeepOrder() {
@@ -103,11 +201,11 @@ import Domain
                 free: [rtve],
                 global: [
                     ProviderRegionalAvailability(provider: netflix, regions: [.spain]),
-                    ProviderRegionalAvailability(provider: prime, regions: [.france]),
+                    ProviderRegionalAvailability(provider: disney, regions: [.unitedStates]),
                 ]
             ),
             home: .spain,
-            subscribed: [ProviderID(8), ProviderID(9)]
+            subscribed: [ProviderID(8), ProviderID(337)]
         )
 
         #expect(options.summary == .atHome([netflix, rtve]))
@@ -123,19 +221,43 @@ import Domain
         let options = WatchOptions(
             bundle: bundle(
                 subscription: [disney],
-                global: [ProviderRegionalAvailability(provider: prime, regions: [.france])]
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])]
             ),
             home: .spain,
-            subscribed: [ProviderID(9)]
+            subscribed: [ProviderID(8)]
         )
 
-        #expect(options.summary == .abroad([prime]))
+        #expect(options.summary == .abroad([netflix]))
     }
 
-    @Test func summaryIsNotOnYourServicesWhenOthersCarryItAtHome() {
-        let options = WatchOptions(bundle: bundle(subscription: [disney]), home: .spain, subscribed: [ProviderID(8)])
+    @Test func summaryIsOthersAtHomeWhenOnlyOthersCarryItAtHome() {
+        let options = WatchOptions(
+            bundle: bundle(subscription: [disney, prime]),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
 
-        #expect(options.summary == .notOnYourServices)
+        #expect(options.summary == .othersAtHome([disney, prime]))
+    }
+
+    /// Yours abroad beat the others at home.
+    @Test func summaryIsAbroadEvenWhenOthersCarryItAtHome() {
+        let options = WatchOptions(
+            bundle: bundle(
+                subscription: [disney],
+                global: [ProviderRegionalAvailability(provider: netflix, regions: [.unitedStates])]
+            ),
+            home: .spain,
+            subscribed: [ProviderID(8)]
+        )
+
+        #expect(options.summary == .abroad([netflix]))
+    }
+
+    @Test func summaryIsOthersAtHomeWithoutServices() {
+        let options = WatchOptions(bundle: bundle(subscription: [disney]), home: .spain, subscribed: [])
+
+        #expect(options.summary == .othersAtHome([disney]))
     }
 
     @Test func summaryIsNotStreamingHereWhenNothingCarriesItAtHome() {
@@ -171,6 +293,10 @@ import Domain
             global: GlobalWatchAvailability(movieID: MovieID(1), subscription: global)
         )
     }
+}
+
+private extension Region {
+    static let japan = Region(code: "JP")
 }
 
 private func provider(_ id: Int, _ name: String) -> WatchProvider {
