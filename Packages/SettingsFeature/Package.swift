@@ -30,7 +30,11 @@ let package = Package(
                 .product(name: "ReferenceData", package: "ReferenceData"),
                 .product(name: "DesignSystem", package: "DesignSystem"),
             ],
-            resources: [.process("Translations/Localizable.xcstrings")]
+            resources: [
+                .process("Translations/Localizable.xcstrings"),
+                // TMDB's official logo, unmodified, as their terms require.
+                .process("Resources/Assets.xcassets"),
+            ]
         ),
         .testTarget(
             name: "SettingsFeatureTests",

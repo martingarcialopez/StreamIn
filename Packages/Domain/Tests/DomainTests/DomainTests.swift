@@ -171,24 +171,26 @@ import Foundation
     /// The picker switches the interface too, so it may only offer languages
     /// every String Catalog translates.
     @Test func pickerOffersOnlyTranslatedLanguages() {
-        #expect(Language.allKnown.map(\.code) == ["en-US", "es-ES"])
+        #expect(Language.allKnown.map(\.code) == ["en-GB", "es-ES"])
     }
 
     @Test func exactMatchWins() {
         #expect(Language.currentLocale(for: Locale(identifier: "es_ES")) == .spanishES)
+        #expect(Language.currentLocale(for: Locale(identifier: "en_GB")) == .englishUK)
     }
 
+    /// StreamIn's English is British: an American device gets it too.
     @Test func languageCodeMatchesAcrossRegions() {
         #expect(Language.currentLocale(for: Locale(identifier: "es_MX")) == .spanishES)
-        #expect(Language.currentLocale(for: Locale(identifier: "en_GB")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "en_US")) == .englishUK)
     }
 
     /// An untranslated device language falls back to English, the language
     /// iOS shows the interface in, so content and interface agree.
     @Test func untranslatedLanguageFallsBackToEnglish() {
-        #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUS)
-        #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUS)
-        #expect(Language.currentLocale(for: Locale(identifier: "de_DE")) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: "fr_FR")) == .englishUK)
+        #expect(Language.currentLocale(for: Locale(identifier: "it_IT")) == .englishUK)
+        #expect(Language.currentLocale(for: Locale(identifier: "de_DE")) == .englishUK)
     }
 
     /// Every Spanish gets the one Spanish interface.
@@ -200,7 +202,7 @@ import Foundation
     /// The language decides, not the region: English in Mexico stays English.
     @Test(arguments: ["en", "en_US", "en_MX", "en_ES"])
     func anyEnglishDeviceGetsEnglish(identifier: String) {
-        #expect(Language.currentLocale(for: Locale(identifier: identifier)) == .englishUS)
+        #expect(Language.currentLocale(for: Locale(identifier: identifier)) == .englishUK)
     }
 
     @Test(arguments: [
@@ -210,9 +212,11 @@ import Foundation
         #expect(Language.spanishES.contentLanguage(in: Region(code: region)).code == expected)
     }
 
+    /// Only Spanish follows the region. English stays the app's English
+    /// everywhere; `TMDBConfig` sends it to TMDB as en-US.
     @Test(arguments: ["US", "MX", "ES", "DE"])
-    func englishContentIsAlwaysUS(region: String) {
-        #expect(Language.englishUS.contentLanguage(in: Region(code: region)) == .englishUS)
+    func englishContentDoesNotFollowTheRegion(region: String) {
+        #expect(Language.englishUK.contentLanguage(in: Region(code: region)) == .englishUK)
     }
 }
 

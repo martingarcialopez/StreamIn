@@ -2,16 +2,12 @@
 //  OnboardingView.swift
 //  SettingsFeature
 //
-//  First-launch picker that prompts the user to declare which streaming
-//  services they pay for. Wraps `StreamingServicesView` (the same multi-
-//  select used from Settings) with a welcome header pinned at the top of
-//  the safe area and a single "Done" toolbar button.
+//  First-launch picker that asks which streaming services the user pays
+//  for. Wraps `StreamingServicesView` (the same grid Settings uses) with a
+//  welcome above it, a credit line below it and a single "Done" button.
 //
-//  Triggering rule lives in the App target's `RootView` — see
-//  `StreamInApp.swift`. During the test phase the rule is "show whenever
-//  the user has no subscriptions"; once shipping, swap it for a
-//  first-launch flag persisted in `Preferences`. See CLAUDE.md "TODO:
-//  onboarding trigger" for the migration.
+//  Shown once: the App target's `RootView` presents it until
+//  `Preferences.hasCompletedOnboarding` is set, which Done does.
 //
 
 import SwiftUI
@@ -46,13 +42,18 @@ public struct OnboardingView: View {
                 model: model,
                 imageURLBuilder: imageURLBuilder,
                 title: .onboardingNavTitle
-            )
-            .safeAreaInset(edge: .top, spacing: 0) {
-                OnboardingHeader()
+            ) {
+                OnboardingWelcome()
+            } footer: {
+                OnboardingCredits()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(.onboardingDone) { dismiss() }
+                    // Enabled with nothing picked: services can be added later.
+                    Button(.onboardingDone) {
+                        prefs.hasCompletedOnboarding = true
+                        dismiss()
+                    }
                 }
             }
             .task(id: prefs.region) {
@@ -63,31 +64,81 @@ public struct OnboardingView: View {
     }
 }
 
-// MARK: - Welcome header
+// MARK: - Welcome and credits
 
-/// Pinned above the picker list. Brief, scannable — the user is here to
-/// pick services, not read prose.
-private struct OnboardingHeader: View {
+/// Scrolls away with the grid: the user is here to pick services, not read.
+/// The globe says "here and abroad" before the subtitle does.
+private struct OnboardingWelcome: View {
+    @ScaledMetric(relativeTo: .largeTitle) private var globeDiameter: CGFloat = 88
+
     var body: some View {
-        VStack(spacing: 10) {
-            // Icon uses Dynamic Type via `.largeTitle`, so it grows with
-            // accessibility text sizes instead of staying fixed at 44pt.
-            Image(systemName: Symbol.popcornFill)
-                .font(.largeTitle)
-                .foregroundStyle(AppPalette.accent)
+        VStack(spacing: Spacing.comfortable) {
+            SpinningGlobe(diameter: globeDiameter)
                 .accessibilityHidden(true)
             Text(.onboardingHeaderTitle)
-                .font(.title3)
+                .font(.title2)
                 .bold()
+                .accessibilityAddTraits(.isHeader)
             Text(.onboardingHeaderSubtitle)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .padding()
+        .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
-        // `.bar` material matches the visual treatment iOS uses for
-        // top-pinned content above a List, blending with the nav bar.
-        .background(.bar)
+        .padding(.top, Spacing.sectionGap)
     }
+}
+
+/// TMDB's terms ask for credit wherever their data shows; one quiet line.
+private struct OnboardingCredits: View {
+    var body: some View {
+        Text(.onboardingCredits)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.top, Spacing.sectionGap)
+    }
+}
+
+#Preview {
+    let prefs = Preferences(defaultRegion: .spain, defaults: UserDefaults(suiteName: "OnboardingView.preview")!)
+    prefs.region = .spain
+    prefs.subscribedProviderIDs = []
+    return OnboardingView(
+        prefs: prefs,
+        catalog: ProviderCatalog(repository: PreviewMovieRepository()),
+        imageURLBuilder: PreviewImageURLBuilder()
+    )
+    .preferredColorScheme(.dark)
+}
+
+/// `load()` runs in the preview, so `allProviders` answers every scope.
+private struct PreviewMovieRepository: MovieRepository {
+    func searchMovies(query: String, page: Int) async throws -> SearchPage {
+        fatalError("not used in preview")
+    }
+    func movie(id: MovieID) async throws -> Movie {
+        fatalError("not used in preview")
+    }
+    func trendingMovies() async throws -> [Movie] {
+        fatalError("not used in preview")
+    }
+    func availability(for id: MovieID, in region: Region) async throws -> WatchAvailability {
+        fatalError("not used in preview")
+    }
+    func availabilities(for id: MovieID, in region: Region) async throws -> AvailabilityBundle {
+        fatalError("not used in preview")
+    }
+    func allProviders(in region: Region?) async throws -> [WatchProvider] {
+        [(8, "Netflix"), (119, "Prime Video"), (337, "Disney Plus"), (1899, "HBO Max"),
+         (149, "Movistar Plus+"), (63, "Filmin"), (350, "Apple TV+"), (1773, "SkyShowtime")]
+            .enumerated()
+            .map { WatchProvider(id: ProviderID($1.0), name: $1.1, logoPath: nil, priority: $0) }
+    }
+    func watchRegions() async throws -> [Region] { [] }
+}
+
+private struct PreviewImageURLBuilder: ImageURLBuilder {
+    func url(for path: ImagePath, size: ImageSize) -> URL? { nil }
 }

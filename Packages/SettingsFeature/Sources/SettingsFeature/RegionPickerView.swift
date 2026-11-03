@@ -123,7 +123,7 @@ private struct LoadFailedRow: View {
         } description: {
             Text(error.userMessage)
         } actions: {
-            Button(.settingsRegionRetry, action: retry)
+            Button(.settingsRetry, action: retry)
         }
     }
 }

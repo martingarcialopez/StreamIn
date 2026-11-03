@@ -56,10 +56,10 @@ import Domain
 
     @Test func roundTripPersistsAcrossInstances() {
         let defaults = makeDefaults()
-        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+        let prefs = Preferences(defaultLanguage: .englishUK, defaults: defaults)
         prefs.language = .spanishES
 
-        #expect(Preferences(defaultLanguage: .englishUS, defaults: defaults).language == .spanishES)
+        #expect(Preferences(defaultLanguage: .englishUK, defaults: defaults).language == .spanishES)
     }
 
     /// French was offered before the picker was limited to translated
@@ -68,9 +68,57 @@ import Domain
         let defaults = makeDefaults()
         defaults.set("fr-FR", forKey: "settings.language.code")
 
-        let prefs = Preferences(defaultLanguage: .englishUS, defaults: defaults)
+        let prefs = Preferences(defaultLanguage: .englishUK, defaults: defaults)
 
-        #expect(prefs.language == .englishUS)
+        #expect(prefs.language == .englishUK)
+    }
+
+    /// English was en-US before it became British; that choice becomes en-GB,
+    /// even on a device whose own language (the default) is Spanish.
+    @Test func americanEnglishFromAnOlderBuildBecomesBritish() {
+        let defaults = makeDefaults()
+        defaults.set("en-US", forKey: "settings.language.code")
+
+        let prefs = Preferences(defaultLanguage: .spanishES, defaults: defaults)
+
+        #expect(prefs.language == .englishUK)
+    }
+}
+
+@MainActor
+@Suite struct OnboardingFlagTests {
+
+    private func makeDefaults() -> UserDefaults {
+        let suite = "PreferencesTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return defaults
+    }
+
+    @Test func falseByDefault() {
+        #expect(Preferences(defaults: makeDefaults()).hasCompletedOnboarding == false)
+    }
+
+    @Test func roundTripPersistsAcrossInstances() {
+        let defaults = makeDefaults()
+        Preferences(defaults: defaults).hasCompletedOnboarding = true
+
+        #expect(Preferences(defaults: defaults).hasCompletedOnboarding)
+    }
+
+    /// Skipping onboarding with no services picked must still count as done,
+    /// and picking services must not mark it done on its own.
+    @Test func independentOfSubscriptions() {
+        let defaults = makeDefaults()
+        let prefs = Preferences(defaults: defaults)
+        prefs.subscribedProviderIDs = [ProviderID(8)]
+        #expect(Preferences(defaults: defaults).hasCompletedOnboarding == false)
+
+        prefs.subscribedProviderIDs = []
+        prefs.hasCompletedOnboarding = true
+        let reloaded = Preferences(defaults: defaults)
+        #expect(reloaded.hasCompletedOnboarding)
+        #expect(reloaded.subscribedProviderIDs.isEmpty)
     }
 }
 

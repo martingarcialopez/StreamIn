@@ -355,22 +355,60 @@ A pattern used by two screens moves to DesignSystem.
 
    To change a row: edit `CatalogScope.scopes` and this table together.
 
+   **Decided (Oct 30, design Q&A):**
+   - **Settings stays an inset `Form`** on the cinema background, the most familiar shape for a
+     settings screen. Region and language options carry their flag (a language shows its region
+     subtag's: 🇬🇧 English (United Kingdom), 🇪🇸 Español (España)); VoiceOver reads only the name.
+   - **StreamIn's English is British** (`Language.englishUK`, en-GB): the picker, the default for
+     every non-Spanish device, and iOS's language for the app. TMDB still gets en-US for it
+     (`TMDBConfig.contentLanguage(for:)`): few movies have an en-GB translation, and one without
+     comes back with an empty overview. A stored en-US from an older build becomes en-GB.
+   - **The language restart is said up front:** a "↻ Takes effect after restarting StreamIn." line
+     under the picker, and the Restart now / Later alert stays.
+   - **The services row** keeps its logo summary, now DesignSystem's `ProviderLogoStrip` (3 + "+N"),
+     read by VoiceOver as one list of every name.
+   - **The picker is a grid of app-icon logos** (`ProviderTile`, `LogoSize.tile`), as many columns
+     as fit (fewer at accessibility sizes, more on iPad, at most 720 pt wide). A picked tile gets
+     an accent ring and a check badge; VoiceOver reads it as a selected button. "🍿 Your services · N"
+     comes first, then "🇪🇸 Available in Spain" with a settings-style Worldwide switch under it
+     (it didn't fit beside the heading). Search narrows both sections; a search with no match shows
+     the system's search empty state.
+   - **Free services stay out of the picker** (public broadcasters' players, ad-supported
+     streamers): it's for the services you pay for. TMDB doesn't say which are free, so
+     `FreeProviders` (Domain) lists them, matched by id or by name (case and accents ignored),
+     since a broadcaster's id differs per region. A movie's page still shows them.
+   - **Onboarding wraps the same grid** with a `SpinningGlobe`, "Pick the services you pay for" and
+     one subtitle line that scroll away with it, and a credit line at the end. It shows **once**:
+     Done sets `Preferences.hasCompletedOnboarding`, even with nothing picked (folded in from
+     Phase 6).
+   - **About** (folded in from Phase 6, TMDB's terms and App Store 5.1.1(i)): TMDB's official logo,
+     unmodified and small, over their attribution sentence; JustWatch's credit; the privacy policy
+     (the Spanish page in Spanish); "Version 1.0.0 (1)" from the bundle. It's fine print, not
+     settings (Martín, after seeing it as a card): no header and no rows, small centred gray text
+     on the page with room above it, the links a step brighter than the version. An underline says
+     what's a link: the brand a credit names (TMDB, JustWatch) or the whole privacy line. Each link
+     has its own row: links sharing a Form row all opened the first.
+   - **Dark only:** the issue asked for light and dark, but the app is dark-only since #46, so
+     there's no light mode to check.
+   - **Nothing new in DesignSystem** beyond tokens: the tile and grid are used only inside
+     SettingsFeature, where Settings, the sheet and Onboarding all live.
+
 ---
 
 ## Phase 6 — App Store readiness
 
 - **Icon** (Martín designs it) and a launch screen matching the landing page.
-- **TMDB attribution** (required by TMDB's terms): Settings, "Powered by TMDB" with
-  their logo and a link; a line in onboarding.
+- ✅ **TMDB attribution** (required by TMDB's terms): Settings → About with their logo and a
+  link; a line in onboarding (#49).
 - **`PrivacyInfo.xcprivacy`:** UserDefaults reason `CA92.1`, no tracking, no data
   collected. **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`.
-- **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (steps in
-  CLAUDE.md, "TODO: onboarding trigger").
+- ✅ **Onboarding trigger:** the one-shot `hasCompletedOnboarding` flag (#49).
 - **Every country (#22, decided Oct 30):** the home-region picker lists the regions TMDB covers
   (`/watch/providers/regions`, held by `RegionCatalog`), searchable. The default is the device's
-  region, or the United Kingdom when there's none or TMDB doesn't cover it (decided Nov 3). The interface language follows the device (any
-  Spanish → Spanish, anything else → English); Spanish movie data follows the home region
-  (`es-MX` in the Americas, `es-ES` elsewhere), with one "Español" in the picker.
+  region, or the United Kingdom when there's none or TMDB doesn't cover it (decided Nov 3).
+  The interface language follows the device (any Spanish → Spanish, anything else → British
+  English); Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES`
+  elsewhere), with one "Español" in the picker. English content is `en-US` everywhere.
 - **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
   contrast in light and dark.
 - **README:** refresh the status section and add screenshots or a demo GIF.

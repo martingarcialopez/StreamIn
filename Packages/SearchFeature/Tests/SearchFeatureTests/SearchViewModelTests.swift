@@ -23,7 +23,7 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1), .fixture(2)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
 
         #expect(model.hasLoadedResults)
         #expect(model.results.map(\.id) == [MovieID(1), MovieID(2)])
@@ -37,7 +37,7 @@ struct SearchViewModelTests {
     @Test func emptyResultStillCountsAsLoaded() async {
         let model = makeModel(FakeMovieRepository(results: []))
 
-        await model.search(query: "zzzzzz", region: .spain, language: .englishUS)
+        await model.search(query: "zzzzzz", region: .spain, language: .englishUK)
 
         #expect(model.hasLoadedResults)
         #expect(model.results.isEmpty)
@@ -49,8 +49,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1), .fixture(2)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
 
         #expect(await repo.searchCalls == 1)
         #expect(await repo.availabilityCalls[MovieID(1)] == 1)
@@ -65,10 +65,10 @@ struct SearchViewModelTests {
         )
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
         #expect(Set(model.availability.keys) == [MovieID(1)])
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
 
         #expect(await repo.searchCalls == 1)
         #expect(await repo.availabilityCalls[MovieID(1)] == 1)
@@ -80,8 +80,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
-        await model.search(query: " Inception ", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
+        await model.search(query: " Inception ", region: .spain, language: .englishUK)
 
         #expect(await repo.searchCalls == 1)
     }
@@ -90,8 +90,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
-        await model.search(query: "Dune", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
+        await model.search(query: "Dune", region: .spain, language: .englishUK)
 
         #expect(await repo.searchCalls == 2)
     }
@@ -100,8 +100,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
-        await model.search(query: "Inception", region: .france, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
+        await model.search(query: "Inception", region: .france, language: .englishUK)
 
         #expect(await repo.searchCalls == 2)
         #expect(await repo.availabilityCalls[MovieID(1)] == 2)
@@ -111,7 +111,7 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
         await model.search(query: "Inception", region: .spain, language: .spanishES)
 
         #expect(await repo.searchCalls == 2)
@@ -121,14 +121,14 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)], searchError: .offline)
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
         #expect(model.error == .offline)
         #expect(model.results.isEmpty)
         #expect(!model.hasLoadedResults)
         #expect(!model.isLoading)
 
         await repo.setSearchError(nil)
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
 
         #expect(await repo.searchCalls == 2)
         #expect(model.error == nil)
@@ -139,8 +139,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Inception", region: .spain, language: .englishUS)
-        await model.search(query: "   ", region: .spain, language: .englishUS)
+        await model.search(query: "Inception", region: .spain, language: .englishUK)
+        await model.search(query: "   ", region: .spain, language: .englishUK)
 
         #expect(model.results.isEmpty)
         #expect(model.availability.isEmpty)
@@ -156,7 +156,7 @@ struct SearchViewModelTests {
         )
         let model = makeModel(repo)
 
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
 
         #expect(model.rowProviders(for: .fixture(1)) == .loaded(.notStreamingHere))
         #expect(model.rowProviders(for: .fixture(2)) == .failed)
@@ -168,8 +168,8 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)], failAvailabilityOnce: [MovieID(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
 
         #expect(model.failedAvailability.isEmpty)
         #expect(model.rowProviders(for: .fixture(1)) == .loaded(.notStreamingHere))
@@ -181,11 +181,11 @@ struct SearchViewModelTests {
         let repo = FakeMovieRepository(results: [.fixture(1)], failAvailabilityOnce: [MovieID(1)])
         let model = makeModel(repo)
 
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
         #expect(model.failedAvailability == [MovieID(1)])
 
         await repo.setSearchError(.offline)
-        await model.search(query: "Hook", region: .spain, language: .englishUS)
+        await model.search(query: "Hook", region: .spain, language: .englishUK)
 
         #expect(model.failedAvailability.isEmpty)
     }
@@ -214,7 +214,7 @@ struct SearchRowProvidersTests {
             imageURLBuilder: NullImageURLBuilder(),
             prefs: makePrefs(subscribedTo: providers)
         )
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
         return model.rowProviders(for: movie)
     }
 
@@ -316,7 +316,7 @@ struct SearchRowProvidersTests {
         )
         let prefs = makePrefs(subscribedTo: [.netflix])
         let model = SearchViewModel(repository: repo, imageURLBuilder: NullImageURLBuilder(), prefs: prefs)
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
         #expect(model.rowProviders(for: movie) == .loaded(.othersAtHome([.filmin])))
 
         prefs.subscribedProviderIDs.insert(WatchProvider.filmin.id)
@@ -348,7 +348,7 @@ struct SearchRowDisplayTests {
             imageURLBuilder: NullImageURLBuilder(),
             prefs: makePrefs(subscribedTo: [.netflix, .primeVideo, .disneyPlus, .filmin])
         )
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
 
         let label = model.accessibilityLabel(for: movie)
 
@@ -380,7 +380,7 @@ struct SearchRowDisplayTests {
             imageURLBuilder: NullImageURLBuilder(),
             prefs: makePrefs(subscribedTo: [.netflix])
         )
-        await model.search(query: "Peter Pan", region: .spain, language: .englishUS)
+        await model.search(query: "Peter Pan", region: .spain, language: .englishUK)
 
         let names = [WatchProvider.filmin, .disneyPlus].map(\.name).formatted(.list(type: .and))
         #expect(model.accessibilityLabel(for: movie).hasSuffix("On \(names)"))

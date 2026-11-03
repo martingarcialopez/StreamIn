@@ -20,19 +20,19 @@
       }
     },
     "settingsLanguageFooter": {
-      "comment": "Section footer explaining what the language picker affects",
+      "comment": "Settings: footer under the Language picker, before the restart note.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sets the language for app text and movie information. Changing this requires restarting StreamIn."
+            "value": "Sets the language for app text and movie information."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Establece el idioma del texto de la app y de la información de las películas. Cambiar esto requiere reiniciar StreamIn."
+            "value": "Establece el idioma del texto de la app y de la información de las películas."
           }
         }
       }
@@ -56,7 +56,7 @@
       }
     },
     "settingsRegionFooter": {
-      "comment": "Section footer explaining what the region picker affects",
+      "comment": "Settings: footer under the Region picker.",
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -68,7 +68,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Determina qué servicios de streaming se presentan para cada película"
+            "value": "Determina qué servicios de streaming aparecen para cada película."
           }
         }
       }
@@ -217,164 +217,38 @@
         }
       }
     },
-    "settingsSubscriptionsMajor": {
-      "comment": "Sub-header for the curated/major streaming services in the My Subscriptions section",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Major services"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Servicios principales"
-          }
-        }
-      }
-    },
-    "settingsSubscriptionsOther": {
-      "comment": "Sub-header for non-curated streaming services the user added via the More Providers sheet",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Other subscriptions"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otras suscripciones"
-          }
-        }
-      }
-    },
-    "settingsSubscriptionsAddMore": {
-      "comment": "Button that opens the sheet for adding non-curated streaming providers",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add more providers"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añadir más proveedores"
-          }
-        }
-      }
-    },
-    "settingsSubscriptionsLoading": {
-      "comment": "Placeholder shown while the provider catalog is loading",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loading providers…"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cargando proveedores…"
-          }
-        }
-      }
-    },
-    "settingsMoreProvidersTitle": {
-      "comment": "Navigation title for the sheet that lists all TMDB providers the user can add",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More providers"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Más proveedores"
-          }
-        }
-      }
-    },
     "settingsMoreProvidersWorldwideToggle": {
-      "comment": "Toggle in the More Providers sheet that switches between home-region and worldwide provider lists",
+      "comment": "Services picker: switch under the 'Available in …' heading that lists every service in the world instead of the home region's.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show providers worldwide"
+            "value": "Worldwide"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mostrar proveedores en todo el mundo"
+            "value": "Todo el mundo"
           }
         }
       }
     },
     "settingsMoreProvidersSearchPrompt": {
-      "comment": "Prompt text for the search field in the More Providers sheet",
+      "comment": "Services picker: placeholder of the search field that filters services by name.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search providers"
+            "value": "Search services"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Buscar proveedores"
-          }
-        }
-      }
-    },
-    "settingsMoreProvidersEmpty": {
-      "comment": "Empty-state text shown in the More Providers sheet when the search returns no matches",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No providers match your search."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ningún proveedor coincide con tu búsqueda."
-          }
-        }
-      }
-    },
-    "settingsMoreProvidersDone": {
-      "comment": "Done button on the More Providers sheet",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hecho"
+            "value": "Buscar servicios"
           }
         }
       }
@@ -447,24 +321,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Servicios de streaming"
-          }
-        }
-      }
-    },
-    "settingsStreamingServicesYourSubs": {
-      "comment": "Section header above the user's currently-selected streaming services on the picker screen",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your subscriptions"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tus suscripciones"
           }
         }
       }
@@ -542,37 +398,37 @@
       }
     },
     "onboardingHeaderTitle": {
-      "comment": "Large header on the onboarding screen, above the picker list",
+      "comment": "Onboarding: headline under the spinning globe, above the services picker.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Welcome to StreamIn"
+            "value": "Pick the services you pay for"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Te damos la bienvenida a StreamIn"
+            "value": "Elige los servicios que pagas"
           }
         }
       }
     },
     "onboardingHeaderSubtitle": {
-      "comment": "Sub-header on the onboarding screen explaining what to do",
+      "comment": "Onboarding: one line under the headline saying what picking services gets you.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pick the streaming services you pay for. We'll show you where to watch every film with them."
+            "value": "We'll show where each movie streams on them, here and abroad."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige los servicios de streaming que pagas. Te mostraremos dónde puedes ver cada película con ellos."
+            "value": "Te diremos dónde ver cada película con ellos, aquí y fuera."
           }
         }
       }
@@ -595,38 +451,182 @@
         }
       }
     },
-    "providerIconStripOverflowAccessibility": {
-      "comment": "VoiceOver-friendly form of the '+N' overflow pill on the Settings streaming-services row. %lld is the count.",
+    "settingsAboutTMDB": {
+      "comment": "Settings → About: TMDB's required attribution, under their logo; opens themoviedb.org. Wording set by TMDB's terms.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld more"
+            "value": "This product uses the TMDB API but is not endorsed or certified by TMDB."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld más"
+            "value": "Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica."
           }
         }
       }
     },
-    "providerRowSubscribedAccessibility": {
-      "comment": "VoiceOver label for the checkmark next to a subscribed provider in the picker",
+    "settingsAboutJustWatch": {
+      "comment": "Settings → About: credit for the watch-provider data; opens justwatch.com.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Subscribed"
+            "value": "Streaming availability data provided by JustWatch."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Suscrito"
+            "value": "Datos de disponibilidad en streaming proporcionados por JustWatch."
+          }
+        }
+      }
+    },
+    "settingsAboutPrivacy": {
+      "comment": "Settings → About: link to StreamIn's privacy policy web page.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidad"
+          }
+        }
+      }
+    },
+    "settingsAboutVersion": {
+      "comment": "Settings → About: the app version, then the build number in parentheses, e.g. Version 1.0.0 (1).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "onboardingCredits": {
+      "comment": "Onboarding: one quiet credit line at the end of the services list. Same copy as the landing page's credits.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Powered by TMDB · Availability by JustWatch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con datos de TMDB · Disponibilidad de JustWatch"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesYourServices": {
+      "comment": "Services picker: heading above the services you picked, with how many, e.g. Your services · 3.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your services · %lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus servicios · %lld"
+          }
+        }
+      }
+    },
+    "settingsLanguageRestartNote": {
+      "comment": "Settings: second footer line under the Language picker, with a restart icon; says a new language applies only after StreamIn restarts.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Takes effect after restarting StreamIn."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se aplica al reiniciar StreamIn."
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesLoadFailed": {
+      "comment": "Services picker: title shown in place of the grid when the list of services couldn't be loaded; the reason and a Retry button follow.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load the services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido cargar los servicios"
+          }
+        }
+      }
+    },
+    "settingsRetry": {
+      "comment": "Services picker: button that asks again for the list of services after a failure.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar"
+          }
+        }
+      }
+    },
+    "settingsStreamingServicesAllPicked": {
+      "comment": "Services picker: shown under 'Available in …' when every service there is already one of yours.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've picked every service here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya has elegido todos los servicios de aquí."
           }
         }
       }
@@ -699,24 +699,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se han podido cargar las regiones"
-          }
-        }
-      }
-    },
-    "settingsRegionRetry": {
-      "comment": "Button that retries downloading the country list in the region picker.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try again"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reintentar"
           }
         }
       }

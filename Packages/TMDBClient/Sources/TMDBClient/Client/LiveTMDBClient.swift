@@ -45,7 +45,8 @@ public final class LiveTMDBClient: TMDBClient {
     /// Update the language sent on subsequent requests. Safe to call from
     /// any actor.
     public func updateLanguage(_ language: String) {
-        lockedLanguage.withLock { $0 = language }
+        let content = TMDBConfig.contentLanguage(for: language)
+        lockedLanguage.withLock { $0 = content }
     }
 
     /// The language sent with localized requests right now.

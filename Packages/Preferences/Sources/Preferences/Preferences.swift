@@ -46,6 +46,12 @@ public final class Preferences {
         didSet { persistSubscribedProviders() }
     }
 
+    /// Set once the user leaves onboarding, with or without picking services,
+    /// so it shows on the first launch only.
+    public var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: Self.hasCompletedOnboardingKey) }
+    }
+
     /// A value type snapshot of both axes. Use this as the `id:` argument of
     /// `.task(id:)` in any view that needs to re-fire a query when either
     /// setting changes.
@@ -65,6 +71,7 @@ public final class Preferences {
     private static let regionKey               = "settings.region.code"
     private static let languageKey             = "settings.language.code"
     private static let subscribedProvidersKey  = "settings.subscribedProviders.ids"
+    private static let hasCompletedOnboardingKey = "settings.hasCompletedOnboarding"
 
     public init(
         defaultRegion: Region = .device(),
@@ -81,15 +88,28 @@ public final class Preferences {
 
         // Only languages the picker still offers: one stored by an older build
         // (e.g. French, before the list was cut to translated languages) would
-        // pair localized content with an untranslated interface.
+        // pair localized content with an untranslated interface. A variant of
+        // one it offers becomes that one (en-US, from before English was
+        // British, becomes en-GB) rather than the device's language.
         if let stored = defaults.string(forKey: Self.languageKey),
-           let known = Language.allKnown.first(where: { $0.code == stored }) {
+           let known = Self.offeredLanguage(matching: stored) {
             self.language = known
         } else {
             self.language = defaultLanguage
         }
 
         self.subscribedProviderIDs = Self.loadSubscribedProviders(from: defaults)
+        self.hasCompletedOnboarding = defaults.bool(forKey: Self.hasCompletedOnboardingKey)
+    }
+
+    /// The picker's language for a stored code: the same one, or else the one
+    /// in the same language ("en-US" → English (UK)).
+    private static func offeredLanguage(matching code: String) -> Language? {
+        if let exact = Language.allKnown.first(where: { $0.code == code }) {
+            return exact
+        }
+        let languageCode = code.prefix(while: { $0 != "-" })
+        return Language.allKnown.first(where: { $0.code.hasPrefix(languageCode + "-") })
     }
 
     /// Moves to the fallback region when TMDB has no streaming data for the

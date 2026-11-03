@@ -27,6 +27,23 @@ import Domain
         return (components.path, Set(components.queryItems ?? []), request)
     }
 
+    // MARK: Language
+
+    /// The app's English is British, but TMDB's en-GB coverage is thin.
+    @Test func britishEnglishAsksForAmericanContent() {
+        let british = LiveTMDBClient(
+            config: TMDBConfig(apiKey: "test-key", language: "en-GB"),
+            session: StubURLProtocol.makeSession()
+        )
+        #expect(british.language == "en-US")
+
+        british.updateLanguage("es-ES")
+        #expect(british.language == "es-ES")
+
+        british.updateLanguage("en-GB")
+        #expect(british.language == "en-US")
+    }
+
     // MARK: Request building
 
     @Test func searchBuildsRequest() async throws {
