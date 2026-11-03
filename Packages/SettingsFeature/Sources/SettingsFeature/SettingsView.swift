@@ -308,6 +308,8 @@ private struct ProviderIcon: View {
             regionCatalog: RegionCatalog(repository: PreviewMovieRepository()),
             imageURLBuilder: PreviewImageURLBuilder()
         )
+        // As `RootView` presents it: the cinema background also makes it dark.
+        .cinemaBackground()
     }
 }
 
