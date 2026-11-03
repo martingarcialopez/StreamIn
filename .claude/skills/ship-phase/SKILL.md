@@ -59,6 +59,10 @@ If something can't run, say so — never imply it passed.
 - Once pushed, `gh pr create --base main` with a body that follows
   `.github/pull_request_template.md`, including `Closes #<n>` for each issue.
   Leave the CI box for step 6 and manual checks for Martín unticked.
+- **Keep it short:** Martín should be able to read it in 30 seconds. Follow the
+  template's comments: a one- or two-sentence summary, at most five one-line
+  bullets, and notes only for what he must decide or know. What the reviewer
+  found and how it was fixed goes in the workflow log, not the PR.
 - When the branch changed or added a screen, run the `pr-screenshots` skill on
   the new PR: before/after previews, side by side, in its Screenshots section.
   Tick "Previews of changed views rendered" with the count. When no view
