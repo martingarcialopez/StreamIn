@@ -50,7 +50,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lenguaje"
+            "value": "Idioma"
           }
         }
       }
@@ -104,7 +104,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige los servicios de streaming que pagas. Te mostraremos los países donde cada película está disponible en esos servicios — útil si tienes una VPN."
+            "value": "Elige los servicios de streaming que pagas. Te mostraremos en qué países está disponible cada película en esos servicios — útil si tienes una VPN."
           }
         }
       }
@@ -176,7 +176,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "StreamIn necesita reiniciarse para aplicar el nuevo idioma. Tu elección se guarda de cualquier forma."
+            "value": "StreamIn necesita reiniciarse para aplicar el nuevo idioma. Tu elección ya se ha guardado."
           }
         }
       }

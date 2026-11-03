@@ -14,7 +14,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La solicitud fue cancelada."
+            "value" : "La solicitud ha sido cancelada."
           }
         }
       }
@@ -50,7 +50,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No pudimos encontrar lo que está buscando."
+            "value" : "No pudimos encontrar lo que estás buscando."
           }
         }
       }
@@ -68,7 +68,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Parece que estás sin conexión. Verifique su conexión e inténtelo de nuevo."
+            "value" : "Parece que estás sin conexión. Verifica tu conexión e inténtalo de nuevo."
           }
         }
       }
@@ -86,7 +86,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Demasiadas solicitudes. Por favor espere un momento y vuelva a intentarlo."
+            "value" : "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo."
           }
         }
       }
@@ -104,7 +104,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El servidor está teniendo problemas. Por favor inténtelo de nuevo más tarde."
+            "value" : "El servidor está teniendo problemas. Por favor inténtalo de nuevo más tarde."
           }
         }
       }
@@ -122,7 +122,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solicitud demasiado larga. Por favor inténtelo de nuevo."
+            "value" : "Tiempo de espera agotado. Por favor inténtalo de nuevo."
           }
         }
       }
@@ -140,7 +140,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hay un problema con sus credenciales de la API."
+            "value" : "Hay un problema con las credenciales de la API."
           }
         }
       }
@@ -158,7 +158,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Algo fue mal. Por favor inténtelo de nuevo."
+            "value" : "Algo fue mal. Por favor inténtalo de nuevo."
           }
         }
       }
