@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Only what build settings can't express: the rest of Info.plist is generated
+  from the target's INFOPLIST_KEY_* settings and merged with this file.
+-->
+<plist version="1.0">
+<dict>
+	<!--
+	  The launch screen is the landing page's background, with no logo and no
+	  text, so the first frame of the app looks like it was already there.
+	  LaunchBackground (the app's Assets.xcassets) must stay the same colour as
+	  DesignSystem's `background` colour set (AppPalette.background): the launch
+	  screen reads only the main bundle, so it can't use DesignSystem's.
+	-->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
+</dict>
+</plist>
