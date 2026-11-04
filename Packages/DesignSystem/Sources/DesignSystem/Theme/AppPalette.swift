@@ -2,7 +2,8 @@ import SwiftUI
 
 public enum AppPalette {
     /// A warm near-black. The app is always dark; screens sit on it through
-    /// `cinemaBackground()`.
+    /// `cinemaBackground()`. The launch screen paints the same colour from
+    /// the app's `LaunchBackground` colour set: keep the two in sync.
     public static let background = Color("background", bundle: .module)
     public static let secondaryBackground = Color("secondaryBackground", bundle: .module)
     public static let separator = Color("separator", bundle: .module)

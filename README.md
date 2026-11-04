@@ -233,7 +233,7 @@ Martín reviews every PR before it merges.
 | 3 | Watchlist with SwiftData | ✅ |
 | 4 | Details redesign: one verdict first | ✅ |
 | 5 | Design and UX pass on every screen: slot machine, cinema theme, where-to-watch rows | ✅ |
-| 6 | App Store: privacy manifest, TMDB attribution and every region ✅; icon, accessibility pass, store screenshots, TestFlight and submission next | 🔄 |
+| 6 | App Store: privacy manifest, TMDB attribution, every region, icon and launch screen ✅; accessibility pass, store screenshots, TestFlight and submission next | 🔄 |
 
 After 1.0: French, and on-device Foundation Models for natural-language search
 ("a feel-good 90s comedy") if it earns its place. Full plan in

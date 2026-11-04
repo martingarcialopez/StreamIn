@@ -397,7 +397,14 @@ A pattern used by two screens moves to DesignSystem.
 
 ## Phase 6 — App Store readiness
 
-- **Icon** (Martín designs it) and a launch screen matching the landing page.
+- ✅ **Icon and launch screen** (#80): an Icon Composer document (`StreamIn/Resources/AppIcon.icon`,
+  a flat white globe with a play sign on the app's cinema background, drawn by an image model
+  and rebuilt in layers; notes in `design/README.md`), and a launch screen in the landing page's
+  background colour only, since the landing page has no logo. The unused `AppLogoMark` (a
+  popcorn symbol) is gone.
+  - Flat beat detailed: a 3D planet with a film ring and a painted lens fought iOS 26's own
+    glass and went muddy at 58 px. Hand-drawn SVG drafts didn't reach the polish Martín wanted;
+    an image model's flat design, rebuilt as Icon Composer layers, did.
 - ✅ **TMDB attribution** (required by TMDB's terms): Settings → About with their logo and a
   link; a line in onboarding (#49).
 - **`PrivacyInfo.xcprivacy`:** UserDefaults reason `CA92.1`, no tracking, no data
