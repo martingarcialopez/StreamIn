@@ -20,6 +20,24 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-11-04 — Checking the app icon without a device
+
+**Why:** an iOS 26 icon has six appearances (default, dark, clear and tinted, light and dark), and
+the simulator's home screen shows one at a time.
+
+**What changed:** `scripts/render-app-icon.sh` runs Icon Composer's `ictool` on the `.icon`
+document and writes all six as PNGs, so every design round was judged in every appearance and at
+58 px, side by side.
+
+**What it improved:** fast rounds (about a dozen designs compared in one session), but not the
+design itself. Hand-drawn SVG icons never reached the polish Martín wanted; an image model's
+design, rebuilt by Claude as Icon Composer layers, did. Split the work that way: the image model
+draws, Claude makes it a proper `.icon` and does the edits (colours, glass, backgrounds).
+
+**Caveat:** `ictool` isn't the device. An SVG radial gradient rendered right in `ictool` but
+Xcode's icon compiler drew it in the wrong place; only the simulator's home screen caught it.
+Finish every icon change with a simulator check.
+
 ## 2026-11-03 — PR descriptions readable in 30 seconds
 
 **Why:** Martín stopped reading PR descriptions to the end. #98's ran to about 40 lines for a
