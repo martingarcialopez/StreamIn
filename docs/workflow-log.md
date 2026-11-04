@@ -20,6 +20,21 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-11-03 — PR descriptions readable in 30 seconds
+
+**Why:** Martín stopped reading PR descriptions to the end. #98's ran to about 40 lines for a
+README change: file-by-file bullets, a "Numbers" line, notes that belonged in issues.
+
+**What changed:** `.github/pull_request_template.md` carries the rules in hidden comments: about
+15 lines of text, a one- or two-sentence summary, at most five one-line bullets by what changed,
+notes only for what Martín must decide or know, follow-ups as issues. Everyone who writes a PR
+already follows that file (`ship-phase`, claude[bot] in `claude.yml`), and CLAUDE.md's "How we
+work" repeats it for PRs opened outside `ship-phase`. `ship-phase` also says the reviewer's
+findings go here, in the log, not in the PR.
+
+**How to tell if it worked:** Martín reads the next PRs to the end, and asks for detail less
+often than he skips it.
+
 ## 2026-11-03 — Regions from TMDB, defaults for every country (#22)
 
 **What shipped:** the home-region picker lists every country TMDB covers (`RegionCatalog`,

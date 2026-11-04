@@ -1,12 +1,22 @@
+<!--
+Short enough to read in 30 seconds: about 15 lines of text, not counting
+screenshots and the test plan. The diff and the commits hold the details; a
+follow-up becomes an issue, not a paragraph. No file-by-file or type-by-type
+lists, unless the list is the decision. Every comment like this one is hidden
+when the PR renders, so leave them.
+-->
+
 ## Summary
 
-<!-- What this delivers, in one or two sentences. Link the issue: "Closes #<n>". -->
+<!-- One or two sentences: what changes for the user or the codebase. Then the issue. -->
 
 Closes #
 
 ## What changed
 
-<!-- Grouped by area. Call out new packages, new dependencies (and why), and anything that migrates data. -->
+<!-- At most five bullets, one line each, by what changed (not by file). -->
+
+-
 
 ## Screenshots
 
@@ -16,7 +26,7 @@ Closes #
 
 ## Notes for reviewers
 
-<!-- Non-obvious decisions, deviations from the plan, ios-reviewer findings left open. Suggested reading order for large PRs. -->
+<!-- Only what Martín must decide or know before merging: an open question, a deviation from the plan, a risk, an ios-reviewer finding left open. One line each. Delete the section when there's nothing. -->
 
 ## Test plan
 
