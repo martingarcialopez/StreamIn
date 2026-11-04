@@ -218,6 +218,17 @@ public final class DetailsViewModel {
         movie.runtime?.formatted(.units(allowed: [.minutes], width: .abbreviated))
     }
 
+    /// "148 minutes" — the runtime as VoiceOver should say it.
+    public var spokenRuntime: String? {
+        movie.runtime?.formatted(.units(allowed: [.minutes], width: .wide))
+    }
+
+    /// "Rated 8.4 out of 10" — the vote average as VoiceOver should say it;
+    /// on screen the star says what the number is.
+    public var spokenVoteAverage: String {
+        String(localized: .detailsRatingAccessibility(formattedVoteAverage))
+    }
+
     /// "8.4" — TMDB's vote average to one decimal place. Routed through
     /// `Double.formatted(.number...)` so the locale's decimal separator is
     /// respected (a Spanish user sees "8,4").

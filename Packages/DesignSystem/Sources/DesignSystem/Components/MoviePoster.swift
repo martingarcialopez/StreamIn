@@ -29,6 +29,8 @@ public struct MoviePoster: View {
         }
         .frame(width: width, height: width * 1.5)
         .clipShape(.rect(cornerRadius: Radius.medium))
+        // Smart Invert keeps photos as they are.
+        .accessibilityIgnoresInvertColors()
         .accessibilityHidden(true)
     }
 }

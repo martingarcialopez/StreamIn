@@ -121,18 +121,30 @@ private struct LoadTrigger: Hashable {
 
 // MARK: - Metadata strip
 
+/// One line of year, runtime and rating; one per line at accessibility text
+/// sizes, where three side by side would break their numbers.
 private struct MetadataRow: View {
     let model: DetailsViewModel
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var layout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.tight))
+            : AnyLayout(HStackLayout(spacing: Spacing.screenPadding))
+    }
+
     var body: some View {
-        HStack(spacing: 16) {
+        layout {
             if let year = model.formattedReleaseYear {
                 Label(year, systemImage: Symbol.calendar)
             }
             if let runtime = model.formattedRuntime {
                 Label(runtime, systemImage: Symbol.clock)
+                    .accessibilityLabel(model.spokenRuntime ?? runtime)
             }
             Label(model.formattedVoteAverage, systemImage: Symbol.starFill)
+                .accessibilityLabel(model.spokenVoteAverage)
         }
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -153,6 +165,8 @@ private struct WhereToWatchCard: View {
     @ScaledMetric(relativeTo: .body) private var heroLogoSize: CGFloat = LogoSize.hero
     /// About the size of the emoji beside the other verdicts.
     @ScaledMetric(relativeTo: .title) private var globeSize: CGFloat = LogoSize.medium
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The verdict's color; loading, failures and the services prompt stay neutral.
     private var tint: Color? {
@@ -218,14 +232,15 @@ private struct WhereToWatchCard: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                .strokeBorder(tint.map(VerdictTint.border) ?? AppPalette.separator)
+                .strokeBorder(tint.map { VerdictTint.border($0, contrast: contrast) } ?? AppPalette.separator)
                 .mask { LegendCutout { BorderLegends(model: model, layer: .borderGap) } }
         }
         .overlay(alignment: .top) {
             BorderLegends(model: model, layer: .content)
         }
-        // Crossfades from the spinner to the verdict, tint included.
-        .animation(.smooth, value: model.verdict)
+        // Crossfades from the spinner to the verdict, tint included; with
+        // Reduce Motion the card changes at once, without resizing on screen.
+        .animation(reduceMotion ? nil : .smooth, value: model.verdict)
         .accessibilityElement(children: .contain)
     }
 }
@@ -249,13 +264,23 @@ private struct CardLegend: View {
 }
 
 /// The verdict's emoji, a size up from the answer beside it in plain text:
-/// the card's color carries the state, the text stays readable.
+/// the card's color carries the state, the text stays readable. At
+/// accessibility text sizes the emoji sits above the answer, which then has
+/// the card's whole width.
 private struct VerdictHeadline<Icon: View>: View {
     let title: LocalizedStringResource
     @ViewBuilder let icon: Icon
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var layout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.default))
+            : AnyLayout(HStackLayout(spacing: Spacing.comfortable))
+    }
+
     var body: some View {
-        HStack(spacing: Spacing.comfortable) {
+        layout {
             icon
                 .font(.title)
                 .accessibilityHidden(true)
@@ -352,7 +377,11 @@ private enum VerdictTint {
     static func fill(_ tint: Color) -> LinearGradient {
         LinearGradient(colors: [tint.opacity(0.18), tint.opacity(0.04)], startPoint: .top, endPoint: .bottom)
     }
-    static func border(_ tint: Color) -> Color { tint.opacity(0.25) }
+    /// Faint, so the card reads as one surface; with Increase Contrast on,
+    /// strong enough to show the card's edge.
+    static func border(_ tint: Color, contrast: ColorSchemeContrast) -> Color {
+        tint.opacity(contrast == .increased ? 0.7 : 0.25)
+    }
 }
 
 private struct UnavailableReason: View {
@@ -513,9 +542,9 @@ private struct RegionFlags: View {
                 Text(region.flag)
             }
             if overflow > 0 {
+                // Primary: secondary text on the quaternary capsule is below 4.5:1.
                 Text(verbatim: "+\(overflow)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 2)
                     .background(.quaternary, in: .capsule)
@@ -577,11 +606,17 @@ private struct ErrorRetry: View {
     let onRetry: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text(.detailsLoadFailed(error.userMessage))
-                .font(.caption)
-                .foregroundStyle(.red)
-                .multilineTextAlignment(.center)
+        VStack(spacing: Spacing.default) {
+            // Red only on the symbol: red text is too dim on the tinted card,
+            // and the symbol says "error" without the color.
+            Label {
+                Text(.detailsLoadFailed(error.userMessage))
+            } icon: {
+                Image(systemName: Symbol.exclamationmarkTriangle)
+                    .foregroundStyle(.red)
+            }
+            .font(.caption)
+            .multilineTextAlignment(.center)
             Button(.detailsRetry, action: onRetry)
         }
         .frame(maxWidth: .infinity)
@@ -608,6 +643,8 @@ private struct BackdropView: View {
                 Rectangle().fill(.quaternary)
             }
         }
+        // Smart Invert keeps the still as it is.
+        .accessibilityIgnoresInvertColors()
         .accessibilityHidden(true)
     }
 }
@@ -662,6 +699,23 @@ private struct BackdropView: View {
             ]
         )
     )
+}
+
+#Preview("Abroad, accessibility size") {
+    previewDetails(
+        "abroad-large",
+        subscribedTo: [.netflix],
+        repository: PreviewMovieRepository(
+            subscription: [.disneyPlus, .hboMax],
+            global: [
+                ProviderRegionalAvailability(
+                    provider: .netflix,
+                    regions: ["AR", "CA", "GB", "JP", "MX", "US"].map(Region.init(code:))
+                ),
+            ]
+        )
+    )
+    .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Read a book, others here") {

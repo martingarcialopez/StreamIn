@@ -29,8 +29,9 @@ struct AboutSection: View {
                 .modifier(FinePrintRow())
             QuietLink(.settingsAboutPrivacy, destination: AboutLinks.privacyPolicy())
                 .modifier(FinePrintRow())
+            // Secondary, as the links above: tertiary text is below 4.5:1.
             Text(.settingsAboutVersion(version.version, version.build))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
                 .modifier(FinePrintRow())
         }
     }
@@ -55,8 +56,8 @@ private struct FinePrintRow: ViewModifier {
     }
 }
 
-/// A line of fine print that opens a web page: gray, a step brighter than
-/// the version under it, with an underline that says it's a link. The text
+/// A line of fine print that opens a web page: gray, like the version under
+/// it, with an underline that says it's a link. The text
 /// is the link's name for VoiceOver.
 struct QuietLink: View {
     let title: LocalizedStringResource
@@ -102,6 +103,8 @@ private struct TMDBLogo: View {
             .resizable()
             .scaledToFit()
             .frame(height: height)
+            // TMDB's terms: their logo unmodified, Smart Invert included.
+            .accessibilityIgnoresInvertColors()
             // The sentence under it names TMDB already.
             .accessibilityHidden(true)
     }

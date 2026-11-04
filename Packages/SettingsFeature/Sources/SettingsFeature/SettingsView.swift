@@ -125,14 +125,7 @@ private struct LanguageSection: View {
 
     var body: some View {
         Section {
-            Picker(selection: languageBinding) {
-                ForEach(Language.allKnown) { language in
-                    FlaggedName(flag: language.flag, name: language.displayName)
-                        .tag(language)
-                }
-            } label: {
-                Text(.settingsLanguagePicker)
-            }
+            LanguagePicker(selection: languageBinding)
         } footer: {
             // Said before the change, not only in the alert after it.
             VStack(alignment: .leading, spacing: Spacing.tight) {
@@ -191,6 +184,90 @@ private struct LanguageSection: View {
         prefs.language = language
         UserDefaults.standard.set([language.code], forKey: "AppleLanguages")
         pendingLanguage = nil
+    }
+}
+
+/// A menu beside its label. At accessibility text sizes the menu's button
+/// would cut the name short ("E…dom)"), so the row works like Region's: the
+/// language under its label, pushing the list.
+private struct LanguagePicker: View {
+    let selection: Binding<Language>
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            NavigationLink {
+                LanguageList(selection: selection)
+            } label: {
+                LabeledContent {
+                    FlaggedLabel(flag: selection.wrappedValue.flag, name: selection.wrappedValue.displayName)
+                } label: {
+                    Text(.settingsLanguagePicker)
+                }
+            }
+        } else {
+            Picker(selection: selection) {
+                ForEach(Language.allKnown) { language in
+                    FlaggedName(flag: language.flag, name: language.displayName)
+                        .tag(language)
+                }
+            } label: {
+                Text(.settingsLanguagePicker)
+            }
+        }
+    }
+}
+
+/// The languages as rows, for accessibility text sizes. Picking one goes
+/// back to Settings, where the restart alert asks to confirm it.
+private struct LanguageList: View {
+    let selection: Binding<Language>
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        List(Language.allKnown) { language in
+            let isSelected = language == selection.wrappedValue
+            Button {
+                dismiss()
+                selection.wrappedValue = language
+            } label: {
+                HStack(spacing: Spacing.comfortable) {
+                    FlaggedLabel(flag: language.flag, name: language.displayName)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    if isSelected {
+                        Image(systemName: Symbol.checkmark)
+                            .foregroundStyle(.tint)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            .cinemaRow()
+        }
+        .cinemaBackground()
+        .navigationTitle(Text(.settingsLanguagePicker))
+        .toolbarTitleDisplayMode(.inline)
+    }
+}
+
+/// A flag, then a name that wraps on its own, as the region picker's rows
+/// lay them out: for language names long enough to wrap at accessibility
+/// text sizes. VoiceOver reads only the name.
+private struct FlaggedLabel: View {
+    let flag: String
+    let name: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.comfortable) {
+            Text(verbatim: flag)
+                .accessibilityHidden(true)
+            Text(verbatim: name)
+        }
     }
 }
 
@@ -297,7 +374,7 @@ private struct StreamingServicesSummary: View {
 
 #Preview("Large text") {
     previewSettings("large", subscribedTo: [8, 9])
-        .dynamicTypeSize(.accessibility3)
+        .dynamicTypeSize(.accessibility5)
 }
 
 /// Each preview gets its own defaults suite so previews don't share state.

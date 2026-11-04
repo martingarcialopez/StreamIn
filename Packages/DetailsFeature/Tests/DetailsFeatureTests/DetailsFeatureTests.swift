@@ -612,3 +612,34 @@ private func provider(_ id: Int, _ name: String) -> WatchProvider {
         #expect(model.homeSubscriptionsOthers.isEmpty)
     }
 }
+
+// MARK: - VoiceOver
+
+@MainActor
+@Suite struct SpokenMetadataTests {
+    private func spokenModel(runtime: Duration?) -> DetailsViewModel {
+        let movie = Movie(
+            id: MovieID(1), title: "Inception", originalTitle: "Inception", overview: "",
+            releaseDate: nil, posterPath: nil, backdropPath: nil, voteAverage: 8.4, runtime: runtime
+        )
+        return makeModel(repository: FakeMovieRepository(), prefs: makePrefs(subscribedTo: []), movie: movie)
+    }
+
+    @Test func ratingSaysWhatTheNumberIs() {
+        let model = spokenModel(runtime: nil)
+        #expect(model.spokenVoteAverage.contains(model.formattedVoteAverage))
+        #expect(model.spokenVoteAverage.contains("10"))
+    }
+
+    @Test func runtimeIsSpokenInFullWords() throws {
+        let model = spokenModel(runtime: .seconds(148 * 60))
+        let spoken = try #require(model.spokenRuntime)
+        let shown = try #require(model.formattedRuntime)
+        #expect(spoken.contains("148"))
+        #expect(spoken.count > shown.count)
+    }
+
+    @Test func noRuntimeSaysNothing() {
+        #expect(spokenModel(runtime: nil).spokenRuntime == nil)
+    }
+}

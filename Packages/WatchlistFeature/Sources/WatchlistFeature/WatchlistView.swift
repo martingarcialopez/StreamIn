@@ -218,7 +218,7 @@ private struct WatchlistRow: View {
 
 #Preview("Empty, accessibility size") {
     previewWatchlist("empty-large", PreviewWatchlistRepository())
-        .dynamicTypeSize(.accessibility3)
+        .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Filled") {
@@ -227,7 +227,7 @@ private struct WatchlistRow: View {
 
 #Preview("Filled, accessibility size") {
     previewWatchlist("filled-large", PreviewWatchlistRepository(items: PreviewWatchlistRepository.sample))
-        .dynamicTypeSize(.accessibility3)
+        .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Load failed") {

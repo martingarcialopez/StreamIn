@@ -17,6 +17,35 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 | 5 — Abroad verdict, catalogue scope (#91) | #91's PR | Yes (issue gated on Martín's go-ahead; three decisions asked before code) | 1 medium + 2 low of 3 | Partly — full test plan; previews not rendered (no Xcode MCP in the session) | — | — |
 | 5 — Settings and the picker (#49) | [#95](https://github.com/martingarcialopez/StreamIn/pull/95) | Yes (issue, a one-round design Q&A, then plan mode) | 2 medium + 4 low of 6 | Partly — full test plan (325 tests after merging main), onboarding on the simulator in en and es; previews not rendered (Xcode MCP down) | — | — |
 | 6 — Regions from TMDB (#22) | [#96](https://github.com/martingarcialopez/StreamIn/pull/96) | Yes (plan mode; Martín cut `Region.allKnown` outright) | 3 low of 3, plus one note | Partly — full test plan, 3 previews; simulator locale checks left to Martín | 1 (the Settings preview rendered light, so its screenshots were unreadable) | — |
+| 6 — Accessibility pass (#81) | #81's PR | Yes (plan mode; Martín chose dark-only contrast and a fixture repository) | 4 medium + 2 low of 6 (all in the audit's skip rules; fixing them found a 7th real issue, tile names capped at two lines) | Yes — full test plan with the new UI audit at default size and AX5, AX5 previews; VoiceOver on a device left to Martín | — | — |
+
+---
+
+## 2026-11-04 — An accessibility audit in CI (#81)
+
+**Why:** Accessibility had been checked by eye, one AX3 preview per screen. Nothing ran
+VoiceOver labels, contrast or large text against the real app, and the UI test target was
+empty (its folder was attached to the unit-test target).
+
+**What changed:** `StreamInUITests` is wired up and in the test plan. `AccessibilityAuditTests`
+walks onboarding, Search, Details (each verdict), the Watchlist, Settings and its pickers, and
+runs `performAccessibilityAudit()` on each screen at the default size and at AX5. CI has no
+TMDB key, so the app reads canned data from `FixtureMovieRepository` when launched with
+`STREAMIN_UI_TEST_FIXTURES=1`, and only the composition root knows about it. The raw audit
+reported about 60 issues, most of them noise: it flagged system secondary text that measures
+6.4:1 as failing, it flagged emoji, and it flagged rows scrolled half off screen. Each skip is
+now a named rule backed by a measurement (WCAG contrast on the element's own pixels, for
+example), and every skipped or reported issue shows in the test's activity log, with a
+screenshot when something fails.
+
+**What it improved:** the audit and the AX5 screenshots found seven real problems that the AX3
+previews had missed. Details broke "2010" and "8.4" mid-number. The verdict wrapped "Watch /
+now" beside its emoji. Landing's credits covered the search bar. Settings cut the language down
+to "E…dom)". Service names in the picker were capped at two lines. The "+N" badge and red error
+text fell below 4.5:1. `ios-reviewer` checked the skip rules themselves: 4 of its 6 findings
+were rules looser than their comments said, such as a contrast measurement that a white title
+in the same row would always pass. Tightening those rules found the tile-name cap. An
+accessibility regression now fails CI instead of waiting for a manual pass.
 
 ---
 

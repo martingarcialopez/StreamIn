@@ -59,32 +59,9 @@
 		D2C66CD8381CCDA70C64DD90 /* Persistence */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Persistence; path = Packages/Persistence; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5B3C2C8B2FADF9C800481221 /* Exceptions for "StreamInUITests" folder in "StreamInTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				StreamInUITests.swift,
-				StreamInUITestsLaunchTests.swift,
-			);
-			target = 5BBF59952FA119DD008CC68E /* StreamInTests */;
-		};
-		5B3C2C8C2FADF9C800481221 /* Exceptions for "StreamInUITests" folder in "StreamInUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				StreamInUITests.swift,
-				StreamInUITestsLaunchTests.swift,
-			);
-			target = 5BBF599F2FA119DD008CC68E /* StreamInUITests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5B3C2C882FADF9C700481221 /* StreamInUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				5B3C2C8B2FADF9C800481221 /* Exceptions for "StreamInUITests" folder in "StreamInTests" target */,
-				5B3C2C8C2FADF9C800481221 /* Exceptions for "StreamInUITests" folder in "StreamInUITests" target */,
-			);
 			path = StreamInUITests;
 			sourceTree = "<group>";
 		};
@@ -280,7 +257,6 @@
 				5BBF59982FA119DD008CC68E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				5B3C2C882FADF9C700481221 /* StreamInUITests */,
 				5BBF59992FA119DD008CC68E /* StreamInTests */,
 			);
 			name = StreamInTests;
@@ -302,6 +278,9 @@
 			);
 			dependencies = (
 				5BBF59A22FA119DD008CC68E /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5B3C2C882FADF9C700481221 /* StreamInUITests */,
 			);
 			name = StreamInUITests;
 			packageProductDependencies = (

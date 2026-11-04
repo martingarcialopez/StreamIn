@@ -42,19 +42,18 @@ struct StreamInApp: App {
     private let landingModel: LandingViewModel
 
     init() {
+        let usesFixtures = AppConfig.isUsingUITestFixtures
         let client = LiveTMDBClient(
             config: TMDBConfig(
-                apiKey: AppConfig.tmdbAPIKey,
+                // UI tests never reach TMDB, and CI has only the placeholder key.
+                apiKey: usesFixtures ? "" : AppConfig.tmdbAPIKey,
                 language: prefs.contentLanguage.code
             )
         )
-        let liveRepository = TMDBMovieRepository(client: client)
-        let repository: MovieRepository = AppConfig.isResponseCachingEnabled
-            ? CachingMovieRepository(upstream: liveRepository, currentLanguage: { client.language })
-            : liveRepository
-
         self.tmdbClient = client
-        self.repository = repository
+        self.repository = Self.makeMovieRepository(client: client, usesFixtures: usesFixtures)
+        let repository = self.repository
+
         self.providerCatalog = ProviderCatalog(repository: repository)
         self.regionCatalog = RegionCatalog(repository: repository)
         let watchlist = WatchlistStore(repository: Self.makeWatchlistRepository())
@@ -71,6 +70,17 @@ struct StreamInApp: App {
             prefs: prefs,
             imageURLBuilder: imageURLBuilder
         )
+    }
+
+    /// TMDB behind the response cache, or canned data for UI tests.
+    private static func makeMovieRepository(client: LiveTMDBClient, usesFixtures: Bool) -> MovieRepository {
+        #if DEBUG
+        if usesFixtures { return FixtureMovieRepository() }
+        #endif
+        let liveRepository = TMDBMovieRepository(client: client)
+        return AppConfig.isResponseCachingEnabled
+            ? CachingMovieRepository(upstream: liveRepository, currentLanguage: { client.language })
+            : liveRepository
     }
 
     /// The on-disk store, or a throwaway in-memory one when the launch

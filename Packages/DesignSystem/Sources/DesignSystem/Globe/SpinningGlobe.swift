@@ -40,6 +40,8 @@ public struct SpinningGlobe: View {
             }
         }
         .frame(width: diameter, height: diameter)
+        // Smart Invert would turn the oceans orange.
+        .accessibilityIgnoresInvertColors()
         .accessibilityHidden(true)
         .task {
             guard !reduceMotion, turns > 0 else { return }

@@ -10,6 +10,7 @@ public struct ProviderLine<Provider: Identifiable>: View {
     public let name: @MainActor (Provider) -> String
 
     @ScaledMetric(relativeTo: .caption) private var logoSize: CGFloat = LogoSize.small
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         _ content: ProviderLineContent<Provider>,
@@ -41,7 +42,7 @@ public struct ProviderLine<Provider: Identifiable>: View {
             }
         }
         .frame(minHeight: logoSize, alignment: .leading)
-        .animation(.smooth, value: content)
+        .animation(reduceMotion ? nil : .smooth, value: content)
     }
 }
 

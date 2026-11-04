@@ -342,6 +342,24 @@
           }
         }
       }
+    },
+    "detailsRatingAccessibility" : {
+      "comment" : "VoiceOver label for the star rating on a movie's page; %@ is TMDB's vote average, e.g. 8.4",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rated %@ out of 10"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valoración: %@ sobre 10"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -12,6 +12,11 @@ struct LandingView: View {
     let onSubmit: () -> Void
 
     @State private var creditsHeight: CGFloat = 0
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// At accessibility text sizes the credits run several lines, too tall
+    /// to float over the page: they scroll with it, under the search bar.
+    private var creditsScroll: Bool { dynamicTypeSize.isAccessibilitySize }
 
     /// A little above the middle, so the bar stays clear of the keyboard.
     private static let contentAnchor = UnitPoint(x: 0.5, y: 0.4)
@@ -32,6 +37,9 @@ struct LandingView: View {
                 }
                 .multilineTextAlignment(.center)
                 SearchBar(text: $searchText, onSubmit: onSubmit)
+                if creditsScroll {
+                    LandingCredits()
+                }
             }
             .frame(maxWidth: Self.maxContentWidth)
             .padding(Spacing.screenPadding)
@@ -42,20 +50,18 @@ struct LandingView: View {
         .defaultScrollAnchor(Self.contentAnchor, for: .alignment)
         .scrollBounceBehavior(.basedOnSize)
         .scrollDismissesKeyboard(.interactively)
-        .safeAreaPadding(.bottom, creditsHeight)
+        .safeAreaPadding(.bottom, creditsScroll ? 0 : creditsHeight)
         .overlay(alignment: .bottom) {
-            // TMDB's terms ask for credit, and for JustWatch's on watch-provider data.
-            Text(.searchLandingCredits)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Spacing.screenPadding)
-                // Clear of the floating tab bar, not resting on it.
-                .padding(.bottom, Spacing.sectionGap)
-                .onGeometryChange(for: CGFloat.self, of: \.size.height) { creditsHeight = $0 }
-                .frame(maxHeight: .infinity, alignment: .bottom)
-                // The keyboard covers the credits rather than pushing them into the bar.
-                .ignoresSafeArea(.keyboard)
+            if !creditsScroll {
+                LandingCredits()
+                    .padding(.horizontal, Spacing.screenPadding)
+                    // Clear of the floating tab bar, not resting on it.
+                    .padding(.bottom, Spacing.sectionGap)
+                    .onGeometryChange(for: CGFloat.self, of: \.size.height) { creditsHeight = $0 }
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    // The keyboard covers the credits rather than pushing them into the bar.
+                    .ignoresSafeArea(.keyboard)
+            }
         }
         .cinemaBackground()
         .task { await model.load() }
@@ -67,6 +73,16 @@ struct LandingView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
             ?? "StreamIn"
+    }
+}
+
+/// TMDB's terms ask for credit, and for JustWatch's on watch-provider data.
+private struct LandingCredits: View {
+    var body: some View {
+        Text(.searchLandingCredits)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
     }
 }
 
@@ -95,7 +111,7 @@ extension LandingViewModel {
     NavigationStack {
         LandingView(model: .preview(), searchText: $text, onSubmit: {})
     }
-    .dynamicTypeSize(.accessibility3)
+    .dynamicTypeSize(.accessibility5)
 }
 
 /// Trending fails and there are no providers, as when offline.

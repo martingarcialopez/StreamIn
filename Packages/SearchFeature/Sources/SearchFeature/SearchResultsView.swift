@@ -121,9 +121,15 @@ private struct ErrorState: View {
 
     var body: some View {
         VStack(spacing: Spacing.comfortable) {
-            Text(error.userMessage)
-                .foregroundStyle(.red)
-                .multilineTextAlignment(.center)
+            // Red only on the symbol, so the message keeps full contrast and
+            // "error" doesn't rest on color alone.
+            Label {
+                Text(error.userMessage)
+            } icon: {
+                Image(systemName: Symbol.exclamationmarkTriangle)
+                    .foregroundStyle(.red)
+            }
+            .multilineTextAlignment(.center)
             Button(.searchRetry, action: onRetry)
         }
         .padding()
@@ -187,7 +193,7 @@ private struct SearchResultRow: View {
 
 #Preview("Loaded, accessibility size") {
     previewResults("large", .results)
-        .dynamicTypeSize(.accessibility3)
+        .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Searching") {

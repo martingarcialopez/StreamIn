@@ -32,6 +32,8 @@ public struct RemoteImage<Content: View, Placeholder: View>: View {
     public var body: some View {
         if let image = currentImage {
             content(Image(decorative: image, scale: 1))
+                // Smart Invert keeps logos and photos as they are.
+                .accessibilityIgnoresInvertColors()
         } else {
             placeholder()
                 .task(id: url) {

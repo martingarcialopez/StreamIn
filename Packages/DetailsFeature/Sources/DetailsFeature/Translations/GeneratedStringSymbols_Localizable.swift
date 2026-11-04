@@ -64,6 +64,15 @@ nonisolated extension LocalizedStringResource {
     }
 
     /**
+     VoiceOver label for the star rating on a movie's page; %@ is TMDB's vote average, e.g. 8.4
+     
+     Localized string for key “detailsRatingAccessibility” in table “Localizable.xcstrings”.
+     */
+    static func detailsRatingAccessibility(_ arg1: String) -> LocalizedStringResource {
+        LocalizedStringResource("detailsRatingAccessibility", defaultValue: "\(arg1)", table: "Localizable", bundle: resourceBundleDescription)
+    }
+
+    /**
      VoiceOver label for the region flag strip on a Details provider row. %1$@ is the provider name, %2$lld is the count of regions.
      
      Localized string for key “detailsRegionStripAccessibility” in table “Localizable.xcstrings”.
