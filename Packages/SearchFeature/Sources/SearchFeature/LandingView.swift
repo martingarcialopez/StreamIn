@@ -14,8 +14,8 @@ struct LandingView: View {
     @State private var creditsHeight: CGFloat = 0
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// At accessibility text sizes the credits run several lines, too tall
-    /// to float over the page: they scroll with it, under the search bar.
+    /// At accessibility text sizes the credits are too tall to float over
+    /// the page, so they scroll under the search bar.
     private var creditsScroll: Bool { dynamicTypeSize.isAccessibilitySize }
 
     /// A little above the middle, so the bar stays clear of the keyboard.

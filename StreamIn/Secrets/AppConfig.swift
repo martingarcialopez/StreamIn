@@ -49,9 +49,8 @@ enum AppConfig {
         ProcessInfo.processInfo.environment["STREAMIN_IN_MEMORY_WATCHLIST"] == "1"
     }
 
-    /// UI tests launch with `STREAMIN_UI_TEST_FIXTURES=1` to read canned,
-    /// offline data (`FixtureMovieRepository`) instead of TMDB, so they need
-    /// no API key and see the same screens on every run. Debug builds only.
+    /// UI tests set `STREAMIN_UI_TEST_FIXTURES=1` to read canned data
+    /// (`FixtureMovieRepository`) instead of TMDB. Debug builds only.
     static var isUsingUITestFixtures: Bool {
         #if DEBUG
         ProcessInfo.processInfo.environment["STREAMIN_UI_TEST_FIXTURES"] == "1"

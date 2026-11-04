@@ -48,7 +48,7 @@ struct ProviderTile: View {
                     .font(.caption)
                     .foregroundStyle(isSelected ? .primary : .secondary)
                     .multilineTextAlignment(.center)
-                    .modifier(TileNameLines())
+                    .lineLimit(2, reservesSpace: true)
             }
             .frame(maxWidth: .infinity)
             .contentShape(.rect)
@@ -57,21 +57,6 @@ struct ProviderTile: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(provider.name)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-    }
-}
-
-/// Two lines, kept even when one is enough, so the tiles in a row line up.
-/// At accessibility text sizes a long name ("Amazon Prime Video with Ads")
-/// needs more, so it wraps as far as it must.
-private struct TileNameLines: ViewModifier {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    func body(content: Content) -> some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            content.fixedSize(horizontal: false, vertical: true)
-        } else {
-            content.lineLimit(2, reservesSpace: true)
-        }
     }
 }
 

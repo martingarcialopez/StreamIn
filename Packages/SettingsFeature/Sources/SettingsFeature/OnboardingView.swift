@@ -113,19 +113,6 @@ private struct OnboardingCredits: View {
     .preferredColorScheme(.dark)
 }
 
-#Preview("Accessibility size") {
-    let prefs = Preferences(defaultRegion: .spain, defaults: UserDefaults(suiteName: "OnboardingView.preview.large")!)
-    prefs.region = .spain
-    prefs.subscribedProviderIDs = []
-    return OnboardingView(
-        prefs: prefs,
-        catalog: ProviderCatalog(repository: PreviewMovieRepository()),
-        imageURLBuilder: PreviewImageURLBuilder()
-    )
-    .preferredColorScheme(.dark)
-    .dynamicTypeSize(.accessibility5)
-}
-
 /// `load()` runs in the preview, so `allProviders` answers every scope.
 private struct PreviewMovieRepository: MovieRepository {
     func searchMovies(query: String, page: Int) async throws -> SearchPage {

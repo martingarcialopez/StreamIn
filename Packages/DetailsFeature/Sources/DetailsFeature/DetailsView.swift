@@ -121,8 +121,7 @@ private struct LoadTrigger: Hashable {
 
 // MARK: - Metadata strip
 
-/// One line of year, runtime and rating; one per line at accessibility text
-/// sizes, where three side by side would break their numbers.
+/// Year, runtime and rating; stacked at accessibility text sizes.
 private struct MetadataRow: View {
     let model: DetailsViewModel
 
@@ -165,7 +164,6 @@ private struct WhereToWatchCard: View {
     @ScaledMetric(relativeTo: .body) private var heroLogoSize: CGFloat = LogoSize.hero
     /// About the size of the emoji beside the other verdicts.
     @ScaledMetric(relativeTo: .title) private var globeSize: CGFloat = LogoSize.medium
-    @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The verdict's color; loading, failures and the services prompt stay neutral.
@@ -232,14 +230,13 @@ private struct WhereToWatchCard: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                .strokeBorder(tint.map { VerdictTint.border($0, contrast: contrast) } ?? AppPalette.separator)
+                .strokeBorder(tint.map(VerdictTint.border) ?? AppPalette.separator)
                 .mask { LegendCutout { BorderLegends(model: model, layer: .borderGap) } }
         }
         .overlay(alignment: .top) {
             BorderLegends(model: model, layer: .content)
         }
-        // Crossfades from the spinner to the verdict, tint included; with
-        // Reduce Motion the card changes at once, without resizing on screen.
+        // Crossfades from the spinner to the verdict, tint included.
         .animation(reduceMotion ? nil : .smooth, value: model.verdict)
         .accessibilityElement(children: .contain)
     }
@@ -264,9 +261,8 @@ private struct CardLegend: View {
 }
 
 /// The verdict's emoji, a size up from the answer beside it in plain text:
-/// the card's color carries the state, the text stays readable. At
-/// accessibility text sizes the emoji sits above the answer, which then has
-/// the card's whole width.
+/// the card's color carries the state, the text stays readable. Above the
+/// answer at accessibility text sizes.
 private struct VerdictHeadline<Icon: View>: View {
     let title: LocalizedStringResource
     @ViewBuilder let icon: Icon
@@ -377,11 +373,7 @@ private enum VerdictTint {
     static func fill(_ tint: Color) -> LinearGradient {
         LinearGradient(colors: [tint.opacity(0.18), tint.opacity(0.04)], startPoint: .top, endPoint: .bottom)
     }
-    /// Faint, so the card reads as one surface; with Increase Contrast on,
-    /// strong enough to show the card's edge.
-    static func border(_ tint: Color, contrast: ColorSchemeContrast) -> Color {
-        tint.opacity(contrast == .increased ? 0.7 : 0.25)
-    }
+    static func border(_ tint: Color) -> Color { tint.opacity(0.25) }
 }
 
 private struct UnavailableReason: View {
@@ -542,7 +534,6 @@ private struct RegionFlags: View {
                 Text(region.flag)
             }
             if overflow > 0 {
-                // Primary: secondary text on the quaternary capsule is below 4.5:1.
                 Text(verbatim: "+\(overflow)")
                     .font(.caption)
                     .padding(.horizontal, 7)
@@ -607,8 +598,7 @@ private struct ErrorRetry: View {
 
     var body: some View {
         VStack(spacing: Spacing.default) {
-            // Red only on the symbol: red text is too dim on the tinted card,
-            // and the symbol says "error" without the color.
+            // Red text is too dim on the tinted card; the symbol carries it.
             Label {
                 Text(.detailsLoadFailed(error.userMessage))
             } icon: {
@@ -643,7 +633,6 @@ private struct BackdropView: View {
                 Rectangle().fill(.quaternary)
             }
         }
-        // Smart Invert keeps the still as it is.
         .accessibilityIgnoresInvertColors()
         .accessibilityHidden(true)
     }
@@ -699,23 +688,6 @@ private struct BackdropView: View {
             ]
         )
     )
-}
-
-#Preview("Abroad, accessibility size") {
-    previewDetails(
-        "abroad-large",
-        subscribedTo: [.netflix],
-        repository: PreviewMovieRepository(
-            subscription: [.disneyPlus, .hboMax],
-            global: [
-                ProviderRegionalAvailability(
-                    provider: .netflix,
-                    regions: ["AR", "CA", "GB", "JP", "MX", "US"].map(Region.init(code:))
-                ),
-            ]
-        )
-    )
-    .dynamicTypeSize(.accessibility5)
 }
 
 #Preview("Read a book, others here") {

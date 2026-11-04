@@ -129,7 +129,7 @@ Three mechanisms, one per kind of data:
 - Unit tests with Swift Testing: Domain logic, view models against fake repositories, the TMDB adapter against a stubbed client, caches with an injected clock.
 - `StreamIn.xctestplan` (the shared `StreamIn` scheme's test plan) runs every package's tests in one build — ⌘U in Xcode, and what CI runs: `xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'`. A new package's test target must be added to the test plan.
 - The packages are iOS-only, so `swift test` doesn't run them on macOS. One package alone, from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
-- UI tests (`StreamInUITests`, in the test plan): `AccessibilityAuditTests` walks every screen and runs Xcode's accessibility audit at the default size and at AX5. The app reads canned data when launched with `STREAMIN_UI_TEST_FIXTURES=1` (`FixtureMovieRepository`, Debug only, chosen in the composition root), so UI tests need no TMDB key. A skipped audit issue needs a named, measured rule in `shouldSkip`.
+- UI tests (`StreamInUITests`, in the test plan): `AccessibilityAuditTests` opens each tab and runs Xcode's accessibility audit. Launched with `STREAMIN_UI_TEST_FIXTURES=1`, the app reads canned data (`FixtureMovieRepository`, Debug only, chosen in the composition root), so UI tests need no TMDB key.
 - Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`. `StreamInTests` still holds Xcode's template.
 
 ## Non-goals

@@ -29,7 +29,6 @@ struct AboutSection: View {
                 .modifier(FinePrintRow())
             QuietLink(.settingsAboutPrivacy, destination: AboutLinks.privacyPolicy())
                 .modifier(FinePrintRow())
-            // Secondary, as the links above: tertiary text is below 4.5:1.
             Text(.settingsAboutVersion(version.version, version.build))
                 .foregroundStyle(.secondary)
                 .modifier(FinePrintRow())
@@ -103,7 +102,6 @@ private struct TMDBLogo: View {
             .resizable()
             .scaledToFit()
             .frame(height: height)
-            // TMDB's terms: their logo unmodified, Smart Invert included.
             .accessibilityIgnoresInvertColors()
             // The sentence under it names TMDB already.
             .accessibilityHidden(true)

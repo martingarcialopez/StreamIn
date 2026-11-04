@@ -409,15 +409,11 @@ A pattern used by two screens moves to DesignSystem.
   The interface language follows the device (any Spanish → Spanish, anything else → British
   English); Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES`
   elsewhere), with one "Español" in the picker. English content is `en-US` everywhere.
-- ✅ **Accessibility pass (#81):** VoiceOver on every screen, Dynamic Type up to AX5,
-  WCAG AA contrast, Increase Contrast, Smart Invert and Reduce Motion. The app is dark-only,
-  so contrast is checked in dark, with and without Increase Contrast (decided Nov 4).
-  `AccessibilityAuditTests` runs Xcode's audit on every screen at the default size and at AX5,
-  on canned data (`STREAMIN_UI_TEST_FIXTURES=1`, `FixtureMovieRepository`); its skip rules are
-  named and measured (WCAG on the element's pixels, emoji, nodes hidden from VoiceOver, text
-  partly off screen). At accessibility sizes Details stacks its metadata and verdict, Landing's
-  credits scroll under the search bar, and Settings' Language row pushes a list like Region's.
-  The border legends on Details' card stay capped at XXX Large.
+- ✅ **Accessibility pass (#81), kept light on purpose (decided Nov 4):** fixes for AX5 layouts,
+  contrast (dark-only, so checked in dark), Smart Invert and Reduce Motion, verified once with
+  previews and the audit. In CI, `AccessibilityAuditTests` runs Xcode's audit (labels, traits,
+  hit regions) on each tab, on canned data (`STREAMIN_UI_TEST_FIXTURES=1`). Its contrast and
+  Dynamic Type checks stay off: in SwiftUI they flag too much that passes.
 - **README:** refresh the status section and add screenshots or a demo GIF.
 - **Store assets:** screenshots for iPhone **and iPad** (the app supports both),
   description in en + es, keywords, Entertainment category, age rating, a privacy

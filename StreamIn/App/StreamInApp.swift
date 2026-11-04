@@ -45,7 +45,7 @@ struct StreamInApp: App {
         let usesFixtures = AppConfig.isUsingUITestFixtures
         let client = LiveTMDBClient(
             config: TMDBConfig(
-                // UI tests never reach TMDB, and CI has only the placeholder key.
+                // CI has only the placeholder key.
                 apiKey: usesFixtures ? "" : AppConfig.tmdbAPIKey,
                 language: prefs.contentLanguage.code
             )

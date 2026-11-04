@@ -121,8 +121,6 @@ private struct ErrorState: View {
 
     var body: some View {
         VStack(spacing: Spacing.comfortable) {
-            // Red only on the symbol, so the message keeps full contrast and
-            // "error" doesn't rest on color alone.
             Label {
                 Text(error.userMessage)
             } icon: {
