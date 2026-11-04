@@ -67,14 +67,11 @@ public struct OnboardingView: View {
 // MARK: - Welcome and credits
 
 /// Scrolls away with the grid: the user is here to pick services, not read.
-/// The globe says "here and abroad" before the subtitle does.
+/// The wordmark's globe says "here and abroad" before the subtitle does.
 private struct OnboardingWelcome: View {
-    @ScaledMetric(relativeTo: .largeTitle) private var globeDiameter: CGFloat = 88
-
     var body: some View {
         VStack(spacing: Spacing.comfortable) {
-            SpinningGlobe(diameter: globeDiameter)
-                .accessibilityHidden(true)
+            AppWordmark()
             Text(.onboardingHeaderTitle)
                 .font(.title2)
                 .bold()

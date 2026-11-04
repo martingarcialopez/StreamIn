@@ -4,7 +4,7 @@ import Preferences
 import ReferenceData
 import DesignSystem
 
-/// The Search tab's first screen: the slot machine, the app's name and
+/// The Search tab's first screen: the slot machine, the app's wordmark and
 /// promise, and the search bar.
 struct LandingView: View {
     let model: LandingViewModel
@@ -23,8 +23,7 @@ struct LandingView: View {
             VStack(spacing: Spacing.sectionGap) {
                 SlotMachine(model: model)
                 VStack(spacing: Spacing.tight) {
-                    Text(verbatim: Self.appName)
-                        .font(.largeTitle.bold())
+                    AppWordmark()
                         .accessibilityAddTraits(.isHeader)
                     Text(.searchLandingTagline)
                         .font(.title3)
@@ -59,14 +58,6 @@ struct LandingView: View {
         }
         .cinemaBackground()
         .task { await model.load() }
-    }
-
-    // Pulled from Info.plist so the localized display name (en/es) flows
-    // through automatically — same source iOS uses for the Home Screen icon.
-    private static var appName: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
-            ?? "StreamIn"
     }
 }
 
