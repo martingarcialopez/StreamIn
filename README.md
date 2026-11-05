@@ -15,6 +15,10 @@ home, or on *your* services in another country (the VPN use case). Every
 country TMDB covers, in English and Spanish. **App Store release is the next
 milestone.**
 
+<p align="center">
+  <img src="docs/screenshots/demo.gif" width="300" alt="A 20-second demo on an iPhone: the slot machine spins, a search for Spirited Away, its page says Watch now on Netflix, the heart saves it, and it shows up in the Watchlist tab">
+</p>
+
 <table>
   <tr>
     <th width="25%">🎰 Spin or search</th>
@@ -23,10 +27,10 @@ milestone.**
     <th width="25%">📺 Your services</th>
   </tr>
   <tr>
-    <td width="25%" align="center"><img src="docs/screenshots/landing-slot-machine.png" width="200" alt="The search landing page: a slot machine whose three reels stopped on a movie poster, Prime Video and the flag of Canada, above the StreamIn title and the search bar"></td>
-    <td width="25%" align="center"><img src="docs/screenshots/search-results.png" width="200" alt="Search results for Paddington: each row shows its poster, year and where to watch it, Prime Video for the first two films, Netflix abroad behind a globe for the third, and Not streaming here for the rest"></td>
-    <td width="25%" align="center"><img src="docs/screenshots/watchlist.png" width="200" alt="The Watchlist tab: saved movies with their posters, directors and the services that carry them"></td>
-    <td width="25%" align="center"><img src="docs/screenshots/onboarding-services.png" width="200" alt="Onboarding: a globe over Pick the services you pay for, with Prime Video, Disney+ and Netflix picked and a grid of the other services available in the United Kingdom"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/landing-slot-machine.png" width="200" alt="The search landing page: a slot machine whose three reels stopped on a movie poster, a streaming service and a flag, above the Streamin wordmark, its i dotted with a gold globe, and the search bar"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/search-results.png" width="200" alt="Search results for Night: each row shows its poster, year and where to watch it: Netflix at home, Netflix abroad behind a globe, Disney+, or Not streaming here"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/watchlist.png" width="200" alt="The Watchlist tab: Spirited Away, Whiplash and Greyhound with their posters, directors and the services that carry them, Whiplash&#39;s behind a globe"></td>
+    <td width="25%" align="center"><img src="docs/screenshots/onboarding-services.png" width="200" alt="Onboarding: the Streamin wordmark over Pick the services you pay for, with Prime Video, Disney+ and Netflix picked and a grid of the other services available in the United Kingdom"></td>
   </tr>
 </table>
 
@@ -221,7 +225,7 @@ wrong row — all fixed before the PR opened. Martín found no code bugs after
 hand-off. The [workflow log](docs/workflow-log.md) has the per-phase scorecard
 and the things that broke along the way.
 
-**By the numbers:** 50 merged PRs, 6 of them written end to end by claude[bot]
+**By the numbers:** 54 merged PRs, 6 of them written end to end by claude[bot]
 from an issue. Every commit Claude makes carries a co-author trailer, and
 Martín reviews every PR before it merges.
 
@@ -233,7 +237,7 @@ Martín reviews every PR before it merges.
 | 3 | Watchlist with SwiftData | ✅ |
 | 4 | Details redesign: one verdict first | ✅ |
 | 5 | Design and UX pass on every screen: slot machine, cinema theme, where-to-watch rows | ✅ |
-| 6 | App Store: privacy manifest, TMDB attribution, every region, icon and launch screen ✅; accessibility pass, store screenshots, TestFlight and submission next | 🔄 |
+| 6 | App Store: privacy manifest, TMDB attribution, every region, icon, launch screen and logo, store screenshots ✅; TestFlight and submission next | 🔄 |
 
 After 1.0: French, and on-device Foundation Models for natural-language search
 ("a feel-good 90s comedy") if it earns its place. Full plan in
