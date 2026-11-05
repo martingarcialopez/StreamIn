@@ -78,6 +78,7 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 | `parallel` skill | `/parallel <issue>` or `/parallel <task in plain words>` (written up as an issue first): start it in its own worktree session (own simulator, Xcode window, build lock), listed in `claude agents`; `/parallel clean` removes finished ones |
 | `ship-phase` skill | Finish a phase and open its PR (with `pr-screenshots` when a screen changed), then wait for CI (only when Martín asks) |
 | `pr-screenshots` skill | Before/after renders of the previews of every screen a branch changed or added, side by side at 180 px in the PR's Screenshots section. `scripts/publish-screenshots.sh` pushes the images to the orphan `pr-screenshots` branch (never merged, kept so merged PRs keep their pictures) and prints commit-pinned URLs |
+| `scripts/store-screenshots.sh` | App Store screenshots (iPhone 6.9" and iPad 13", en + es) into the gitignored `build/store-screenshots/`; `--readme` refreshes `docs/screenshots/`, `--demo` the README GIF. Needs a real TMDB key |
 | `commit` skill | Every commit Claude makes: gitmoji Conventional Commits title (`tooling` 🔧 for the workflow, `chore` 🧹 for app housekeeping), at most two short body lines, and `Co-Authored-By: Claude <model> <noreply@anthropic.com>` so GitHub shows the pairing. One prompt where Martín approves or edits the message, then commit and push; specific branch names. Martín commits solo work himself, outside Claude |
 | `ios-reviewer` subagent | Read-only review against these rules, with `swiftui-pro` (its Swift and hygiene checks on every Swift change, its SwiftUI checks on view code): locally before every PR, and on GitHub for every PR |
 | `swiftui-pro` skill | Paul Hudson's SwiftUI review checklist (MIT), vendored at v1.1 in `.claude/skills/swiftui-pro/` (see its `SOURCE.md`); `ios-reviewer` applies it, and the project's rules win where they differ |
@@ -129,7 +130,8 @@ Three mechanisms, one per kind of data:
 - Unit tests with Swift Testing: Domain logic, view models against fake repositories, the TMDB adapter against a stubbed client, caches with an injected clock.
 - `StreamIn.xctestplan` (the shared `StreamIn` scheme's test plan) runs every package's tests in one build — ⌘U in Xcode, and what CI runs: `xcodebuild test -project StreamIn.xcodeproj -scheme StreamIn -testPlan StreamIn -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'`. A new package's test target must be added to the test plan.
 - The packages are iOS-only, so `swift test` doesn't run them on macOS. One package alone, from its directory: `xcodebuild test -scheme <Package> -destination 'platform=iOS Simulator,name=<iPhone>'`.
-- Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`, and one UI test for search → details → providers. The app-level test targets still hold Xcode's templates.
+- UI tests (`StreamInUITests`) hold `StoreScreenshotTests`, the screenshot tour on live TMDB data. It runs through `Screenshots.xctestplan` from `scripts/store-screenshots.sh`, never in CI (CI has a placeholder key).
+- Not written yet: `URLProtocol` fixture tests for `LiveTMDBClient`, and one UI test for search → details → providers. `StreamInTests` still holds Xcode's template.
 
 ## Non-goals
 

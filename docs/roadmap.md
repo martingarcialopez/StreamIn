@@ -416,11 +416,16 @@ A pattern used by two screens moves to DesignSystem.
   The interface language follows the device (any Spanish → Spanish, anything else → British
   English); Spanish movie data follows the home region (`es-MX` in the Americas, `es-ES`
   elsewhere), with one "Español" in the picker. English content is `en-US` everywhere.
-- **Accessibility pass:** VoiceOver on every screen, Dynamic Type up to AX5,
-  contrast in light and dark.
-- **README:** refresh the status section and add screenshots or a demo GIF.
-- **Store assets:** screenshots for iPhone **and iPad** (the app supports both),
-  description in en + es, keywords, Entertainment category, age rating, a privacy
+- **Accessibility pass:** parked on Nov 4 (#81, not planned); the branch
+  `feat/accessibility-pass` keeps the few visible fixes.
+- ✅ **Screenshots, store and README, from one script** (#82): `scripts/store-screenshots.sh`
+  runs the `StoreScreenshotTests` UI test (`Screenshots.xctestplan`, never in CI: it needs a
+  real TMDB key) on erased simulators with a 9:41 status bar: iPhone 17 Pro Max (6.9", 1320 × 2868)
+  and iPad Pro 13" (2064 × 2752), en with the UK and es with Spain. Six shots each, in story
+  order (landing → results → watch now → abroad → Watchlist → services), in the gitignored
+  `build/store-screenshots/`. `--readme` refreshes `docs/screenshots/`, `--demo` records the
+  README's GIF (`scripts/make-demo-gif.swift`, AVFoundation + ImageIO, no new tool).
+- **Store assets:** description in en + es, keywords, Entertainment category, age rating, a privacy
   policy URL (one page on GitHub Pages).
 - **Privacy and support pages** live in `site/`, published by `pages.yml` (only that folder).
   Stable URLs for App Store Connect, one per localization:

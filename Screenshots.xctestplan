@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "9C4E2B71-6A3D-4F18-8B5E-2D7A1C9F3E60",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StreamIn.xcodeproj",
+      "identifier" : "5BBF59882FA119DC008CC68E",
+      "name" : "StreamIn"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:StreamIn.xcodeproj",
+        "identifier" : "5BBF599F2FA119DD008CC68E",
+        "name" : "StreamInUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
