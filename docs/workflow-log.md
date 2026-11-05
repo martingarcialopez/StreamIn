@@ -20,6 +20,25 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-11-05 — One script for the store and README screenshots (#82)
+
+**Why:** the README's shots (#98) came from a throwaway UI test that couldn't be committed: the
+UI test target had no sources. The App Store needs the same screens again on two devices in two
+languages, and retaking by hand drifts (status bar, region, which movies).
+
+**What changed:** the UI test target is wired, and `scripts/store-screenshots.sh` runs its tour on
+erased simulators with a 9:41 bar: 6 shots × iPhone 6.9" and iPad 13" × en (UK) and es (Spain),
+checked for App Store pixel sizes. `--readme` refreshes `docs/screenshots/`; `--demo` records the
+README GIF with `simctl io recordVideo` and converts it in Swift (no ffmpeg).
+
+**What it improved:** a retake is one command, not an afternoon. Live data still moves (a
+movie's verdict or a search's top rows can change), so each run's shots need a look before they
+ship.
+
+**Caveats:** a simulator erased on a Mac set to a 24-hour locale shows 09:41, so the script sets
+the device to en_US before the override. `simctl` records only when the screen changes: sample
+frames with a one-step tolerance, or AVFoundation fails or jumps to keyframes.
+
 ## 2026-11-04 — Checking the app icon without a device
 
 **Why:** an iOS 26 icon has six appearances (default, dark, clear and tinted, light and dark), and
