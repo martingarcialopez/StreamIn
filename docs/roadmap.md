@@ -433,6 +433,9 @@ A pattern used by two screens moves to DesignSystem.
 - **Make the repository public** before sharing it. History is clean: the secrets
   files were never committed.
 - **Version 1.0.0, build 1**, TestFlight, submit. Expect one review round trip.
+  - Versions move once per App Store release, never per PR: `scripts/bump-version.sh
+    patch|minor|major|X.Y.Z` in the release PR (patch for fixes, minor for features). The build number
+    is left to Xcode, which raises it on upload ("Manage Version and Build Number").
 
 ---
 

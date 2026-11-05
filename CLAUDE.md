@@ -73,6 +73,7 @@ The main checkout is a **control room** (planning, `gh`, merging, conversation).
 |---|---|
 | `localize` skill | Add/update a string in a package catalog (en + es) and regenerate symbols |
 | Translation review (`scripts/translations/translations.sh`, `scripts/translations/translator-preview.sh`) | Every on-screen string to a Numbers workbook, one sheet per screen, where a reviewer edits the en + es copy in place; `import` writes the edits back (placeholders checked, stale rows skipped). The preview script opens the app in the simulator in one language. Loop in [`docs/translations.md`](docs/translations.md) |
+| `scripts/bump-version.sh` | `patch`, `minor`, `major` or `X.Y.Z`: the app version in every target, once per App Store release (never per PR). Xcode raises the build number on upload |
 | `new-package` skill | Scaffold a package and register it in the Xcode project (never hand-edit `project.pbxproj` for this) |
 | `start-issue` skill | Start work on a GitHub issue: read it, plan, branch |
 | `parallel` skill | `/parallel <issue>` or `/parallel <task in plain words>` (written up as an issue first): start it in its own worktree session (own simulator, Xcode window, build lock), listed in `claude agents`; `/parallel clean` removes finished ones |
