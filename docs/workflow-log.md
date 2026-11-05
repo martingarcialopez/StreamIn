@@ -20,6 +20,20 @@ actually improved. Newest first. Numbers are what was observed, not estimates.
 
 ---
 
+## 2026-11-05 — One version bump per release
+
+**Why:** shipping 1.0.0 (#83) raised when the version should change: per PR, or per App Store
+release.
+
+**What changed:** per release. `scripts/bump-version.sh patch|minor|major|X.Y.Z` sets
+`MARKETING_VERSION` in every target in one go, run in the release PR (patch for fixes, minor for
+features). The build number stays in the repo at 1: Xcode's "Manage Version and Build Number"
+raises it on each upload.
+
+**What it improved:** the version in the project now matches what the App Store shows, and a
+version can't drift between the app and test targets. Bumping per PR was rejected: most merges
+never ship on their own, so the numbers would stop meaning anything.
+
 ## 2026-11-04 — Checking the app icon without a device
 
 **Why:** an iOS 26 icon has six appearances (default, dark, clear and tinted, light and dark), and
